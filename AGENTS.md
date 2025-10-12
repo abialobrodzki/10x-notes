@@ -169,10 +169,29 @@ src/
 This project uses **unified AI context management with symbolic links**:
 
 - **`AGENTS.md`** - Single source of truth for AI agent instructions (this file)
-- **Symlinks** - `CLAUDE.md`, `GEMINI.md`, `CURSOR.md`, `CLINE.md`, `COPILOT.md`, `AGENT.md` all point to `AGENTS.md`
+- **Symlinks** - `CLAUDE.md`, `GEMINI.md`, `CURSOR.md`, `CLINE.md`, `COPILOT.md`, `AGENT.md`, `WARP.md` all point to `AGENTS.md`
 - **Tool-specific directories** - `.cursor/rules`, `.clinerules/rules`, `.roorules/rules` contain symlinks to `AGENTS.md`
 - **Benefits**: Edit once in `AGENTS.md`, changes apply to all AI tools automatically
 - **See**: `AI_CONTEXT.md` for full documentation on the symlink system
+
+### Advanced Context-Specific Rules
+
+This project contains detailed, context-specific guidelines in `.cursor/rules/*.mdc` files.
+
+**IMPORTANT for AI Agents**: When working with specific technologies or tasks, **READ the relevant file first** using the Read tool before making changes:
+
+#### When to Read Additional Rules:
+
+- **Working with Astro components (\*.astro)** → Read `.cursor/rules/astro.mdc`
+- **Working with React components (\*.tsx)** → Read `.cursor/rules/react.mdc`
+- **Frontend/UI work (styling, components)** → Read `.cursor/rules/frontend.mdc`
+- **Backend/API/Database work** → Read `.cursor/rules/backend.mdc`
+- **Setting up Supabase integration** → Read `.cursor/rules/api-supabase-astro-init.mdc`
+- **Creating database migrations** → Read `.cursor/rules/db-supabase-migrations.mdc`
+- **Using/installing Shadcn/ui components** → Read `.cursor/rules/ui-shadcn-helper.mdc`
+- **Project structure questions** → Read `.cursor/rules/shared.mdc`
+
+These files contain detailed best practices, patterns, and implementation guidelines that supplement this file.
 
 ### Additional Project Files
 
