@@ -1,1 +1,12 @@
-npx lint-staged
+# Load nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Check code formatting
+npm run format:check
+
+# Lint with zero warnings tolerance
+npm run lint
+
+# TypeScript type checking with strict mode
+npm run tsc:check

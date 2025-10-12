@@ -12,6 +12,7 @@ export default defineConfig({
   integrations: [react(), sitemap()],
   server: { port: 3000 },
   vite: {
+    // @ts-expect-error - Tailwind v4 plugin type incompatibility, remove when fixed upstream
     plugins: [tailwindcss()],
   },
   adapter: node({

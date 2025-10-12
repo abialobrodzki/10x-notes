@@ -7,9 +7,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "format:check": "prettier . --check",
+    "tsc:check": "tsc --noEmit --pretty --strict",
+    "prepare": "husky"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.5",
@@ -52,9 +55,10 @@
   },
   "lint-staged": {
     "*.{ts,tsx,astro}": [
+      "prettier --write",
       "eslint --fix"
     ],
-    "*.{json,css,md}": [
+    "*.{js,json,css,md}": [
       "prettier --write"
     ]
   }
