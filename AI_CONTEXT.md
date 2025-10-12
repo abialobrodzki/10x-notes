@@ -13,6 +13,7 @@ Different AI coding tools require different context file names:
 - Roo → `.roorules/rules`
 - OpenAI Codex → `AGENTS.md`
 - AMP → `AGENT.md`
+- Warp → `WARP.md`
 
 Maintaining multiple identical files leads to sync issues and duplication.
 
@@ -30,6 +31,7 @@ We use **`AGENTS.md` as the single source of truth** and create symbolic links f
 ├── CLINE.md            # 🔗 → AGENTS.md
 ├── COPILOT.md          # 🔗 → AGENTS.md
 ├── AGENT.md            # 🔗 → AGENTS.md
+├── WARP.md             # 🔗 → WARP.md
 ├── .cursor/
 │   └── rules/
 │       ├── AGENTS.md   # 🔗 → ../../AGENTS.md
@@ -60,6 +62,7 @@ CURSOR.md
 CLINE.md
 COPILOT.md
 AGENT.md
+WARP.md
 .cursor/
 .clinerules/
 .roorules/
@@ -92,6 +95,7 @@ echo "CURSOR.md" >> .gitignore
 echo "CLINE.md" >> .gitignore
 echo "COPILOT.md" >> .gitignore
 echo "AGENT.md" >> .gitignore
+echo "WARP.md" >> .gitignore
 echo ".clinerules/" >> .gitignore
 echo ".roorules/" >> .gitignore
 ```
