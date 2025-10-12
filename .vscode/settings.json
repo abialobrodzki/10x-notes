@@ -4,5 +4,16 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "cSpell.words": ["duplicative", "prerender", "Shadcn", "Supabase", "timeoutu", "windsurfrules"]
+  "cSpell.words": [
+    "clinerules",
+    "duplicative",
+    "mklink",
+    "prerender",
+    "roorules",
+    "Shadcn",
+    "sidebarze",
+    "Supabase",
+    "timeoutu",
+    "windsurfrules"
+  ]
 }

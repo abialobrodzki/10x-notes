@@ -22,3 +22,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# AI context file symlinks (keep only AGENTS.md)
+CLAUDE.md
+GEMINI.md
+CURSOR.md
+CLINE.md
+COPILOT.md
+AGENT.md
+.cursor/
+.clinerules/
+.roorules/
