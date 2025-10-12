@@ -207,6 +207,7 @@ Kryteria akceptacji:
 ## 6. Metryki sukcesu
 
 1. Adopcja:
+
    - Średnio > 3 zapisane notatki dziennie na aktywnego użytkownika.
 
 2. Wydajność generowania:

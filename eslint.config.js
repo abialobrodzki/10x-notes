@@ -1,13 +1,14 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
-import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import eslintPluginAstro from "eslint-plugin-astro";
+import importPlugin from "eslint-plugin-import";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
 import pluginReact from "eslint-plugin-react";
 import reactCompiler from "eslint-plugin-react-compiler";
 import eslintPluginReactHooks from "eslint-plugin-react-hooks";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import tseslint from "typescript-eslint";
 
 // File path setup
@@ -20,6 +21,14 @@ const baseConfig = tseslint.config({
   rules: {
     "no-console": "warn",
     "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+      },
+    ],
+    "@typescript-eslint/no-explicit-any": "warn",
   },
 });
 
@@ -31,6 +40,34 @@ const jsxA11yConfig = tseslint.config({
   },
   rules: {
     ...jsxA11y.flatConfigs.recommended.rules,
+  },
+});
+
+const importConfig = tseslint.config({
+  files: ["**/*.{js,jsx,ts,tsx}"],
+  plugins: {
+    import: importPlugin,
+  },
+  settings: {
+    "import/resolver": {
+      typescript: true,
+      node: true,
+    },
+  },
+  rules: {
+    "import/order": [
+      "warn",
+      {
+        groups: ["builtin", "external", "internal", ["parent", "sibling"], "index", "object", "type"],
+        "newlines-between": "never",
+        alphabetize: {
+          order: "asc",
+          caseInsensitive: true,
+        },
+      },
+    ],
+    "import/no-duplicates": "error",
+    "import/no-unresolved": "off", // TypeScript handles this
   },
 });
 
@@ -60,6 +97,7 @@ export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   baseConfig,
   jsxA11yConfig,
+  importConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
