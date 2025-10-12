@@ -27,27 +27,35 @@ nvm use  # Uses Node.js v24.7.0 from .nvmrc
 ### Code Quality
 
 ```bash
-# Run ESLint
+# Run ESLint (max warnings: 0)
 npm run lint
 
-# Fix ESLint issues
+# Fix ESLint issues automatically
 npm run lint:fix
 
 # Format code with Prettier
 npm run format
+
+# Check code formatting without modifying files
+npm run format:check
+
+# Run TypeScript type checking
+npm run tsc:check
 ```
 
 ## Code Architecture & Structure
 
 ### Tech Stack
 
-- **Astro 5** - Modern web framework with server-side rendering
+- **Astro 5** - Modern web framework with server-side rendering (SSR mode)
 - **React 19** - UI library for interactive components
-- **TypeScript 5** - Type-safe JavaScript
-- **Tailwind CSS 4** - Utility-first CSS framework
-- **Shadcn/ui** - Component library built on Radix UI
+- **TypeScript 5** - Type-safe JavaScript with strict mode
+- **Tailwind CSS 4** - Utility-first CSS framework (via Vite plugin)
+- **Shadcn/ui** - Component library built on Radix UI (New York style)
 - **Lucide React** - Icon library
-- **Zod** - TypeScript-first schema validation (available via dependencies)
+- **class-variance-authority** - CVA for component variants
+- **tw-animate-css** - Tailwind animation utilities
+- **Zod** - TypeScript-first schema validation (available via Astro dependencies)
 
 ### Project Structure
 
@@ -64,11 +72,18 @@ src/
 
 ### Configuration Files
 
-- `astro.config.mjs` - Astro configuration with Node adapter for SSR and Tailwind via Vite plugin
-- `tsconfig.json` - TypeScript config with `@/*` path aliases
-- `components.json` - Shadcn/ui configuration with New York style and Lucide icons
-- `eslint.config.js` - ESLint configuration with TypeScript, React, and Astro support
-- `.prettierrc.json` - Prettier formatting configuration
+- `astro.config.mjs` - Astro configuration with:
+  - Node adapter in standalone mode for SSR
+  - React integration for interactive components
+  - Sitemap generation (`@astrojs/sitemap`)
+  - Tailwind CSS 4 via Vite plugin
+  - Development server on port 3000
+- `tsconfig.json` - TypeScript config extending Astro strict presets with `@/*` path aliases
+- `components.json` - Shadcn/ui configuration with New York style, Lucide icons, and path aliases
+- `eslint.config.js` - ESLint 9 flat config with TypeScript, React (including React Compiler plugin), and Astro support
+- `.prettierrc.json` - Prettier formatting configuration with Astro plugin support
+- `package.json` - Scripts and dependencies with lint-staged configuration
+- `.nvmrc` - Node.js version specification (v24.7.0)
 
 ### Component Architecture
 
@@ -133,9 +148,37 @@ src/
 
 ### Development Tools & Git Hooks
 
-- **Husky** - Git hooks management
-- **ESLint** - Code linting with TypeScript, React, and Astro support
-- **Prettier** - Code formatting with Astro plugin
-- **lint-staged** - Run linters on staged files
+- **Husky 9** - Git hooks management (configured in `.husky/` directory)
+- **ESLint 9** - Code linting with flat config system supporting:
+  - TypeScript (`@typescript-eslint`)
+  - React 19 with Hooks rules
+  - React Compiler plugin
+  - Astro components
+  - JSX accessibility (`jsx-a11y`)
+  - Import/export validation
+  - Prettier integration
+- **Prettier** - Code formatting with Astro plugin support
+- **lint-staged 16** - Runs linters on staged files before commit
+  - Auto-formats and lints `.ts`, `.tsx`, `.astro` files
+  - Auto-formats `.js`, `.json`, `.css`, `.md` files
 - Pre-commit hooks automatically lint and format staged files
-- Configuration in `package.json` lint-staged section
+- Configuration in `package.json` lint-staged section and `.husky/pre-commit`
+
+## AI Context Management
+
+This project uses **unified AI context management with symbolic links**:
+
+- **`AGENTS.md`** - Single source of truth for AI agent instructions (this file)
+- **Symlinks** - `CLAUDE.md`, `GEMINI.md`, `CURSOR.md`, `CLINE.md`, `COPILOT.md`, `AGENT.md` all point to `AGENTS.md`
+- **Tool-specific directories** - `.cursor/rules`, `.clinerules/rules`, `.roorules/rules` contain symlinks to `AGENTS.md`
+- **Benefits**: Edit once in `AGENTS.md`, changes apply to all AI tools automatically
+- **See**: `AI_CONTEXT.md` for full documentation on the symlink system
+
+### Additional Project Files
+
+- `.ai/` - Directory for AI-related project documentation (e.g., PRD documents)
+- `.env.example` - Environment variables template
+- `README.md` - Project documentation and setup instructions
+- `AI_CONTEXT.md` - Documentation for AI context management system
+- `.vscode/` - VS Code workspace settings, recommended extensions, and debug configurations
+- `.gitignore` - Git ignore rules including AI context symlinks and build artifacts
