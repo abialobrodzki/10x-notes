@@ -21,7 +21,7 @@ npm run build
 npm run preview
 
 # Use correct Node.js version
-nvm use  # Uses Node.js v24.7.0 from .nvmrc
+nvm use  # Uses Node.js v24.9.0 from .nvmrc
 ```
 
 ### Code Quality
@@ -83,7 +83,7 @@ src/
 - `eslint.config.js` - ESLint 9 flat config with TypeScript, React (including React Compiler plugin), and Astro support
 - `.prettierrc.json` - Prettier formatting configuration with Astro plugin support
 - `package.json` - Scripts and dependencies with lint-staged configuration
-- `.nvmrc` - Node.js version specification (v24.7.0)
+- `.nvmrc` - Node.js version specification (v24.9.0)
 
 ### Component Architecture
 
