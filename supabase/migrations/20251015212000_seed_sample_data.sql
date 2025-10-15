@@ -1,0 +1,195 @@
+-- ============================================================================
+-- 10xNotes MVP - Sample Data for Development and Testing
+-- ============================================================================
+--
+-- Migration: Seed sample data
+-- Purpose: Populate database with realistic sample data for manual testing and development
+-- Note: This migration uses placeholder UUIDs for user_id values
+--       In development, replace these with actual test user IDs from Supabase Auth
+--
+-- Sample data includes:
+--   - Test tags for project organization
+--   - Sample notes with various states (AI-generated, manual, with/without summaries)
+--   - Shared access examples
+--   - Public links
+--   - LLM generation logs
+--
+-- ⚠️ IMPORTANT: This seed data uses hardcoded UUIDs. For production use:
+--   1. Replace 'user-uuid-1-placeholder' with actual test user IDs
+--   2. Replace 'user-uuid-2-placeholder' with actual test user IDs  
+--   3. Or use a seed script that handles user creation dynamically
+--
+-- ============================================================================
+
+-- ============================================================================
+-- NOTE: This seed migration is commented out by default
+-- To use this seed data:
+-- 1. Uncomment the sections below
+-- 2. Replace placeholder UUIDs with real user IDs from your test accounts
+-- 3. Run: supabase db push
+--
+-- Example placeholder UUIDs:
+-- - User 1 (owner): 'user-uuid-1-placeholder'
+-- - User 2 (recipient): 'user-uuid-2-placeholder'
+-- ============================================================================
+
+-- ============================================================================
+-- 1. SAMPLE TAGS
+-- ============================================================================
+-- Tags for organizing notes into projects/categories
+
+-- insert into tags (id, user_id, name) values
+--   ('11111111-1111-1111-1111-111111111111', 'user-uuid-1-placeholder', 'Q1 Planning'),
+--   ('22222222-2222-2222-2222-222222222222', 'user-uuid-1-placeholder', 'Product Roadmap'),
+--   ('33333333-3333-3333-3333-333333333333', 'user-uuid-1-placeholder', 'Engineering Sync'),
+--   ('44444444-4444-4444-4444-444444444444', 'user-uuid-2-placeholder', 'My Projects');
+
+-- ============================================================================
+-- 2. SAMPLE NOTES - User 1
+-- ============================================================================
+-- Various note types: ai-generated, manual, complete, partial
+
+-- insert into notes (
+--   id, user_id, tag_id, original_content, summary_text, goal_status, 
+--   suggested_tag, meeting_date, is_ai_generated
+-- ) values
+--   (
+--     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+--     'user-uuid-1-placeholder',
+--     '11111111-1111-1111-1111-111111111111',
+--     'Discussed Q1 planning priorities. Timeline: Q1 Sprint 1 (Jan 1-15), Q1 Sprint 2 (Jan 16-31), Q1 Sprint 3 (Feb 1-15). Goals: complete product spec by Jan 15, start development by Jan 16, have alpha build by March 1. Assigned to: Alice (product spec), Bob (architecture), Carol (frontend). Next steps: schedule weekly sync, create design mockups, set up dev environment.',
+--     'Q1 planning priorities established with three-sprint timeline (January-February). Team assigned roles: Alice (product spec), Bob (architecture), Carol (frontend). Key milestones: complete spec by Jan 15, start dev Jan 16, alpha build by March 1.',
+--     'achieved',
+--     'planning',
+--     current_date,
+--     true
+--   ),
+--   (
+--     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+--     'user-uuid-1-placeholder',
+--     '22222222-2222-2222-2222-222222222222',
+--     'Reviewed product roadmap for next 6 months. H1 Focus: core features (features A, B, C). H2 Focus: integrations and scaling. Budget approved: $50k for tools and services. Risks: talent acquisition, third-party API dependencies. Owner: Bob assigned.',
+--     'Six-month roadmap approved with $50k budget. H1: core features A-C, H2: integrations and scaling. Risks: hiring and API dependencies. Owner: Bob.',
+--     null,
+--     'roadmap',
+--     current_date - interval '1 day',
+--     true
+--   ),
+--   (
+--     'cccccccc-cccc-cccc-cccc-cccccccccccc',
+--     'user-uuid-1-placeholder',
+--     '33333333-3333-3333-3333-333333333333',
+--     'Engineering sync covered: CI/CD pipeline is 90% done, database migration tested, performance benchmarks show 50ms avg response time for MVP queries. Blockers: waiting on Security review for RLS policies. Next: code review on Friday, deploy to staging Monday.',
+--     null,
+--     null,
+--     'engineering',
+--     current_date - interval '2 days',
+--     false
+--   );
+
+-- ============================================================================
+-- 3. SAMPLE TAG ACCESS - Share tags with recipient
+-- ============================================================================
+-- Example: User 1 shares "Q1 Planning" tag with User 2
+
+-- insert into tag_access (id, tag_id, recipient_id) values
+--   ('ffffffff-ffff-ffff-ffff-ffffffffffff', '11111111-1111-1111-1111-111111111111', 'user-uuid-2-placeholder');
+
+-- ============================================================================
+-- 4. SAMPLE PUBLIC LINKS
+-- ============================================================================
+-- Public links for sharing note summaries externally
+
+-- insert into public_links (id, note_id, token, is_enabled) values
+--   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'token-uuid-1-placeholder', true);
+
+-- ============================================================================
+-- 5. SAMPLE LLM GENERATIONS - Success Cases
+-- ============================================================================
+-- Examples of successful AI generations for monitoring and analytics
+
+-- insert into llm_generations (
+--   id, note_id, user_id, model_name, generation_time_ms, tokens_used, status, error_message
+-- ) values
+--   (
+--     '11111111-1111-1111-1111-111111111111',
+--     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+--     'user-uuid-1-placeholder',
+--     'openai/gpt-4o-mini',
+--     1250,
+--     450,
+--     'success',
+--     null
+--   ),
+--   (
+--     '22222222-2222-2222-2222-222222222222',
+--     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+--     'user-uuid-1-placeholder',
+--     'openai/gpt-4o-mini',
+--     1580,
+--     520,
+--     'success',
+--     null
+--   );
+
+-- ============================================================================
+-- 6. SAMPLE LLM GENERATIONS - Failure Cases
+-- ============================================================================
+-- Examples of failed AI generations for testing error handling
+
+-- insert into llm_generations (
+--   id, note_id, user_id, model_name, generation_time_ms, tokens_used, status, error_message
+-- ) values
+--   (
+--     '33333333-3333-3333-3333-333333333333',
+--     null,
+--     'user-uuid-1-placeholder',
+--     'openai/gpt-4o-mini',
+--     15000,
+--     null,
+--     'failure',
+--     'API timeout after 15 seconds - note content exceeded expected size'
+--   );
+
+-- ============================================================================
+-- 7. VERIFY SEED DATA
+-- ============================================================================
+-- Uncomment to verify data was inserted correctly
+
+-- select 'tags' as table_name, count(*) as count from tags
+-- union all
+-- select 'notes', count(*) from notes
+-- union all
+-- select 'tag_access', count(*) from tag_access
+-- union all
+-- select 'public_links', count(*) from public_links
+-- union all
+-- select 'llm_generations', count(*) from llm_generations;
+
+-- ============================================================================
+-- ⚠️ IMPORTANT TESTING NOTES
+-- ============================================================================
+--
+-- This seed data is FOR DEVELOPMENT ONLY. Before using:
+--
+-- 1. Replace all placeholder UUIDs with actual user IDs:
+--    - Get real user IDs from Supabase Dashboard > Authentication > Users
+--    - Replace 'user-uuid-1-placeholder' and 'user-uuid-2-placeholder'
+--
+-- 2. Test RLS policies:
+--    - User 1 should see all their own notes and tags
+--    - User 2 should see User 1's "Q1 Planning" tag and associated notes (via tag_access)
+--    - User 2 should NOT see other User 1 tags or notes
+--
+-- 3. Test public links:
+--    - Public endpoint should return only summary_text, meeting_date, goal_status
+--    - Public endpoint should NOT return original_content
+--    - is_enabled = false should block access
+--
+-- 4. Test statistics:
+--    - user_generation_stats should show:
+--      * User 1: 3 total generations, 2 successful, 1 failed
+--      * avg_time_ms ≈ 9276 ms
+--      * total_tokens ≈ 970
+--
+-- ============================================================================

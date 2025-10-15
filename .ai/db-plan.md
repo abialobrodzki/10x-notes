@@ -9,7 +9,7 @@ This document defines the complete PostgreSQL database schema for 10xNotes MVP -
 - **6 main tables**: `tags`, `notes`, `tag_access`, `public_links`, `llm_generations`, plus `auth.users` (Supabase Auth)
 - **1 enum type**: `goal_status_enum`
 - **1 view**: `user_generation_stats`
-- **Multi-layered security**: RLS policies for owner, recipient, and public access
+- **Multi-layered security**: RLS policies for owner and recipient; public access via dedicated API endpoint
 - **Optimized indexing**: B-tree indexes on foreign keys and filter columns
 - **Referential integrity**: CASCADE and RESTRICT strategies based on business logic
 
