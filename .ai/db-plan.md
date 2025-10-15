@@ -61,7 +61,7 @@ Core table storing original meeting notes and AI-generated summaries.
 | `user_id`          | UUID             | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE   | Note owner                              |
 | `tag_id`           | UUID             | NOT NULL, REFERENCES tags(id) ON DELETE RESTRICT        | Assigned tag                            |
 | `original_content` | TEXT             | NOT NULL, CHECK (char_length(original_content) <= 5000) | Original meeting notes (max 5000 chars) |
-| `summary_text`     | TEXT             | NULLABLE                                                | AI-generated summary (50-200 words)     |
+| `summary_text`     | TEXT             | NULLABLE, CHECK (char_length(summary_text) <= 2000)     | AI-generated summary (50-200 words)     |
 | `goal_status`      | goal_status_enum | NULLABLE                                                | Meeting goal achievement status         |
 | `suggested_tag`    | TEXT             | NULLABLE                                                | AI-suggested tag name                   |
 | `meeting_date`     | DATE             | NOT NULL, DEFAULT CURRENT_DATE                          | Date of the meeting (user-editable)     |
@@ -72,6 +72,7 @@ Core table storing original meeting notes and AI-generated summaries.
 **Constraints**:
 
 - `CHECK (char_length(original_content) <= 5000)` - Enforces content length limit
+- `CHECK (char_length(summary_text) <= 2000)` - Enforces summary length limit (approx. 200 words buffer)
 
 **Relations**:
 
@@ -132,17 +133,17 @@ Public sharing links for individual notes (only summary is visible via public li
 
 Logging table for AI model invocations (monitoring, analytics, cost tracking).
 
-| Column               | Type        | Constraints                                            | Description                                             |
-| -------------------- | ----------- | ------------------------------------------------------ | ------------------------------------------------------- |
-| `id`                 | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                 | Unique generation log identifier                        |
-| `note_id`            | UUID        | NULLABLE, REFERENCES notes(id) ON DELETE SET NULL      | Associated note (NULL if generation failed before save) |
-| `user_id`            | UUID        | NULLABLE, REFERENCES auth.users(id) ON DELETE SET NULL | User who triggered generation (NULL for anonymous)      |
-| `model_name`         | TEXT        | NOT NULL                                               | AI model used (e.g., "openai/gpt-4o-mini")              |
-| `generation_time_ms` | INTEGER     | NOT NULL                                               | Generation time in milliseconds                         |
-| `tokens_used`        | INTEGER     | NULLABLE                                               | Total tokens consumed                                   |
-| `status`             | TEXT        | NOT NULL                                               | Generation status: 'success' or 'failure'               |
-| `error_message`      | TEXT        | NULLABLE                                               | Error details if status is 'failure'                    |
-| `created_at`         | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                | Timestamp of generation                                 |
+| Column               | Type        | Constraints                                               | Description                                             |
+| -------------------- | ----------- | --------------------------------------------------------- | ------------------------------------------------------- |
+| `id`                 | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                    | Unique generation log identifier                        |
+| `note_id`            | UUID        | NULLABLE, REFERENCES notes(id) ON DELETE SET NULL         | Associated note (NULL if generation failed before save) |
+| `user_id`            | UUID        | NULLABLE, REFERENCES auth.users(id) ON DELETE SET NULL    | User who triggered generation (NULL for anonymous)      |
+| `model_name`         | TEXT        | NOT NULL                                                  | AI model used (e.g., "openai/gpt-4o-mini")              |
+| `generation_time_ms` | INTEGER     | NOT NULL, CHECK (generation_time_ms >= 0)                 | Generation time in milliseconds (non-negative)          |
+| `tokens_used`        | INTEGER     | NULLABLE, CHECK (tokens_used IS NULL OR tokens_used >= 0) | Total tokens consumed (non-negative if present)         |
+| `status`             | TEXT        | NOT NULL, CHECK (status IN ('success', 'failure'))        | Generation status: 'success' or 'failure'               |
+| `error_message`      | TEXT        | NULLABLE                                                  | Error details if status is 'failure'                    |
+| `created_at`         | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                   | Timestamp of generation                                 |
 
 **Relations**:
 
@@ -174,30 +175,42 @@ Performance-optimized B-tree indexes for common query patterns.
 ### 3.1 notes table
 
 ```sql
-CREATE INDEX idx_notes_user_id ON notes(user_id);
+-- Indexes for notes table
+-- Note: idx_notes_user_id removed - covered by composite idx_notes_user_meeting_date
+-- Note: idx_notes_meeting_date removed - no global date queries in MVP scope
+
 CREATE INDEX idx_notes_tag_id ON notes(tag_id);
-CREATE INDEX idx_notes_meeting_date ON notes(meeting_date DESC);
 CREATE INDEX idx_notes_goal_status ON notes(goal_status);
+-- Composite index for optimal performance on user's notes list (query 11.1)
+-- This index also covers queries filtering only by user_id
+CREATE INDEX idx_notes_user_meeting_date ON notes(user_id, meeting_date DESC);
 ```
 
 ### 3.2 tags table
 
 ```sql
-CREATE INDEX idx_tags_user_id ON tags(user_id);
+-- Indexes for tags table
+-- Note: idx_tags_user_id removed - covered by composite unique_tag_name_per_user
 CREATE UNIQUE INDEX unique_tag_name_per_user ON tags(user_id, LOWER(name));
 ```
 
 ### 3.3 tag_access table
 
 ```sql
+-- Indexes for tag_access table
+-- Note: idx_tag_access_recipient_id removed - covered by composite idx_tag_access_recipient_tag
+
 CREATE INDEX idx_tag_access_tag_id ON tag_access(tag_id);
-CREATE INDEX idx_tag_access_recipient_id ON tag_access(recipient_id);
+-- Composite index for optimal performance on shared notes queries (query 11.2)
+-- This index also covers queries filtering only by recipient_id
+CREATE INDEX idx_tag_access_recipient_tag ON tag_access(recipient_id, tag_id);
 ```
 
 ### 3.4 public_links table
 
 ```sql
-CREATE INDEX idx_public_links_token ON public_links(token);
+-- Note: No explicit index needed for token column
+-- The UNIQUE constraint on token already creates an index automatically
 ```
 
 ### 3.5 llm_generations table
@@ -221,7 +234,7 @@ SELECT
   user_id,
   COUNT(*) as total_generations,
   AVG(generation_time_ms) as avg_time_ms,
-  SUM(tokens_used) as total_tokens,
+  SUM(COALESCE(tokens_used, 0)) as total_tokens,
   SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful_generations,
   SUM(CASE WHEN status = 'failure' THEN 1 ELSE 0 END) as failed_generations
 FROM llm_generations
@@ -266,21 +279,14 @@ CREATE POLICY notes_shared_tag_policy ON notes
   );
 ```
 
-**Policy 3: Public link access (read-only)**
+**Note on Public Access**: Public link access is **NOT handled by RLS policies**. Instead, public notes must be accessed through a dedicated API endpoint (e.g., `/api/public/[token]`) that:
 
-```sql
-CREATE POLICY notes_public_link_policy ON notes
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public_links pl
-      WHERE pl.note_id = notes.id
-        AND pl.is_enabled = TRUE
-    )
-  );
-```
+- Uses Supabase service role key to bypass RLS
+- Validates the `token` from `public_links` table
+- Returns **only** `summary_text`, `meeting_date`, and `goal_status` (never `original_content`)
+- Checks `is_enabled = TRUE` before serving
 
-**Note**: Public link access for unauthenticated users requires a server-side API endpoint that bypasses RLS using service role key.
+This approach ensures unauthenticated users can view public summaries while preventing exposure of full note content to authenticated users through RLS.
 
 ---
 
@@ -395,13 +401,15 @@ CREATE POLICY public_links_owner_policy ON public_links
 ALTER TABLE llm_generations ENABLE ROW LEVEL SECURITY;
 ```
 
-**Policy: User can view their own generation logs**
+**Policy: User can view only their own generation logs**
 
 ```sql
 CREATE POLICY llm_generations_user_policy ON llm_generations
   FOR SELECT
-  USING (auth.uid() = user_id OR user_id IS NULL);
+  USING (auth.uid() = user_id);
 ```
+
+**Note on anonymous generations**: Anonymous generations (user_id IS NULL) are stored for admin analytics but are NOT accessible through RLS policies. This prevents authenticated users from viewing logs of anonymous users' generations, which would be a privacy leak. Admin access should use Supabase service role key to bypass RLS.
 
 **Note**: INSERT operations should be performed by backend service using service role key.
 
@@ -521,6 +529,9 @@ auth.users (Supabase Auth)
 - **RESTRICT on tag deletion**: Requires user to reassign notes before deleting tag (prevents data loss)
 - **CHECK constraint on content length**: Enforces 5000 character limit at database level
 - **NOT NULL on critical fields**: Ensures data completeness for core entities
+- **Non-negative numeric constraints**: `generation_time_ms >= 0` and `tokens_used >= 0` prevent invalid negative values in analytics
+- **NULL vs 'undefined' for goal_status**: `goal_status` is NULLABLE without DEFAULT. NULL represents "no value yet" (before AI processing or on error), while 'undefined' represents AI's assessment that goal status cannot be determined from notes. This distinction aids debugging and provides clearer UX states. Applications can use COALESCE or views to default NULL to 'undefined' for display purposes if needed.
+- **COALESCE for nullable aggregations**: In `user_generation_stats` view, `SUM(COALESCE(tokens_used, 0))` ensures `total_tokens` returns a number even when some generations have NULL tokens (e.g., models that don't report token usage). Without COALESCE, SQL's `SUM(NULL)` would return NULL for the entire aggregate.
 
 ### 8.2 Security
 
@@ -531,10 +542,15 @@ auth.users (Supabase Auth)
 
 ### 8.3 Performance
 
-- **Strategic indexing**: Indexes on foreign keys and common filter columns
+- **Strategic indexing**: Composite indexes cover single-column queries, eliminating redundant indexes
+  - `notes(user_id, meeting_date DESC)` covers both combined and single `user_id` queries
+  - `tag_access(recipient_id, tag_id)` covers both combined and single `recipient_id` queries
+  - `tags(user_id, LOWER(name))` (UNIQUE) covers both tag name uniqueness and single `user_id` queries
+  - Single indexes maintained only where composite cannot help (e.g., second column lookups)
 - **View for statistics**: Pre-aggregated metrics without redundant columns
 - **Separate logging table**: Keeps `notes` table lean, enables performance monitoring
 - **No premature optimization**: No partitioning or full-text search on MVP (can be added later)
+- **⚠️ Global date filtering**: After removing `idx_notes_meeting_date`, queries filtering globally by `meeting_date` without user context will perform full table scans. All MVP queries are scoped to user context, but this is important for post-MVP features. See section 11.6 for details.
 
 ### 8.4 Scalability
 
@@ -577,6 +593,23 @@ The schema is designed to accommodate these potential features without major res
 ## 10. Migration Checklist
 
 When implementing this schema, follow this order:
+
+**Pre-migration checks:**
+
+```sql
+-- Ensure UUID generation is available (built-in in PG 13+, explicit for clarity)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Remove deprecated public link policy if it exists (replaced by API endpoint approach)
+DROP POLICY IF EXISTS notes_public_link_policy ON notes;
+
+-- Remove deprecated indexes if they exist (replaced by composite indexes or removed as unused)
+DROP INDEX IF EXISTS idx_public_links_token;      -- Covered by UNIQUE constraint on token
+DROP INDEX IF EXISTS idx_notes_user_id;           -- Covered by composite idx_notes_user_meeting_date
+DROP INDEX IF EXISTS idx_notes_meeting_date;      -- Not used in MVP scope (all queries scoped to user)
+DROP INDEX IF EXISTS idx_tag_access_recipient_id; -- Covered by composite idx_tag_access_recipient_tag
+DROP INDEX IF EXISTS idx_tags_user_id;            -- Covered by composite unique_tag_name_per_user
+```
 
 1. Create enum type: `goal_status_enum`
 2. Create tables in dependency order:
@@ -646,6 +679,37 @@ WHERE t.user_id = auth.uid()
 GROUP BY t.id
 ORDER BY t.name;
 ```
+
+### 11.6 Performance Note: Date Filtering
+
+⚠️ **Important**: After removing `idx_notes_meeting_date`, queries filtering globally by `meeting_date` without user context are not optimized and will result in full table scans. Always scope date queries to user context:
+
+```sql
+-- ✅ OPTIMIZED (uses composite index idx_notes_user_meeting_date)
+SELECT * FROM notes
+WHERE user_id = auth.uid()
+  AND meeting_date >= '2025-01-01'
+ORDER BY meeting_date DESC;
+
+-- ❌ NOT OPTIMIZED (no index, full table scan)
+SELECT * FROM notes
+WHERE meeting_date >= '2025-01-01'
+ORDER BY meeting_date DESC;
+```
+
+If admin/analytics features requiring global date queries are needed post-MVP, consider adding a partial index:
+
+```sql
+-- Partial index for recent data only (admin queries)
+CREATE INDEX idx_notes_meeting_date_recent ON notes(meeting_date DESC)
+WHERE created_at > NOW() - INTERVAL '90 days';
+```
+
+This approach optimizes for:
+
+- MVP queries scoped to users (using existing composite index)
+- Future admin queries on recent data (using partial index)
+- Minimal storage overhead and maintenance cost
 
 ---
 
