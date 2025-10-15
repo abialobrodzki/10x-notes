@@ -26,7 +26,7 @@
 create extension if not exists pgcrypto;
 
 -- Remove deprecated public link policy if it exists (replaced by API endpoint approach)
-drop policy if exists notes_public_link_policy on notes;
+-- drop policy if exists notes_public_link_policy on notes; -- Disabled - table doesn't exist yet
 
 -- Remove deprecated indexes if they exist (replaced by composite indexes or removed as unused)
 drop index if exists idx_public_links_token;      -- covered by unique constraint on token
@@ -59,7 +59,7 @@ create table tags (
   user_id uuid not null references auth.users(id) on delete cascade,
   name text not null,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
   
   -- constraint: tags must be unique per user (enforced by unique index below)
 );
