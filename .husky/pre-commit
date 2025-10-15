@@ -2,6 +2,9 @@
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
+# Add Homebrew to PATH for supabase CLI
+export PATH="/opt/homebrew/bin:$PATH"
+
 # Check code formatting
 npm run format:check
 
@@ -10,3 +13,6 @@ npm run lint
 
 # TypeScript type checking with strict mode
 npm run tsc:check
+
+# Database schema linting with strict mode
+npm run db:lint:strict

@@ -3,7 +3,11 @@
     "astro-build.astro-vscode",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "christian-kohler.path-intellisense"
+    "christian-kohler.path-intellisense",
+    "denoland.vscode-deno",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-postgresql",
+    "supabase.supabase"
   ],
   "unwantedRecommendations": []
 }

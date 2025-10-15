@@ -12,6 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier . --check",
     "tsc:check": "tsc --noEmit --pretty --strict",
+    "db:lint": "supabase db lint",
+    "db:lint:strict": "supabase db lint --fail-on warning",
     "prepare": "husky"
   },
   "dependencies": {
