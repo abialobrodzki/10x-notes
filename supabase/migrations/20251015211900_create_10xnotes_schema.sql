@@ -547,7 +547,8 @@ begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+set search_path = '';
 
 -- apply trigger to tags table
 create trigger set_tags_updated_at
@@ -587,16 +588,17 @@ begin
   -- deletion order respects foreign key dependencies
   -- most deletions happen automatically via cascade, but this ensures completeness
   
-  delete from tag_access where recipient_id = old.id;
-  delete from public_links where note_id in
-    (select id from notes where user_id = old.id);
-  delete from llm_generations where user_id = old.id;
-  delete from notes where user_id = old.id;
-  delete from tags where user_id = old.id;
+  delete from public.tag_access where recipient_id = old.id;
+  delete from public.public_links where note_id in
+    (select id from public.notes where user_id = old.id);
+  delete from public.llm_generations where user_id = old.id;
+  delete from public.notes where user_id = old.id;
+  delete from public.tags where user_id = old.id;
   
   return old;
 end;
-$$ language plpgsql;
+$$ language plpgsql
+set search_path = '';
 
 -- note: attempting to create trigger on auth.users may fail due to supabase permissions
 -- if this migration fails at this step, it's expected - implement via edge functions instead
