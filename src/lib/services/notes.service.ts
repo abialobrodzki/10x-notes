@@ -10,7 +10,7 @@ import type {
   NoteDetailDTO,
   PublicLinkEmbeddedDTO,
 } from "../../types";
-import type { NotesListQueryInput, CreateNoteInput } from "../validators/notes.schemas";
+import type { NotesListQueryInput, CreateNoteInput, UpdateNoteInput } from "../validators/notes.schemas";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -596,5 +596,86 @@ export class NotesService {
       is_owner: isOwner,
       public_link: publicLink,
     };
+  }
+
+  /**
+   * Update note by ID (partial update)
+   *
+   * Only owner can update. Validates tag ownership if tag_id is being changed.
+   * Updates only provided fields and sets updated_at to current timestamp.
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to update
+   * @param patch - Fields to update (at least one required)
+   * @returns Updated note with tag information
+   * @throws Error if note not found, user not owner, or tag not owned by user
+   */
+  async updateNote(userId: string, noteId: string, patch: UpdateNoteInput): Promise<NoteDTO> {
+    // Step 1: Verify note exists and user is owner
+    const { data: existingNote, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id, user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !existingNote) {
+      throw new Error("NOTE_NOT_FOUND");
+    }
+
+    if (existingNote.user_id !== userId) {
+      throw new Error("NOTE_NOT_OWNED");
+    }
+
+    // Step 2: If tag_id is being updated, verify user owns the new tag
+    if (patch.tag_id) {
+      const { data: tag, error: tagError } = await this.supabase
+        .from("tags")
+        .select("id")
+        .eq("id", patch.tag_id)
+        .eq("user_id", userId)
+        .single();
+
+      if (tagError || !tag) {
+        throw new Error("TAG_NOT_OWNED");
+      }
+    }
+
+    // Step 3: Update note with provided fields
+    const { data: updatedNote, error: updateError } = await this.supabase
+      .from("notes")
+      .update({
+        ...patch,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", noteId)
+      .select(
+        `
+        id,
+        original_content,
+        summary_text,
+        goal_status,
+        suggested_tag,
+        meeting_date,
+        is_ai_generated,
+        created_at,
+        updated_at,
+        tags!inner (
+          id,
+          name
+        )
+      `
+      )
+      .single();
+
+    if (updateError) {
+      throw new Error(`Failed to update note: ${updateError.message}`);
+    }
+
+    if (!updatedNote) {
+      throw new Error("Note update failed: no data returned");
+    }
+
+    // Step 4: Transform to NoteDTO
+    return this.transformToNoteDTO(updatedNote);
   }
 }

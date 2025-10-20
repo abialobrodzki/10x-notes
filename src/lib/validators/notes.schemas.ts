@@ -154,3 +154,45 @@ export const createNoteSchema = z
  * Use this type for validated note creation input
  */
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
+
+/**
+ * Validation schema for PATCH /api/notes/{id}
+ * Updates selected note fields (partial update)
+ * All fields are optional, but at least one must be provided
+ */
+export const updateNoteSchema = z
+  .object({
+    /**
+     * AI-generated or manual summary
+     * Optional - max 2000 characters, can be set to null
+     */
+    summary_text: z.string().max(2000, "Summary exceeds 2000 character limit").nullable().optional(),
+
+    /**
+     * Goal achievement status
+     * Optional - can be set to enum value
+     */
+    goal_status: z.enum(["achieved", "not_achieved", "undefined"]).optional(),
+
+    /**
+     * Meeting date
+     * Optional - Format: YYYY-MM-DD
+     */
+    meeting_date: dateISOSchema.optional(),
+
+    /**
+     * Tag ID to reassign note
+     * Optional - must be a valid UUID owned by user
+     */
+    tag_id: uuidSchema.optional(),
+  })
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided for update",
+  });
+
+/**
+ * TypeScript type inferred from Zod schema
+ * Use this type for validated note update input
+ */
+export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
