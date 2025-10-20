@@ -1,7 +1,7 @@
 import { calculateOffset, createPaginationDTO } from "../utils/pagination.utils";
 import type { Database } from "../../db/database.types";
-import type { NotesListDTO, NoteListItemDTO, TagEmbeddedDTO, NoteEntity, TagEntity } from "../../types";
-import type { NotesListQueryInput } from "../validators/notes.schemas";
+import type { NotesListDTO, NoteListItemDTO, TagEmbeddedDTO, NoteEntity, TagEntity, NoteDTO } from "../../types";
+import type { NotesListQueryInput, CreateNoteInput } from "../validators/notes.schemas";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -294,6 +294,192 @@ export class NotesService {
       tag,
       is_owner: note.user_id === currentUserId,
       has_public_link: publicLinksMap.get(note.id) ?? false,
+    };
+  }
+
+  /**
+   * Create a new note with tag assignment
+   *
+   * Handles XOR logic: either tag_id (existing tag) or tag_name (find or create)
+   * Auto-sets is_ai_generated = false when summary_text is null
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param input - Validated note creation data
+   * @returns Created note with tag information
+   * @throws Error if tag ownership verification fails or database operation fails
+   */
+  async createNote(userId: string, input: CreateNoteInput): Promise<NoteDTO> {
+    // Step 1: Resolve tag_id (XOR logic: tag_id OR tag_name)
+    let resolvedTagId: string;
+
+    if (input.tag_id) {
+      // Use existing tag - verify ownership
+      const { data: tag, error: tagError } = await this.supabase
+        .from("tags")
+        .select("id")
+        .eq("id", input.tag_id)
+        .eq("user_id", userId)
+        .single();
+
+      if (tagError || !tag) {
+        throw new Error("TAG_NOT_FOUND_OR_ACCESS_DENIED");
+      }
+
+      resolvedTagId = tag.id;
+    } else if (input.tag_name) {
+      // Find or create tag by name (case-insensitive)
+      resolvedTagId = await this.findOrCreateTag(userId, input.tag_name);
+    } else {
+      // This should never happen due to Zod validation, but TypeScript doesn't know that
+      throw new Error("Either tag_id or tag_name must be provided");
+    }
+
+    // Step 2: Auto-set is_ai_generated = false when summary_text is null/undefined
+    const isAiGenerated = input.summary_text ? (input.is_ai_generated ?? true) : false;
+
+    // Step 3: Prepare note data for insertion
+    const noteData = {
+      user_id: userId,
+      tag_id: resolvedTagId,
+      original_content: input.original_content,
+      summary_text: input.summary_text ?? null,
+      goal_status: input.goal_status ?? null,
+      suggested_tag: input.suggested_tag ?? null,
+      meeting_date: input.meeting_date ?? new Date().toISOString().split("T")[0], // Default to today
+      is_ai_generated: isAiGenerated,
+    };
+
+    // Step 4: Insert note
+    const { data: createdNote, error: insertError } = await this.supabase
+      .from("notes")
+      .insert(noteData)
+      .select(
+        `
+        id,
+        original_content,
+        summary_text,
+        goal_status,
+        suggested_tag,
+        meeting_date,
+        is_ai_generated,
+        created_at,
+        updated_at,
+        tags!inner (
+          id,
+          name
+        )
+      `
+      )
+      .single();
+
+    if (insertError) {
+      throw new Error(`Failed to create note: ${insertError.message}`);
+    }
+
+    if (!createdNote) {
+      throw new Error("Note creation failed: no data returned");
+    }
+
+    // Step 5: Transform to NoteDTO
+    return this.transformToNoteDTO(createdNote);
+  }
+
+  /**
+   * Find existing tag by name (case-insensitive) or create new tag
+   *
+   * Handles race conditions: if tag creation fails due to unique constraint,
+   * retries SELECT (another request created it simultaneously)
+   *
+   * @param userId - Current user ID
+   * @param tagName - Tag name to find or create
+   * @returns Resolved tag ID
+   * @throws Error if tag creation fails or race condition retry fails
+   */
+  private async findOrCreateTag(userId: string, tagName: string): Promise<string> {
+    // Step 1: Try to find existing tag (case-insensitive)
+    const { data: existingTag, error: selectError } = await this.supabase
+      .from("tags")
+      .select("id")
+      .eq("user_id", userId)
+      .ilike("name", tagName) // Case-insensitive match
+      .single();
+
+    if (existingTag) {
+      return existingTag.id;
+    }
+
+    // If error is not "no rows found", throw it
+    if (selectError && selectError.code !== "PGRST116") {
+      throw new Error(`Failed to search for tag: ${selectError.message}`);
+    }
+
+    // Step 2: Tag not found, create new tag
+    const { data: newTag, error: insertError } = await this.supabase
+      .from("tags")
+      .insert({ user_id: userId, name: tagName })
+      .select("id")
+      .single();
+
+    if (newTag) {
+      return newTag.id;
+    }
+
+    // Step 3: Handle race condition - unique constraint violation
+    // Another request created the tag between SELECT and INSERT
+    if (insertError && insertError.code === "23505") {
+      // Unique constraint violation - retry SELECT
+      const { data: retryTag, error: retryError } = await this.supabase
+        .from("tags")
+        .select("id")
+        .eq("user_id", userId)
+        .ilike("name", tagName)
+        .single();
+
+      if (retryTag) {
+        return retryTag.id;
+      }
+
+      throw new Error(`Tag creation race condition retry failed: ${retryError?.message ?? "Unknown error"}`);
+    }
+
+    // Other insertion error
+    throw new Error(`Failed to create tag: ${insertError?.message ?? "Unknown error"}`);
+  }
+
+  /**
+   * Transform raw note data with joined tag to NoteDTO
+   *
+   * @param note - Raw note data from database with joined tag
+   * @returns Formatted NoteDTO
+   */
+  private transformToNoteDTO(note: {
+    id: string;
+    original_content: string;
+    summary_text: string | null;
+    goal_status: Database["public"]["Enums"]["goal_status_enum"] | null;
+    suggested_tag: string | null;
+    meeting_date: string;
+    is_ai_generated: boolean;
+    created_at: string;
+    updated_at: string;
+    tags: { id: string; name: string };
+  }): NoteDTO {
+    const tag: TagEmbeddedDTO = {
+      id: note.tags.id,
+      name: note.tags.name,
+    };
+
+    return {
+      id: note.id,
+      original_content: note.original_content,
+      summary_text: note.summary_text,
+      goal_status: note.goal_status,
+      suggested_tag: note.suggested_tag,
+      meeting_date: note.meeting_date,
+      is_ai_generated: note.is_ai_generated,
+      created_at: note.created_at,
+      updated_at: note.updated_at,
+      tag,
     };
   }
 }
