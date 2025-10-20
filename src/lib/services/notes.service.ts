@@ -1,6 +1,15 @@
 import { calculateOffset, createPaginationDTO } from "../utils/pagination.utils";
 import type { Database } from "../../db/database.types";
-import type { NotesListDTO, NoteListItemDTO, TagEmbeddedDTO, NoteEntity, TagEntity, NoteDTO } from "../../types";
+import type {
+  NotesListDTO,
+  NoteListItemDTO,
+  TagEmbeddedDTO,
+  NoteEntity,
+  TagEntity,
+  NoteDTO,
+  NoteDetailDTO,
+  PublicLinkEmbeddedDTO,
+} from "../../types";
 import type { NotesListQueryInput, CreateNoteInput } from "../validators/notes.schemas";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -480,6 +489,112 @@ export class NotesService {
       created_at: note.created_at,
       updated_at: note.updated_at,
       tag,
+    };
+  }
+
+  /**
+   * Get note by ID with full details
+   *
+   * Access control: returns note if user is owner OR has shared access via tag_access
+   * Returns null if note not found or user has no access (for 404 response)
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to fetch
+   * @returns Full note details with ownership and public link info, or null if no access
+   * @throws Error if database query fails
+   */
+  async getNoteById(userId: string, noteId: string): Promise<NoteDetailDTO | null> {
+    // Step 1: Query note with joined tag
+    const { data: note, error: noteError } = await this.supabase
+      .from("notes")
+      .select(
+        `
+        id,
+        original_content,
+        summary_text,
+        goal_status,
+        suggested_tag,
+        meeting_date,
+        is_ai_generated,
+        created_at,
+        updated_at,
+        user_id,
+        tag_id,
+        tags!inner (
+          id,
+          name
+        )
+      `
+      )
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !note) {
+      // Note not found or database error - return null (will be 404)
+      return null;
+    }
+
+    // Step 2: Check access permissions
+    const isOwner = note.user_id === userId;
+    let hasAccess = isOwner;
+
+    if (!isOwner) {
+      // Check if user has shared access via tag_access
+      const { data: tagAccess, error: accessError } = await this.supabase
+        .from("tag_access")
+        .select("tag_id")
+        .eq("tag_id", note.tag_id)
+        .eq("recipient_id", userId)
+        .single();
+
+      if (!accessError && tagAccess) {
+        hasAccess = true;
+      }
+    }
+
+    // If user has no access, return null (will be 404 - don't reveal existence)
+    if (!hasAccess) {
+      return null;
+    }
+
+    // Step 3: If owner, fetch public link (if exists)
+    let publicLink: PublicLinkEmbeddedDTO | null = null;
+
+    if (isOwner) {
+      const { data: linkData, error: linkError } = await this.supabase
+        .from("public_links")
+        .select("token, is_enabled")
+        .eq("note_id", noteId)
+        .single();
+
+      if (!linkError && linkData) {
+        publicLink = {
+          token: linkData.token,
+          is_enabled: linkData.is_enabled,
+          url: `/public/${linkData.token}`,
+        };
+      }
+    }
+
+    // Step 4: Transform to NoteDetailDTO
+    const tag: TagEmbeddedDTO = {
+      id: note.tags.id,
+      name: note.tags.name,
+    };
+
+    return {
+      id: note.id,
+      original_content: note.original_content,
+      summary_text: note.summary_text,
+      goal_status: note.goal_status,
+      suggested_tag: note.suggested_tag,
+      meeting_date: note.meeting_date,
+      is_ai_generated: note.is_ai_generated,
+      created_at: note.created_at,
+      updated_at: note.updated_at,
+      tag,
+      is_owner: isOwner,
+      public_link: publicLink,
     };
   }
 }
