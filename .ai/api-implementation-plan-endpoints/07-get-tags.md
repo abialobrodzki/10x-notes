@@ -2,7 +2,7 @@
 
 ## 1. Endpoint Overview
 
-Endpoint returns user's tags: owned (owner) and those to which the user has access shared by others (via `tag_access`). Each tag contains metadata: note count and access type information.
+Endpoint returns user's tags: owned (owner) and those to which the user has access shared by others (via `tag_access`). Each tag contains metadata: note count.
 
 ## 2. Request Details
 
@@ -15,8 +15,6 @@ Endpoint returns user's tags: owned (owner) and those to which the user has acce
 - **Required**: None
 - **Optional**:
   - `include_shared` (boolean) - Include shared tags (default: false)
-  - `sort_by` (enum) - Sort field ('name' | 'created_at' | 'note_count', default: 'name')
-  - `order` (enum) - Sort direction ('asc' | 'desc', default: 'asc')
 
 ## 3. Types Used
 
@@ -34,8 +32,6 @@ Endpoint returns user's tags: owned (owner) and those to which the user has acce
 ```typescript
 export const tagsListQuerySchema = z.object({
   include_shared: z.coerce.boolean().default(false),
-  sort_by: z.enum(["name", "created_at", "note_count"]).default("name"),
-  order: sortOrderSchema,
 });
 ```
 
@@ -50,25 +46,28 @@ export const tagsListQuerySchema = z.object({
       "id": "550e8400-e29b-41d4-a716-446655440001",
       "name": "Project Alpha",
       "created_at": "2025-09-01T10:00:00Z",
+      "updated_at": "2025-09-01T10:00:00Z",
       "is_owner": true,
       "note_count": 15,
-      "access_type": "owner"
+      "shared_recipients": 2
     },
     {
       "id": "550e8400-e29b-41d4-a716-446655440002",
       "name": "Team Beta",
       "created_at": "2025-08-15T12:00:00Z",
+      "updated_at": "2025-08-16T14:30:00Z",
       "is_owner": false,
-      "note_count": 8,
-      "access_type": "read_only"
+      "note_count": 8
     }
   ]
 }
 ```
 
-**Note**: Field `access_type` is computed dynamically based on ownership: "owner" for tags where `owner_id = user_id`, "read_only" for tags accessed via `tag_access`.
+**Note**: Field `shared_recipients` contains the count of users who have access to the tag and is returned only when the current user is the owner (omitted for shared tags where user is not the owner).
 
-**Response Headers**: None special
+**Response Headers**:
+
+- `X-Total-Count`: Total number of tags returned (integer)
 
 **Error Responses**:
 
@@ -79,29 +78,31 @@ export const tagsListQuerySchema = z.object({
 ## 5. Data Flow
 
 1. **Authentication**: Extract and validate JWT token → fetch `user_id`
-2. **Rate Limiting**: Check limit of 5000 calls/hour per user
+2. **Rate Limiting**: Check limit of 10000 calls/hour per user
 3. **Parameter validation**: Parse query params through Zod schema
 4. **Build SQL query**:
-   - Query for own tags (`owner_id = current_user`)
+   - Query for own tags (`user_id = current_user`)
    - If `include_shared=true`: UNION with tags from `tag_access` where `recipient_id = current_user`
    - LEFT JOIN with subquery counting notes per tag
-   - Apply sorting
+   - LEFT JOIN with subquery counting shared recipients
 5. **Execute query**: Fetch from database
-6. **Transform to DTO**: Map raw data to `TagWithStatsDTO[]`, compute `access_type` field
-7. **Return response**: JSON
+6. **Transform to DTO**: Map raw data to `TagWithStatsDTO[]` with shared_recipients count (only include shared_recipients for owned tags, omit for shared tags)
+7. **Set X-Total-Count header**: Set header with total number of tags
+8. **Return response**: JSON with tags array
 
 **Query optimization**:
 
-- Index on `tags(owner_id)`
-- Index on `tag_access(user_id, tag_id)`
+- Unique index `unique_tag_name_per_user` on tags (user_id, lower(name))
+- Index `idx_tag_access_recipient_tag` on tag_access(recipient_id, tag_id)
 - Subquery for `note_count` instead of N+1 queries
+- Subquery for `shared_recipients` count
 
 ## 6. Security Considerations
 
 - **JWT Authentication**: Valid token required
 - **RLS**: Policies restrict access to own tags and tags from `tag_access`
 - **Parameter validation**: All parameters through Zod schema
-- **Rate Limiting**: 5000 requests/hour per user
+- **Rate Limiting**: 10000 requests/hour per user
 - **No sensitive data**: Don't return tag owner's email
 
 ## 7. Error Handling
@@ -110,7 +111,6 @@ export const tagsListQuerySchema = z.object({
 ||------------|-------------|-----------|-------|
 || Missing JWT token | 401 | "Authentication required" | Redirect to login |
 || Invalid token | 401 | "Invalid or expired token" | Refresh token or relogin |
-|| Invalid sort_by | 400 | "Invalid sort_by value" | Use correct enum value |
 || Rate limit exceeded | 429 | "Rate limit exceeded" | Wait until limit reset |
 || Database error | 500 | "Internal server error" | Retry, report error |
 
@@ -164,10 +164,8 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Query for own tags
   - UNION with shared tags (if `include_shared=true`)
   - LEFT JOIN subquery for `note_count`
-  - Sorting
-  - Transform to DTOs with computed `access_type` field:
-    - "owner" when tag.owner_id = userId
-    - "read_only" when tag accessed via tag_access
+  - LEFT JOIN subquery for `shared_recipients` count (only for owned tags)
+  - Transform to DTOs with updated_at field and shared_recipients (only when is_owner=true)
 
 ### Step 3: API Endpoint
 

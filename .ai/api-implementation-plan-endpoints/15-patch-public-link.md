@@ -2,9 +2,9 @@
 
 ## 1. Endpoint Overview
 
-Endpoint updates note's public link. Permissions: owner only. Allows enabling/disabling link or changing expiration date.
+Endpoint updates note's public link. Permissions: owner only. Allows enabling/disabling link.
 
-MVP Note: Expiration date feature not implemented in MVP. Only is_enabled can be toggled.
+MVP Note: Only is_enabled can be toggled.
 
 ## 2. Request Details
 
@@ -29,7 +29,7 @@ export const patchPublicLinkSchema = z
 
 ## 3. Types Used
 
-- **DTO**: `PatchPublicLinkDTO`, `PublicLinkDTO`
+- **DTO**: `UpdatePublicLinkCommand`, `PublicLinkDTO`
 - **Services**: `PublicLinksService.updatePublicLink(userId, noteId, patch)`
 
 ## 4. Response Details
@@ -38,17 +38,16 @@ export const patchPublicLinkSchema = z
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440001",
   "token": "550e8400-e29b-41d4-a716-446655440099",
-  "public_url": "https://app.10xnotes.com/public/550e8400-e29b-41d4-a716-446655440099",
+  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
   "is_enabled": false,
-  "created_at": "2025-10-19T10:00:00Z"
+  "updated_at": "2025-10-19T14:30:00Z"
 }
 ```
 
 **Error Responses**:
 
-- `400 Bad Request`: No fields to update or invalid date
+- `400 Bad Request`: No fields to update
 - `401 Unauthorized`: Missing token
 - `403 Forbidden`: Not owner
 - `404 Not Found`: Note or public link doesn't exist
@@ -61,8 +60,8 @@ export const patchPublicLinkSchema = z
 3. **Validation**: UUID `id` + body
 4. **Check note ownership**: SELECT note WHERE id = $id AND user_id = $user_id
 5. **Check link exists**: SELECT FROM public_links WHERE note_id = $id
-6. **UPDATE**: UPDATE public_links SET <fields> WHERE note_id = $id
-7. **Return**: 200 with updated DTO
+6. **UPDATE**: UPDATE public_links SET <fields>, updated_at = NOW() WHERE note_id = $id
+7. **Return**: 200 with updated DTO (without id, with updated_at)
 
 ## 6. Security Considerations
 
@@ -96,11 +95,11 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 2: PublicLinksService
 
 - Create `src/lib/services/public-links.service.ts`
-- Method `updatePublicLink(userId: string, noteId: string, patch: PatchPublicLinkDTO): Promise<PublicLinkDTO>`:
+- Method `updatePublicLink(userId: string, noteId: string, patch: UpdatePublicLinkCommand): Promise<PublicLinkDTO>`:
   - Check note ownership
   - Check link exists
-  - UPDATE public_links with provided fields
-  - Return updated DTO
+  - UPDATE public_links with provided fields, updated_at = NOW()
+  - Return updated DTO without id field, with updated_at
 
 ### Step 3: API Endpoint
 

@@ -25,7 +25,7 @@ export const patchTagSchema = z.object({
 
 ## 3. Types Used
 
-- **DTO**: `PatchTagDTO`, `TagDTO`
+- **DTO**: `UpdateTagCommand`, `TagDTO`
 - **Services**: `TagsService.updateTag(userId, tagId, patch)`
 
 ## 4. Response Details
@@ -37,9 +37,7 @@ export const patchTagSchema = z.object({
   "id": "550e8400-e29b-41d4-a716-446655440001",
   "name": "New Name",
   "created_at": "2025-09-01T10:00:00Z",
-  "is_owner": true,
-  "note_count": 15,
-  "access_type": "owner"
+  "updated_at": "2025-10-19T14:30:00Z"
 }
 ```
 
@@ -57,15 +55,15 @@ export const patchTagSchema = z.object({
 1. **Authentication**: JWT → `user_id`
 2. **Rate Limiting**: 5000 req/h
 3. **Validation**: UUID `id` + body
-4. **Check ownership**: SELECT tag WHERE id = $id AND owner_id = $user_id
+4. **Check ownership**: SELECT tag WHERE id = $id AND user_id = $user_id
 5. **Check new name uniqueness**: (skip if name hasn't changed)
-6. **UPDATE**: UPDATE tags SET name = $name WHERE id = $id
-7. **Fetch updated tag**: with `note_count`
-8. **Return**: 200 with `TagDTO`
+6. **UPDATE**: UPDATE tags SET name = $name, updated_at = NOW() WHERE id = $id
+7. **Fetch updated tag**: basic fields only (id, name, created_at, updated_at)
+8. **Return**: 200 with basic tag info
 
 ## 6. Security Considerations
 
-- **Owner only**: Check `owner_id = user_id`
+- **Owner only**: Check tag.user_id = current user_id
 - **Uniqueness**: New name cannot collide with user's existing tags
 - **Trim**: Automatic whitespace trimming
 - **Length limit**: Max 100 characters
@@ -97,12 +95,12 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 2: TagsService
 
 - Implement `src/lib/services/tags.service.ts`
-- Method `updateTag(userId: string, tagId: string, dto: PatchTagDTO): Promise<TagDTO>`:
-  - Check ownership (SELECT WHERE id = $tagId AND owner_id = $userId)
+- Method `updateTag(userId: string, tagId: string, dto: UpdateTagCommand): Promise<TagDTO>`:
+  - Check ownership (SELECT WHERE id = $tagId AND user_id = $userId)
   - Check name uniqueness if name changed
-  - UPDATE tags SET name = $name WHERE id = $tagId
-  - Fetch updated tag with note_count
-  - Return updated DTO
+  - UPDATE tags SET name = $name, updated_at = NOW() WHERE id = $tagId
+  - Fetch updated tag (basic fields: id, name, created_at, updated_at)
+  - Return basic DTO
 
 ### Step 3: API Endpoint
 

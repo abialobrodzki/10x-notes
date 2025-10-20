@@ -40,17 +40,17 @@ Operation cascades to related records:
 1. **Authentication**: JWT → `user_id`
 2. **Rate Limiting**: 5000 req/h
 3. **Validation**: UUID `id`
-4. **Check ownership**: SELECT tag WHERE id = $id AND owner_id = $user_id
+4. **Check ownership**: SELECT tag WHERE id = $id AND user_id = $user_id
 5. **Check note count**: SELECT COUNT(\*) FROM notes WHERE tag_id = $id
 6. **If note count > 0**: Return 409 Conflict with message
-7. **DELETE**: DELETE FROM tags WHERE id = $id AND owner_id = $user_id
+7. **DELETE**: DELETE FROM tags WHERE id = $id AND user_id = $user_id
 8. **Cascade deletion**:
    - tag_access(tag_id) → CASCADE
 9. **Return**: 204
 
 ## 6. Security Considerations
 
-- **Owner only**: Check `owner_id = user_id`
+- **Owner only**: Check tag ownership (user_id matches)
 - **Don't reveal existence**: Return 404 when no access (don't reveal if tag exists)
 - **Confirm action**: Frontend should display warning before deletion (important!)
 
@@ -79,10 +79,10 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 
 - Implement `src/lib/services/tags.service.ts`
 - Method `deleteTag(userId: string, tagId: string): Promise<boolean>`:
-  - Check ownership (SELECT WHERE id = $tagId AND owner_id = $userId)
+  - Check ownership (SELECT WHERE id = $tagId AND user_id = $userId)
   - Check note count (SELECT COUNT(\*) FROM notes WHERE tag_id = $tagId)
   - If noteCount > 0: throw 409 Conflict error
-  - DELETE FROM tags WHERE id = $tagId AND owner_id = $userId
+  - DELETE FROM tags WHERE id = $tagId AND user_id = $userId
   - Cascade deletion for tag_access automatically handled by FK constraints
   - Return boolean indicating success
 

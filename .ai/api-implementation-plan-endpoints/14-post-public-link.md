@@ -2,9 +2,9 @@
 
 ## 1. Endpoint Overview
 
-Endpoint creates a public link to a note. Permissions: note owner only. Generates unique UUID token. Expiration dates not supported in MVP.
+Endpoint creates a public link to a note. Permissions: note owner only. Generates unique UUID v4 token.
 
-MVP Note: Expiration date feature not implemented in MVP. Links are permanent until manually disabled via is_enabled or deleted.
+**Idempotency**: If link already exists, returns existing link with 200 OK and is_new: false. If creating new link, returns 201 Created with is_new: true.
 
 ## 2. Request Details
 
@@ -25,20 +25,32 @@ export const createPublicLinkSchema = z.object({});
 
 ## 3. Types Used
 
-- **DTO**: `CreatePublicLinkDTO`, `PublicLinkDTO`
-- **DB**: table `public_links` (id, note_id, token, is_enabled, expires_at, created_at)
-- **Services**: `PublicLinksService.createPublicLink(userId, noteId, dto)`
+- **DTO**: `PublicLinkDTO` (no input command - empty body)
+- **DB**: table `public_links` (id, note_id, token, is_enabled, created_at)
+- **Services**: `PublicLinksService.createPublicLink(userId, noteId)`
 
 ## 4. Response Details
 
-**Success Response (201 Created)**:
+**Success Response (201 Created)** - New link created:
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440001",
   "token": "550e8400-e29b-41d4-a716-446655440099",
-  "public_url": "https://app.10xnotes.com/public/550e8400-e29b-41d4-a716-446655440099",
+  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
   "is_enabled": true,
+  "is_new": true,
+  "created_at": "2025-10-19T10:00:00Z"
+}
+```
+
+**Success Response (200 OK)** - Link already exists (idempotent):
+
+```json
+{
+  "token": "550e8400-e29b-41d4-a716-446655440099",
+  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
+  "is_enabled": true,
+  "is_new": false,
   "created_at": "2025-10-19T10:00:00Z"
 }
 ```
@@ -48,7 +60,6 @@ export const createPublicLinkSchema = z.object({});
 - `401 Unauthorized`: Missing token
 - `403 Forbidden`: Not note owner
 - `404 Not Found`: Note doesn't exist
-- `409 Conflict`: Public link already exists for this note
 - `500 Internal Server Error`: DB error
 
 ## 5. Data Flow
@@ -57,10 +68,11 @@ export const createPublicLinkSchema = z.object({});
 2. **Rate Limiting**: 1000 req/h
 3. **Validation**: UUID `id` + body
 4. **Check note ownership**: SELECT note WHERE id = $id AND user_id = $user_id
-5. **Check duplicate**: SELECT FROM public_links WHERE note_id = $id
-6. **Generate token**: UUID v4 using crypto.randomUUID()
-7. **Insert**: INSERT INTO public_links (note_id, token)
-8. **Return**: 201 with full URL
+5. **Check if link exists**: SELECT FROM public_links WHERE note_id = $id
+6. **If exists**: Return 200 OK with existing link and is_new: false (idempotent behavior)
+7. **If not exists**: Generate UUID v4 token using crypto.randomUUID()
+8. **Insert**: INSERT INTO public_links (note_id, token, is_enabled=true)
+9. **Return**: 201 Created with relative URL (/public/{token}) and is_new: true
 
 ## 6. Security Considerations
 
@@ -76,7 +88,6 @@ export const createPublicLinkSchema = z.object({});
 || Missing token | 401 | "Authentication required" | Login |
 || Not owner | 403 | "Forbidden: You are not the owner of this note" | No action |
 || Note doesn't exist | 404 | "Note not found" | Check ID |
-|| Link already exists | 409 | "Public link already exists for this note" | Use PATCH to update |
 || DB error | 500 | "Internal server error" | Retry |
 
 NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) for semantic precision beyond the base REST standard.
@@ -104,13 +115,13 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 3: PublicLinksService
 
 - Create `src/lib/services/public-links.service.ts`
-- Method `createPublicLink(userId: string, noteId: string, dto: CreatePublicLinkDTO): Promise<PublicLinkDTO>`:
+- Method `createPublicLink(userId: string, noteId: string): Promise<{link: PublicLinkDTO, is_new: boolean}>`:
   - Check note ownership (SELECT WHERE id = $noteId AND user_id = $userId)
-  - Check duplicate (SELECT FROM public_links WHERE note_id = $noteId)
-  - Generate secure token
-  - INSERT INTO public_links (note_id, token)
-  - Build full public URL
-  - Return DTO
+  - Check if link exists (SELECT FROM public_links WHERE note_id = $noteId)
+  - If exists: Return existing link with is_new: false
+  - If not exists: Generate secure UUID v4 token, INSERT INTO public_links (note_id, token, is_enabled=true)
+  - Build relative public URL (/public/{token})
+  - Return DTO without id field, with is_new flag
 
 ### Step 4: API Endpoint
 
@@ -121,5 +132,6 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Rate limiting check (1000 req/h)
   - Validate UUID parameter and request body
   - Call `publicLinksService.createPublicLink()`
-  - Return 201 with public link
-  - Error handling (403 for not owner, 404 for not found, 409 for duplicate)
+  - Return 201 Created with is_new: true if new link created
+  - Return 200 OK with is_new: false if link already exists (idempotent)
+  - Error handling (403 for not owner, 404 for not found)

@@ -5,7 +5,7 @@
 Endpoint deletes user account. **Irreversible operation**. Cascades to delete all user data:
 
 - All notes
-- All tags (and their notes if user was owner)
+- All tags
 - All access permissions (`tag_access`)
 - All public links
 
@@ -52,11 +52,10 @@ export const deleteAccountSchema = z.object({
 2. **Rate Limiting**: 10 req/h (very low limit - sensitive operation)
 3. **Validation**: Verify confirmation_email matches user's account email
 4. **BEGIN TRANSACTION**
-5. **Cascade deletion**:
-   - DELETE FROM public_links (via CASCADE from notes)
-   - DELETE FROM notes WHERE user_id = $user_id
-   - DELETE FROM tag_access WHERE user_id = $user_id OR tag_id IN (SELECT id FROM tags WHERE owner_id = $user_id)
-   - DELETE FROM tags WHERE owner_id = $user_id (CASCADE deletes other users' notes from this tag!)
+5. **Cascade deletion** (order respects FK constraints with ON DELETE RESTRICT on tags):
+   - DELETE FROM notes WHERE user_id = $user_id (CASCADE deletes public_links automatically)
+   - DELETE FROM tags WHERE user_id = $user_id (CASCADE deletes tag_access where user is owner)
+   - DELETE FROM tag_access WHERE recipient_id = $user_id (remove entries where user is recipient)
    - DELETE FROM auth.users WHERE id = $user_id (Supabase Admin API)
 6. **COMMIT TRANSACTION**
 7. **Return**: 204
@@ -107,7 +106,9 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Fetch user's email from auth.users
   - Validate confirmationEmail matches user's account email
   - BEGIN TRANSACTION
-  - Delete notes, tag_access, tags in correct order respecting FKs
+  - DELETE FROM notes (respecting RESTRICT on tags: notes first, then tags)
+  - DELETE FROM tags (CASCADE deletes tag_access where user is owner)
+  - DELETE FROM tag_access WHERE recipient_id = $userId (entries where user is recipient)
   - Use supabase admin to delete from auth.users
   - COMMIT TRANSACTION
   - Return boolean

@@ -2,7 +2,7 @@
 
 ## 1. Endpoint Overview
 
-Endpoint creates a new tag for user. Tag must have a unique name within user's tags (owned + shared). Automatically sets `owner_id` to current user.
+Endpoint creates a new tag for user. Tag must have a unique name within user's own tags. Automatically sets `user_id` to current user.
 
 ## 2. Request Details
 
@@ -25,8 +25,8 @@ export const createTagSchema = z.object({
 
 ## 3. Types Used
 
-- **DTO**: `CreateTagDTO`, `TagDTO`
-- **DB**: table `tags` (id, owner_id, name, created_at)
+- **DTO**: `CreateTagCommand`, `TagDTO`
+- **DB**: table `tags` (id, user_id, name, created_at, updated_at)
 - **Services**: `TagsService.createTag(userId, payload)`
 
 ## 4. Response Details
@@ -38,9 +38,7 @@ export const createTagSchema = z.object({
   "id": "550e8400-e29b-41d4-a716-446655440001",
   "name": "Project Alpha",
   "created_at": "2025-10-19T10:00:00Z",
-  "is_owner": true,
-  "note_count": 0,
-  "access_type": "owner"
+  "updated_at": "2025-10-19T10:00:00Z"
 }
 ```
 
@@ -56,14 +54,14 @@ export const createTagSchema = z.object({
 1. **Authentication**: JWT → `user_id`
 2. **Rate Limiting**: 100 req/day check
 3. **Body validation**: Parse through Zod (`name` trim + length)
-4. **Check uniqueness**: SELECT tag WHERE (owner_id = user_id OR id IN (SELECT tag_id FROM tag_access WHERE user_id = ...)) AND name = $name
-5. **Insert**: INSERT INTO `tags` (owner_id, name)
-6. **Return response**: 201 with `TagDTO` (note_count = 0)
+4. **Check uniqueness**: SELECT tag WHERE user_id = $user_id AND LOWER(name) = LOWER($name)
+5. **Insert**: INSERT INTO `tags` (user_id, name)
+6. **Return response**: 201 with basic tag info (id, name, created_at, updated_at)
 
 ## 6. Security Considerations
 
-- **RLS**: INSERT policy only for own `owner_id`
-- **Uniqueness**: Name must be unique within owned + shared tags (conflict prevention)
+- **RLS**: INSERT policy only for own `user_id`
+- **Uniqueness**: Name must be unique within user's own tags (case-insensitive)
 - **Trim whitespace**: Automatic trimming of spaces at start/end
 - **Length limit**: Max 100 characters (DoS mitigation)
 - **Rate limiting**: 100 req/day (spam prevention)
@@ -90,12 +88,12 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 
 **Optimizations**:
 
-- **Unique constraint**: Index on `tags(owner_id, name)` for fast duplicate check
+- **Unique constraint**: Index on `tags(user_id, LOWER(name))` for fast duplicate check
 - **Single transaction**: Insert in one transaction
 
 **Bottlenecks**:
 
-- Uniqueness check requires query spanning shared tags (may be slower for many shared tags)
+- None significant for MVP (simple indexed query)
 
 ## 9. Implementation Steps
 
@@ -107,10 +105,10 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 2: TagsService
 
 - Implement `src/lib/services/tags.service.ts`
-- Method `createTag(userId: string, dto: CreateTagDTO): Promise<TagDTO>`:
-  - Check uniqueness across owned and shared tags
-  - INSERT INTO tags (owner_id, name)
-  - Return DTO with note_count = 0
+- Method `createTag(userId: string, dto: CreateTagCommand): Promise<TagDTO>`:
+  - Check uniqueness within user's own tags only (case-insensitive)
+  - INSERT INTO tags (user_id, name)
+  - Return basic DTO (id, name, created_at, updated_at)
 
 ### Step 3: API Endpoint
 

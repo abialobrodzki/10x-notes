@@ -36,7 +36,7 @@ Endpoint returns logged-in user's profile. Contains basic user data from Supabas
 ## 5. Data Flow
 
 1. **Authentication**: JWT → `user_id`
-2. **Rate Limiting**: 5000 req/h
+2. **Rate Limiting**: 10000 req/h
 3. **Fetch user data**: SELECT FROM auth.users WHERE id = $user_id
 4. **Transform to DTO**: Map (public fields only)
 5. **Return**: 200 with DTO
@@ -77,6 +77,6 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 - Add `export const prerender = false`
 - Export GET handler:
   - Call `requireAuth()` middleware
-  - Rate limiting check (5000 req/h)
+  - Rate limiting check (10000 req/h)
   - Call `userService.getUserProfile()`
   - Return 200 or 404 if not found

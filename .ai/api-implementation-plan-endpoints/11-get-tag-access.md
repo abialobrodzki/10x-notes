@@ -33,17 +33,15 @@ export const tagIdParamSchema = z.object({
 
 ```json
 {
-  "access_list": [
+  "recipients": [
     {
-      "user_id": "550e8400-e29b-41d4-a716-446655440001",
-      "user_email": "jan.kowalski@example.com",
-      "access_type": "read_only",
+      "recipient_id": "550e8400-e29b-41d4-a716-446655440001",
+      "email": "jan.kowalski@example.com",
       "granted_at": "2025-10-01T10:00:00Z"
     },
     {
-      "user_id": "550e8400-e29b-41d4-a716-446655440002",
-      "user_email": "anna.nowak@example.com",
-      "access_type": "read_write",
+      "recipient_id": "550e8400-e29b-41d4-a716-446655440002",
+      "email": "anna.nowak@example.com",
       "granted_at": "2025-09-15T14:30:00Z"
     }
   ]
@@ -62,14 +60,14 @@ export const tagIdParamSchema = z.object({
 1. **Authentication**: JWT → `user_id`
 2. **Rate Limiting**: 5000 req/h
 3. **Validation**: UUID `id`
-4. **Check ownership**: SELECT tag WHERE id = $id AND owner_id = $user_id
-5. **Fetch access list**: SELECT from `tag_access` JOIN `auth.users` WHERE tag_id = $id
-6. **Transform to DTO**: Map with user email
-7. **Return**: 200 with list
+4. **Check ownership**: SELECT tag WHERE id = $id AND user_id = $user_id
+5. **Fetch recipients list**: SELECT from `tag_access` JOIN `auth.users` WHERE tag_id = $id
+6. **Transform to DTO**: Map to recipients array with {recipient_id, email, granted_at}
+7. **Return**: 200 with recipients list
 
 ## 6. Security Considerations
 
-- **Owner only**: Check `owner_id = user_id`
+- **Owner only**: Check tags.user_id = current user_id
 - **Email exposure**: Return email only to users with access (owner)
 - **No sensitive data**: Don't return passwords or tokens
 
@@ -101,10 +99,10 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 
 - Create `src/lib/services/tag-access.service.ts`
 - Method `getTagAccess(userId: string, tagId: string): Promise<TagAccessListDTO>`:
-  - Check ownership (SELECT WHERE id = $tagId AND owner_id = $userId)
-  - Fetch access list: SELECT from tag_access JOIN auth.users WHERE tag_id = $tagId
-  - Transform to DTO with user emails
-  - Return list
+  - Check ownership (SELECT WHERE id = $tagId AND user_id = $userId)
+  - Fetch recipients: SELECT from tag_access JOIN auth.users WHERE tag_id = $tagId
+  - Transform to DTO with recipients array: {recipient_id, email, granted_at}
+  - Return recipients list
 
 ### Step 3: API Endpoint
 

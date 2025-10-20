@@ -56,15 +56,27 @@ export const createNoteSchema = z
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .optional(),
     is_ai_generated: z.coerce.boolean().optional(),
+    tag_id: z.string().uuid().optional(),
+    tag_name: z.string().min(1).optional(),
   })
-  .and(z.union([z.object({ tag_id: z.string().uuid() }), z.object({ tag_name: z.string().min(1) })]));
+  .strict()
+  .superRefine((data, ctx) => {
+    const hasId = !!data.tag_id;
+    const hasName = !!data.tag_name;
+    if (hasId === hasName) {
+      const message =
+        hasId && hasName ? "Provide either tag_id or tag_name, not both" : "Either tag_id or tag_name is required";
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message, path: ["tag_id"] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message, path: ["tag_name"] });
+    }
+  });
 
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 ```
 
 ## 3. Types Used
 
-- DTO: `CreateNoteDTO`, `NoteDTO`
+- DTO: `CreateNoteCommand`, `NoteDTO`
 - DB: table `notes` (id, user_id, tag_id, original_content, summary_text, is_ai_generated, goal_status, meeting_date, created_at, updated_at)
 - Services: `NotesService.createNote(userId, payload)`
 
@@ -75,15 +87,15 @@ export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 ```json
 {
   "id": "uuid",
+  "original_content": "...",
   "summary_text": "...",
   "goal_status": "undefined",
+  "suggested_tag": "Project",
   "meeting_date": "2025-10-19",
   "is_ai_generated": true,
   "created_at": "2025-10-19T10:00:00Z",
   "updated_at": "2025-10-19T10:00:00Z",
-  "tag": { "id": "uuid", "name": "Projekt Alpha" },
-  "is_owner": true,
-  "has_public_link": false
+  "tag": { "id": "uuid", "name": "Projekt Alpha" }
 }
 ```
 
@@ -111,7 +123,7 @@ Errors:
      d. Handle race condition: if INSERT fails with unique constraint → retry SELECT (another request created it simultaneously) → 409 Conflict
 5. **Auto-set `is_ai_generated`**: If `summary_text` is null or omitted, set `is_ai_generated = false`
 6. **Insert** into `notes` table with resolved tag_id
-7. **Fetch complete note** with joined tag data + check for public link
+7. **Fetch complete note** with joined tag data
 8. **Return 201 Created** with complete NoteDTO
 
 ## 6. Security Considerations

@@ -59,25 +59,25 @@ export type GrantTagAccessInput = z.infer<typeof grantTagAccessSchema>;
 
 ## 5. Data Flow
 
-1. **Authentication**: JWT → `owner_id`
+1. **Authentication**: JWT → `user_id`
 2. **Rate Limiting**: 50 req/hour
 3. **Validation**: UUID `id` + body (recipient_email)
-4. **Check tag ownership**: `SELECT tag WHERE id = $id AND owner_id = $owner_id`
+4. **Check tag ownership**: `SELECT tag WHERE id = $id AND user_id = $user_id`
 5. **Email to User ID Resolution** (requires service role):
    - `SELECT id FROM auth.users WHERE email = $recipient_email` (using supabaseAdmin)
    - If user not found → 404
    - If user email not confirmed → 400
-6. **Prevent self-sharing**: If recipient_id == owner_id → 403
+6. **Prevent self-sharing**: If recipient_id == user_id → 403
 7. **Check duplicate**: `SELECT FROM tag_access WHERE tag_id = $id AND recipient_id = $recipient_id`
 8. **Insert**: `INSERT INTO tag_access (tag_id, recipient_id) VALUES ($id, $recipient_id)`
 9. **Return**: 201 with DTO (recipient_id, email, granted_at)
 
 ## 6. Security Considerations
 
-- **Only owner**: Check `owner_id = user_id` (RLS enforcement)
+- **Only owner**: Check tags.user_id = current user_id (RLS enforcement)
 - **Email validation**: Check if recipient exists in auth.users
 - **Email confirmation check**: Recipient must have confirmed email address
-- **No self-grant**: Owner cannot share with themselves (recipient_id != owner_id)
+- **No self-grant**: Owner cannot share with themselves (recipient_id != user_id)
 - **Service role usage**: Email lookup requires supabaseAdmin (bypasses RLS)
 
 **Security Note**: This operation uses `supabaseAdmin` client (service role key) from `src/lib/services/supabase-admin.ts` to lookup user by email from auth.users. NEVER expose this client to frontend code.
@@ -120,7 +120,7 @@ if (!recipient.email_confirmed_at) {
   throw new Error("USER_EMAIL_NOT_CONFIRMED");
 }
 
-if (recipient.id === ownerId) {
+if (recipient.id === userId) {
   throw new Error("CANNOT_SHARE_WITH_SELF");
 }
 ```
@@ -140,11 +140,11 @@ if (recipient.id === ownerId) {
 ### Step 3: TagAccessService
 
 - Create `src/lib/services/tag-access.service.ts`
-- Method `grantAccess(ownerId: string, tagId: string, recipientEmail: string): Promise<TagAccessGrantedDTO>`:
-  - Check tag ownership (SELECT WHERE id = $tagId AND owner_id = $ownerId)
+- Method `grantAccess(userId: string, tagId: string, recipientEmail: string): Promise<TagAccessGrantedDTO>`:
+  - Check tag ownership (SELECT WHERE id = $tagId AND user_id = $userId)
   - Lookup recipient by email using supabaseAdmin (auth.admin.listUsers)
   - Check email confirmation (email_confirmed_at)
-  - Prevent self-sharing (recipient_id !== ownerId)
+  - Prevent self-sharing (recipient_id !== userId)
   - Check duplicate (SELECT FROM tag_access WHERE tag_id AND recipient_id)
   - INSERT INTO tag_access (tag_id, recipient_id)
   - Return DTO with recipient info

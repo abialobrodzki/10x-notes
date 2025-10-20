@@ -2,7 +2,7 @@
 
 ## 1. Endpoint Overview
 
-Endpoint updates selected note fields. Permissions: owner only. Updated fields: `summary_text`, `original_content`, `goal_status`, `meeting_date`, `tag_id`.
+Endpoint updates selected note fields. Permissions: owner only. Updated fields: `summary_text`, `goal_status`, `meeting_date`, `tag_id`. Field `original_content` CANNOT be edited (immutable).
 
 ## 2. Request Details
 
@@ -13,19 +13,19 @@ Endpoint updates selected note fields. Permissions: owner only. Updated fields: 
 
 Body (JSON, all optional):
 
-- summary_text (string, 1..2000)
-- original_content (string, 1..5000)
+- summary_text (string, nullable, max 2000 chars) — can be set to null
 - goal_status (enum: 'achieved' | 'not_achieved' | 'undefined')
 - meeting_date (YYYY-MM-DD)
 - tag_id (uuid) — new tag must belong to user
+
+**Note**: `original_content` is immutable and cannot be edited after creation.
 
 Zod schema (shortened):
 
 ```ts
 const patchNoteSchema = z
   .object({
-    summary_text: z.string().min(1).max(2_000).optional(),
-    original_content: z.string().min(1).max(5_000).optional(),
+    summary_text: z.string().max(2_000).nullable().optional(),
     goal_status: z.enum(["achieved", "not_achieved", "undefined"]).optional(),
     meeting_date: z
       .string()
@@ -38,7 +38,7 @@ const patchNoteSchema = z
 
 ## 3. Types Used
 
-- DTO: `PatchNoteDTO`, `NoteDTO`
+- DTO: `UpdateNoteCommand`, `NoteDTO`
 - Services: `NotesService.updateNote(userId, noteId, patch)`
 
 ## 4. Response Details
@@ -95,7 +95,7 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 2: NotesService
 
 - Implement `src/lib/services/notes.service.ts`
-- Method `updateNote(userId: string, noteId: string, patch: PatchNoteDTO): Promise<NoteDTO>`:
+- Method `updateNote(userId: string, noteId: string, patch: UpdateNoteCommand): Promise<NoteDTO>`:
   - Query note to verify ownership
   - If `tag_id` in patch: verify tag ownership
   - UPDATE notes with provided fields

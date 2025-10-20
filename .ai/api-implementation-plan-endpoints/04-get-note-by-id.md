@@ -13,7 +13,7 @@ Endpoint returns details of a single note, including full `original_content`. Ac
 
 ## 3. Types Used
 
-- DTO: `NoteDetailsDTO`
+- DTO: `NoteDetailDTO`
 - DB: tables `notes`, `tags`, `tag_access` (view permissions)
 - Services: `NotesService.getNoteById(userId, noteId)`
 
@@ -33,7 +33,11 @@ Endpoint returns details of a single note, including full `original_content`. Ac
   "updated_at": "2025-10-19T10:00:00Z",
   "tag": { "id": "uuid", "name": "Project Alpha" },
   "is_owner": true,
-  "has_public_link": false
+  "public_link": {
+    "token": "uuid-v4-token",
+    "is_enabled": true,
+    "url": "/public/uuid-v4-token"
+  }
 }
 ```
 
@@ -50,8 +54,8 @@ Errors:
 3. Validate UUID `id`
 4. SELECT note JOIN tag (or tag left join) + check ownership or shared access via `tag_access`
 5. If no permissions → 404
-6. Calculate `has_public_link` (LEFT JOIN `public_links` or separate query)
-7. Return `NoteDetailsDTO`
+6. If user is owner: include `public_link` object {token, is_enabled, url} from `public_links` table (LEFT JOIN)
+7. Return `NoteDetailDTO`
 
 ## 6. Security Considerations
 
@@ -81,10 +85,10 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 ### Step 2: NotesService
 
 - Implement `src/lib/services/notes.service.ts`
-- Method `getNoteById(userId: string, noteId: string): Promise<NoteDetailsDTO | null>`:
+- Method `getNoteById(userId: string, noteId: string): Promise<NoteDetailDTO | null>`:
   - Query note with JOIN on tags
   - Check ownership OR shared access via tag_access
-  - Calculate `has_public_link`
+  - If owner: include public_link object {token, is_enabled, url} from public_links table
   - Return null if no access (for 404 response)
 
 ### Step 3: API Endpoint

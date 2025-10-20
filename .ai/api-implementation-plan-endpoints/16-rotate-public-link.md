@@ -22,11 +22,10 @@ Endpoint rotates (changes) public link token. Permissions: owner only. Old token
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440001",
   "token": "550e8400-e29b-41d4-a716-446655440199",
-  "public_url": "https://app.10xnotes.com/public/550e8400-e29b-41d4-a716-446655440199",
+  "url": "/public/550e8400-e29b-41d4-a716-446655440199",
   "is_enabled": true,
-  "created_at": "2025-10-19T10:00:00Z"
+  "updated_at": "2025-10-19T15:30:00Z"
 }
 ```
 
@@ -45,8 +44,8 @@ Endpoint rotates (changes) public link token. Permissions: owner only. Old token
 4. **Check note ownership**: SELECT note WHERE id = $id AND user_id = $user_id
 5. **Check link exists**: SELECT FROM public_links WHERE note_id = $id
 6. **Generate new token**: UUID v4 using crypto.randomUUID()
-7. **UPDATE**: UPDATE public_links SET token = $new_token WHERE note_id = $id
-8. **Return**: 200 with new DTO
+7. **UPDATE**: UPDATE public_links SET token = $new_token, updated_at = NOW() WHERE note_id = $id
+8. **Return**: 200 with new DTO without id field, with relative URL (/public/{token}), including updated_at timestamp
 
 ## 6. Security Considerations
 
@@ -87,8 +86,8 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Check note ownership
   - Check link exists
   - Generate new secure token
-  - UPDATE public_links SET token = $newToken WHERE note_id = $noteId
-  - Return updated DTO with new token and URL
+  - UPDATE public_links SET token = $newToken, updated_at = NOW() WHERE note_id = $noteId
+  - Return updated DTO without id field, with new token, relative URL (/public/{token}), and updated_at timestamp
 
 ### Step 3: API Endpoint
 

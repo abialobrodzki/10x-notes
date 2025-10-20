@@ -96,7 +96,7 @@ export const generateAiSummarySchema = z.object({
    - Send request with 30s timeout
    - Wait for JSON response
 5. **Parse response**: Extract `summary_text`, `goal_status`, `suggested_tag`
-6. **Log generation**: Asynchronously save metric to `llm_generations` (service role)
+6. **Log generation**: Asynchronously save metric to `llm_generations` (service role); on error, log and continue (response is unaffected)
 7. **Return result**: Send summary to client
 
 **External service interactions**:
@@ -122,7 +122,7 @@ export const generateAiSummarySchema = z.object({
 || Rate limit exceeded | 429 | "Rate limit exceeded. Try again in X seconds" | Wait X seconds |
 || OpenRouter timeout (>30s) | 408 | "AI generation timeout" | Retry or use shorter content |
 || OpenRouter API error | 503 | "AI service temporarily unavailable" | Retry later |
-|| DB logging error | 500 | (Console logging, doesn't block response) | Return summary despite logging error |
+|| DB logging error (llm_generations) | 200 | "Logged error; summary returned" | Return summary despite logging error |
 
 **Retry strategy**:
 
