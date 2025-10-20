@@ -678,4 +678,38 @@ export class NotesService {
     // Step 4: Transform to NoteDTO
     return this.transformToNoteDTO(updatedNote);
   }
+
+  /**
+   * Delete note by ID
+   *
+   * Only owner can delete. Related records (public_links) are deleted via CASCADE.
+   * Returns 404 if note not found or user is not owner (don't reveal existence).
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to delete
+   * @throws Error if note not found or user is not owner
+   */
+  async deleteNote(userId: string, noteId: string): Promise<void> {
+    // Step 1: Verify note exists and user is owner
+    const { data: existingNote, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id, user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !existingNote) {
+      throw new Error("NOTE_NOT_FOUND");
+    }
+
+    if (existingNote.user_id !== userId) {
+      throw new Error("NOTE_NOT_OWNED");
+    }
+
+    // Step 2: Delete note (CASCADE will delete related records)
+    const { error: deleteError } = await this.supabase.from("notes").delete().eq("id", noteId).eq("user_id", userId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete note: ${deleteError.message}`);
+    }
+  }
 }

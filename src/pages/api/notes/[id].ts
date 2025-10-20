@@ -342,3 +342,126 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     );
   }
 };
+
+/**
+ * DELETE /api/notes/{id}
+ *
+ * Delete a note by ID
+ * Only owner can delete. Related records (public_links) are deleted via CASCADE.
+ *
+ * @param params.id - Note ID (UUID)
+ * @returns 204 - No Content (successful deletion)
+ * @returns 400 - Invalid UUID format
+ * @returns 401 - Missing or invalid authentication token
+ * @returns 404 - Note not found or access denied (don't reveal existence)
+ * @returns 500 - Internal server error
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Step 1: Require authentication
+    const { userId } = await requireAuth(locals.supabase);
+
+    // Step 2: Validate UUID parameter
+    const noteId = params.id;
+
+    if (!noteId) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Note ID is required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const uuidValidation = uuidSchema.safeParse(noteId);
+
+    if (!uuidValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Invalid note ID format",
+          details: "Note ID must be a valid UUID",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Delete note via service
+    const notesService = new NotesService(locals.supabase);
+
+    try {
+      await notesService.deleteNote(userId, noteId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      // Handle specific error cases - both NOT_FOUND and NOT_OWNED return 404
+      // Security: Don't reveal whether note exists if user doesn't own it
+      if (errorMessage === "NOTE_NOT_FOUND" || errorMessage === "NOTE_NOT_OWNED") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Note not found",
+            details: "The requested note does not exist or you do not have permission to delete it",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Generic service error
+      // eslint-disable-next-line no-console
+      console.error("NotesService.deleteNote error:", {
+        userId,
+        noteId,
+        error: errorMessage,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: "Failed to delete note",
+          details: errorMessage,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 4: Return 204 No Content (successful deletion)
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error) {
+    // Catch authentication errors (thrown as Response by requireAuth)
+    if (error instanceof Response) {
+      return error;
+    }
+
+    // Catch-all for unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in DELETE /api/notes/[id]:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: "An unexpected error occurred",
+        details: error instanceof Error ? error.message : "Unknown error occurred",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
