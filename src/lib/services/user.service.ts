@@ -1,3 +1,4 @@
+import { supabaseAdmin } from "./supabase-admin";
 import type { Database } from "../../db/database.types";
 import type { UserProfileDTO } from "../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -50,5 +51,74 @@ export class UserService {
       email: user.email ?? "", // Email should always exist for authenticated users
       created_at: user.created_at,
     };
+  }
+
+  /**
+   * Delete user account and all associated data
+   *
+   * CRITICAL OPERATION - IRREVERSIBLE!
+   * Cascades deletion of:
+   * - All notes (CASCADE deletes public_links automatically)
+   * - All tags (CASCADE deletes tag_access where user is owner)
+   * - All tag_access entries where user is recipient
+   * - User auth record
+   *
+   * GDPR Compliance: Implements "right to be forgotten"
+   *
+   * @param userId - User ID from JWT authentication
+   * @param confirmationEmail - Email confirmation (must match user's account email)
+   * @returns true if deletion successful
+   * @throws Error if confirmation email doesn't match or database operation fails
+   */
+  async deleteAccount(userId: string, confirmationEmail: string): Promise<boolean> {
+    // Step 1: Fetch user's email from auth using the admin client
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAdmin.auth.admin.getUserById(userId);
+
+    if (userError || !user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    // Step 2: Validate confirmation email matches user's account email
+    if (user.email?.toLowerCase() !== confirmationEmail.toLowerCase()) {
+      throw new Error("EMAIL_CONFIRMATION_MISMATCH");
+    }
+
+    // Step 3: Delete all user data in correct order (respecting FK constraints)
+    // Note: We use the admin client for deletions to bypass RLS policies
+    // The order is critical due to RESTRICT constraint on tags
+
+    // Delete notes first (CASCADE deletes public_links automatically)
+    const { error: notesError } = await supabaseAdmin.from("notes").delete().eq("user_id", userId);
+
+    if (notesError) {
+      throw new Error(`Failed to delete notes: ${notesError.message}`);
+    }
+
+    // Delete tags (CASCADE deletes tag_access where user is owner)
+    const { error: tagsError } = await supabaseAdmin.from("tags").delete().eq("user_id", userId);
+
+    if (tagsError) {
+      throw new Error(`Failed to delete tags: ${tagsError.message}`);
+    }
+
+    // Delete tag_access entries where user is recipient (not cascaded)
+    const { error: tagAccessError } = await supabaseAdmin.from("tag_access").delete().eq("recipient_id", userId);
+
+    if (tagAccessError) {
+      throw new Error(`Failed to delete tag access permissions: ${tagAccessError.message}`);
+    }
+
+    // Step 4: Delete user from auth.users (Supabase Auth)
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+    if (deleteAuthError) {
+      throw new Error(`Failed to delete user account: ${deleteAuthError.message}`);
+    }
+
+    // Step 5: Return success
+    return true;
   }
 }
