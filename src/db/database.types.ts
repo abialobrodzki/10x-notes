@@ -221,31 +221,23 @@ export interface Database {
     };
     Functions: {
       delete_user_account: {
-        Args: {
-          p_user_id: string;
-          p_confirmation_email: string;
-        };
+        Args: { p_confirmation_email: string; p_user_id: string };
         Returns: boolean;
       };
       get_tag_access_list: {
-        Args: {
-          p_tag_id: string;
-        };
+        Args: { p_tag_id: string };
         Returns: {
-          recipient_id: string;
           email: string;
           granted_at: string;
+          recipient_id: string;
         }[];
       };
       grant_tag_access: {
-        Args: {
-          p_tag_id: string;
-          p_recipient_email: string;
-        };
+        Args: { p_recipient_email: string; p_tag_id: string };
         Returns: {
-          recipient_id: string;
           email: string;
           granted_at: string;
+          recipient_id: string;
         }[];
       };
     };
