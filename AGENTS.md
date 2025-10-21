@@ -61,13 +61,73 @@ npm run tsc:check
 
 ```
 src/
-├── layouts/           # Astro layouts (Layout.astro)
-├── pages/             # Astro pages (routes)
-├── components/        # UI components
-│   └── ui/           # Shadcn/ui components
-├── lib/              # Utilities
-│   └── utils.ts      # cn() utility for class merging
-└── styles/           # Global CSS files
+├── layouts/              # Astro layouts (Layout.astro)
+├── pages/                # Astro pages (routes)
+│   ├── index.astro      # Homepage
+│   └── api/             # REST API endpoints (SSR)
+│       ├── ai/          # AI generation endpoints
+│       │   └── generate.ts
+│       ├── notes/       # Notes CRUD endpoints
+│       │   ├── index.ts
+│       │   ├── [id].ts
+│       │   └── [id]/
+│       │       └── public-link/
+│       │           ├── index.ts
+│       │           └── rotate.ts
+│       ├── tags/        # Tags CRUD endpoints
+│       │   ├── index.ts
+│       │   ├── [id].ts
+│       │   └── [id]/
+│       │       └── access/
+│       │           ├── index.ts
+│       │           └── [recipient_id].ts
+│       ├── user/        # User management endpoints
+│       │   ├── profile.ts
+│       │   ├── stats.ts
+│       │   └── account.ts
+│       └── public/      # Public access endpoints (anonymous)
+│           └── [token].ts
+├── components/           # UI components
+│   └── ui/              # Shadcn/ui components
+├── lib/                 # Business logic & utilities
+│   ├── services/        # Business logic layer
+│   │   ├── ai-generation.service.ts
+│   │   ├── notes.service.ts
+│   │   ├── tags.service.ts
+│   │   ├── tag-access.service.ts
+│   │   ├── public-links.service.ts
+│   │   └── user.service.ts
+│   ├── validators/      # Zod schemas for input validation
+│   │   ├── ai.schemas.ts
+│   │   ├── notes.schemas.ts
+│   │   ├── tags.schemas.ts
+│   │   ├── public-links.schemas.ts
+│   │   ├── user.schemas.ts
+│   │   └── shared.schemas.ts
+│   ├── middleware/      # API middleware
+│   │   ├── auth.middleware.ts
+│   │   └── rate-limit.middleware.ts
+│   └── utils/           # Helper functions
+│       ├── pagination.utils.ts
+│       └── token.utils.ts
+├── middleware/          # Astro middleware
+│   └── index.ts        # Supabase client injection
+├── db/                  # Database layer
+│   ├── database.types.ts   # Auto-generated Supabase types
+│   └── supabase.client.ts  # Supabase client configuration
+├── types.ts             # Shared TypeScript types & DTOs
+└── styles/              # Global CSS files
+
+supabase/
+└── migrations/          # SQL migration files
+    ├── 20251015211900_create_10xnotes_schema.sql
+    ├── 20251015234737_optimize_rls_policies_performance.sql
+    ├── 20251021000000_add_get_tag_access_list_function.sql
+    ├── 20251021000001_add_grant_tag_access_function.sql
+    ├── 20251021120000_allow_anon_insert_llm_generations.sql
+    ├── 20251021120100_allow_anon_read_public_notes.sql
+    ├── 20251021120200_create_delete_user_account_function.sql
+    └── 20251021120300_fix_function_search_path_security.sql
 ```
 
 ### Configuration Files
@@ -90,6 +150,43 @@ src/
 - **Astro Components (.astro)** - Use for static content, layouts, and pages
 - **React Components (.tsx)** - Use only when interactivity is needed
 - **UI Components** - Shadcn/ui components in `src/components/ui/`
+
+### Backend Architecture
+
+**Tech Stack - Backend:**
+
+- **Supabase** - PostgreSQL database with Row Level Security (RLS)
+- **Supabase Auth** - JWT-based authentication
+- **Zod** - Runtime input validation and type safety
+- **OpenRouter** - AI model API for text generation
+
+**Database Schema:**
+
+- Tables: `tags`, `notes`, `tag_access`, `public_links`, `llm_generations`
+- Views: `user_generation_stats` (aggregated AI usage)
+- Functions (SECURITY DEFINER): `get_tag_access_list()`, `grant_tag_access()`, `delete_user_account()`
+
+**API Request Flow:**
+
+```
+HTTP Request
+  → Astro Middleware (inject Supabase client)
+  → API Route (src/pages/api/)
+  → Auth Middleware (requireAuth/optionalAuth)
+  → Input Validation (Zod schemas)
+  → Service Layer (business logic)
+  → Database (Supabase with RLS)
+  → Response (DTO format)
+```
+
+**Security Model:**
+
+- **RLS (Row Level Security)** - All tables enforce owner/recipient access control at database level
+- **JWT Authentication** - Bearer tokens via Supabase Auth (validated in `requireAuth` middleware)
+- **Rate Limiting** - In-memory limits for AI generation (100 req/day per IP); production should use Redis
+- **SECURITY DEFINER Functions** - Elevated privileges with explicit `search_path = ''` to prevent SQL injection
+
+**For detailed implementation guidelines, see:** `.cursor/rules/backend.mdc` and `.cursor/rules/db-supabase-migrations.mdc`
 
 ## Development Guidelines & Conventions
 
@@ -130,6 +227,23 @@ src/
 - Place middleware in `src/middleware/` (directory will be created when needed)
 - Environment variables template available in `.env.example`
 - Project documentation in `README.md`
+
+#### Environment Variables
+
+Required environment variables (see `.env.example`):
+
+```bash
+# Supabase Configuration
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_KEY=xxx  # Anon key (public)
+
+# AI Configuration
+OPENROUTER_API_KEY=xxx  # For AI text generation
+```
+
+- Environment variables are validated at startup (see `src/db/supabase.client.ts`)
+- Missing variables throw clear error messages
+- Note: `SUPABASE_SERVICE_ROLE_KEY` is NOT used (removed in refactoring for security)
 
 ### Error Handling Patterns
 
