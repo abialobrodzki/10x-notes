@@ -13,8 +13,11 @@
 -- enable rls if not already enabled (should already be enabled from initial migration)
 alter table llm_generations enable row level security;
 
--- drop existing anon insert policy if exists (cleanup)
+-- drop conflicting old anon policy (from initial schema)
 drop policy if exists llm_generations_anon_insert on llm_generations;
+drop policy if exists llm_generations_anon_select on llm_generations;
+drop policy if exists llm_generations_anon_update on llm_generations;
+drop policy if exists llm_generations_anon_delete on llm_generations;
 
 -- create policy: allow anonymous users to insert their own generation logs
 create policy "allow_anon_insert_llm_generations"

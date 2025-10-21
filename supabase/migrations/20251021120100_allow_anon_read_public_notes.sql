@@ -16,9 +16,15 @@
 alter table public_links enable row level security;
 alter table notes enable row level security;
 
--- drop existing anon select policies if exist (cleanup)
-drop policy if exists public_links_anon_select on public_links;
+-- drop conflicting old anon policies (from initial schema)
 drop policy if exists notes_anon_select on notes;
+drop policy if exists notes_anon_insert on notes;
+drop policy if exists notes_anon_update on notes;
+drop policy if exists notes_anon_delete on notes;
+drop policy if exists public_links_anon_select on public_links;
+drop policy if exists public_links_anon_insert on public_links;
+drop policy if exists public_links_anon_update on public_links;
+drop policy if exists public_links_anon_delete on public_links;
 
 -- policy 1: allow anonymous users to read enabled public links
 create policy "allow_anon_read_enabled_public_links"
