@@ -1,6 +1,7 @@
+import { supabaseAdmin } from "./supabase-admin";
 import { generatePublicLinkToken } from "../utils/token.utils";
 import type { Database } from "../../db/database.types";
-import type { PublicLinkDTO, UpdatePublicLinkCommand } from "../../types";
+import type { PublicLinkDTO, PublicNoteDTO, UpdatePublicLinkCommand } from "../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -294,5 +295,61 @@ export class PublicLinksService {
     }
 
     // Success - link deleted, token is now invalid
+  }
+
+  /**
+   * Get public note by token (anonymous access)
+   *
+   * Public endpoint that returns note summary via public link token.
+   * No authentication required. Uses supabaseAdmin to bypass RLS.
+   *
+   * Security considerations:
+   * - Returns limited data (summary_text, meeting_date, goal_status, created_at)
+   * - Does NOT return: original_content, id, user_id, tag info, AI metadata
+   * - Only works if is_enabled = true
+   * - Returns null for all access denial cases (security best practice)
+   *
+   * @param token - Public link token (UUID v4)
+   * @returns PublicNoteDTO or null if not found/disabled
+   */
+  async getPublicNote(token: string): Promise<PublicNoteDTO | null> {
+    // Use supabaseAdmin to bypass RLS for public access
+    // Single query with JOIN for optimal performance
+    const { data, error } = await supabaseAdmin
+      .from("public_links")
+      .select(
+        `
+        created_at,
+        notes (
+          summary_text,
+          meeting_date,
+          goal_status
+        )
+      `
+      )
+      .eq("token", token)
+      .eq("is_enabled", true)
+      .single();
+
+    // Return null for any error or missing data (don't reveal reason)
+    if (error || !data || !data.notes) {
+      return null;
+    }
+
+    // Type assertion needed because Supabase returns nested structure
+    // but we need to flatten it to match PublicNoteDTO
+    const noteData = Array.isArray(data.notes) ? data.notes[0] : data.notes;
+
+    if (!noteData) {
+      return null;
+    }
+
+    // Return flat DTO structure with only public fields
+    return {
+      summary_text: noteData.summary_text,
+      meeting_date: noteData.meeting_date,
+      goal_status: noteData.goal_status,
+      created_at: data.created_at, // When public link was created
+    };
   }
 }
