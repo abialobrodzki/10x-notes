@@ -1,6 +1,10 @@
 import { requireAuth } from "../../../../../lib/middleware/auth.middleware";
 import { PublicLinksService } from "../../../../../lib/services/public-links.service";
-import { createPublicLinkSchema } from "../../../../../lib/validators/public-links.schemas";
+import {
+  createPublicLinkSchema,
+  patchPublicLinkSchema,
+  type PatchPublicLinkInput,
+} from "../../../../../lib/validators/public-links.schemas";
 import { uuidSchema } from "../../../../../lib/validators/shared.schemas";
 import type { PublicLinkDTO } from "../../../../../types";
 import type { APIRoute } from "astro";
@@ -208,6 +212,206 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     // Catch-all for unexpected errors
     // eslint-disable-next-line no-console
     console.error("Unexpected error in POST /api/notes/[id]/public-link:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: "An unexpected error occurred",
+        details: error instanceof Error ? error.message : "Unknown error occurred",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};
+
+/**
+ * PATCH /api/notes/{id}/public-link
+ *
+ * Update public link settings for a note
+ * Only note owner can update. MVP: Only is_enabled can be toggled.
+ *
+ * Updatable fields:
+ * - is_enabled (boolean, optional) - Enable/disable the public link
+ *
+ * @param params.id - Note ID (UUID)
+ * @param request.body - Fields to update (at least one required)
+ * @returns 200 - Updated public link
+ * @returns 400 - Invalid request (no fields, invalid UUID, validation errors)
+ * @returns 401 - Missing or invalid authentication token
+ * @returns 403 - Not owner
+ * @returns 404 - Note or public link not found
+ * @returns 500 - Internal server error
+ */
+export const PATCH: APIRoute = async ({ params, request, locals }) => {
+  try {
+    // Step 1: Require authentication
+    const { userId } = await requireAuth(locals.supabase);
+
+    // Step 2: Validate UUID parameter
+    const noteId = params.id;
+
+    if (!noteId) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Note ID is required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const uuidValidation = uuidSchema.safeParse(noteId);
+
+    if (!uuidValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Invalid note ID format",
+          details: "Note ID must be a valid UUID",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Parse request body
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid JSON",
+          message: "Request body must be valid JSON",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 4: Validate request body with Zod schema
+    const validationResult = patchPublicLinkSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map((err) => ({
+        field: err.path.join("."),
+        message: err.message,
+      }));
+
+      return new Response(
+        JSON.stringify({
+          error: "Validation failed",
+          message: "Invalid request body",
+          details: errors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const validatedInput: PatchPublicLinkInput = validationResult.data;
+
+    // Step 5: Update public link via service
+    const publicLinksService = new PublicLinksService(locals.supabase);
+    let result: PublicLinkDTO;
+
+    try {
+      result = await publicLinksService.updatePublicLink(userId, noteId, validatedInput);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      // Handle specific error cases
+      if (errorMessage === "NOTE_NOT_FOUND") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Note not found",
+            details: "The requested note does not exist",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (errorMessage === "NOTE_NOT_OWNED") {
+        return new Response(
+          JSON.stringify({
+            error: "Forbidden",
+            message: "Access denied",
+            details: "You do not have permission to update this note's public link",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (errorMessage === "LINK_NOT_FOUND") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Public link not found",
+            details: "No public link exists for this note. Create one first using POST /api/notes/{id}/public-link",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Generic service error
+      // eslint-disable-next-line no-console
+      console.error("PublicLinksService.updatePublicLink error:", {
+        userId,
+        noteId,
+        error: errorMessage,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: "Failed to update public link",
+          details: errorMessage,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 6: Return 200 OK with updated public link
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    // Catch authentication errors (thrown as Response by requireAuth)
+    if (error instanceof Response) {
+      return error;
+    }
+
+    // Catch-all for unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in PATCH /api/notes/[id]/public-link:", error);
 
     return new Response(
       JSON.stringify({

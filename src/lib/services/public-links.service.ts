@@ -1,6 +1,6 @@
 import { generatePublicLinkToken } from "../utils/token.utils";
 import type { Database } from "../../db/database.types";
-import type { PublicLinkDTO } from "../../types";
+import type { PublicLinkDTO, UpdatePublicLinkCommand } from "../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -103,6 +103,73 @@ export class PublicLinksService {
         created_at: newLink.created_at,
       },
       is_new: true,
+    };
+  }
+
+  /**
+   * Update public link settings
+   *
+   * Only note owner can update public links.
+   * MVP: Only is_enabled can be toggled.
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to update public link for
+   * @param patch - Fields to update (at least one required)
+   * @returns Updated public link DTO with updated_at timestamp
+   * @throws Error if note not found, user not owner, link not found, or database error
+   */
+  async updatePublicLink(userId: string, noteId: string, patch: UpdatePublicLinkCommand): Promise<PublicLinkDTO> {
+    // Step 1: Check note ownership - verify note exists and current user is the owner
+    const { data: note, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id, user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !note) {
+      throw new Error("NOTE_NOT_FOUND");
+    }
+
+    if (note.user_id !== userId) {
+      throw new Error("NOTE_NOT_OWNED");
+    }
+
+    // Step 2: Check if public link exists for this note
+    const { data: existingLink, error: checkError } = await this.supabase
+      .from("public_links")
+      .select("id, token, is_enabled")
+      .eq("note_id", noteId)
+      .single();
+
+    if (checkError || !existingLink) {
+      throw new Error("LINK_NOT_FOUND");
+    }
+
+    // Step 3: Update public link with provided fields and updated_at
+    const { data: updatedLink, error: updateError } = await this.supabase
+      .from("public_links")
+      .update({
+        ...patch,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("note_id", noteId)
+      .select("token, is_enabled, updated_at")
+      .single();
+
+    if (updateError) {
+      throw new Error(`Failed to update public link: ${updateError.message}`);
+    }
+
+    if (!updatedLink) {
+      throw new Error("Public link update failed: no data returned");
+    }
+
+    // Step 4: Return updated DTO without id field, with updated_at
+    return {
+      token: updatedLink.token,
+      url: `/public/${updatedLink.token}`,
+      is_enabled: updatedLink.is_enabled,
+      updated_at: updatedLink.updated_at,
     };
   }
 }

@@ -331,8 +331,9 @@ export type PublicLinkDTO = Pick<PublicLinkEntity, "token" | "is_enabled"> & {
 
 /**
  * Command: Update public link status (PATCH /api/notes/{id}/public-link)
+ * MVP: Only is_enabled can be toggled (optional field)
  */
-export type UpdatePublicLinkCommand = Pick<PublicLinkEntity, "is_enabled">;
+export type UpdatePublicLinkCommand = Partial<Pick<PublicLinkEntity, "is_enabled">>;
 
 /**
  * DTO: Public note summary (GET /api/public/{token})
