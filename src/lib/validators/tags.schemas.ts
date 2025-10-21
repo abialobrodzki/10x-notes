@@ -1,6 +1,23 @@
 import { z } from "zod";
 
 /**
+ * Validation schema for tag ID path parameter
+ * Used in endpoints like /api/tags/{id}, /api/tags/{id}/access
+ */
+export const tagIdParamSchema = z.object({
+  /**
+   * Tag ID - must be valid UUID v4
+   */
+  id: z.string().uuid("Invalid tag ID format"),
+});
+
+/**
+ * TypeScript type inferred from Zod schema
+ * Use this type for validated tag ID path parameter
+ */
+export type TagIdParamInput = z.infer<typeof tagIdParamSchema>;
+
+/**
  * Validation schema for GET /api/tags query parameters
  * Handles filtering for tags list
  */

@@ -219,7 +219,18 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<never, never>;
+    Functions: {
+      get_tag_access_list: {
+        Args: {
+          p_tag_id: string;
+        };
+        Returns: {
+          recipient_id: string;
+          email: string;
+          granted_at: string;
+        }[];
+      };
+    };
     Enums: {
       goal_status_enum: "achieved" | "not_achieved" | "undefined";
     };
