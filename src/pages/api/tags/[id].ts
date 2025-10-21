@@ -207,3 +207,143 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     );
   }
 };
+
+/**
+ * DELETE /api/tags/{id}
+ *
+ * Delete a tag by ID
+ * Only owner can delete. Tag cannot be deleted if it has assigned notes.
+ * Authentication required via JWT Bearer token
+ *
+ * @param params.id - Tag ID (UUID)
+ * @returns 204 - No Content (successful deletion)
+ * @returns 400 - Invalid UUID format
+ * @returns 401 - Missing or invalid authentication token
+ * @returns 404 - Tag not found or access denied (don't reveal existence)
+ * @returns 409 - Cannot delete tag with existing notes
+ * @returns 500 - Internal server error
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Step 1: Require authentication
+    const { userId } = await requireAuth(locals.supabase);
+
+    // Step 2: Validate UUID parameter
+    const tagId = params.id;
+
+    if (!tagId) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Tag ID is required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const uuidValidation = uuidSchema.safeParse(tagId);
+
+    if (!uuidValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Invalid tag ID format",
+          details: "Tag ID must be a valid UUID",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Delete tag via service
+    const tagsService = new TagsService(locals.supabase);
+
+    try {
+      await tagsService.deleteTag(userId, tagId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      // Handle specific error cases - both NOT_FOUND and NOT_OWNED return 404
+      // Security: Don't reveal whether tag exists if user doesn't own it
+      if (errorMessage === "TAG_NOT_FOUND" || errorMessage === "TAG_NOT_OWNED") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Tag not found",
+            details: "The requested tag does not exist or you do not have permission to delete it",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Handle tag has notes error (409 Conflict)
+      if (errorMessage === "TAG_HAS_NOTES") {
+        return new Response(
+          JSON.stringify({
+            error: "Conflict",
+            message: "Cannot delete tag with existing notes",
+            details: "This tag has notes assigned to it. Please reassign or delete the notes first.",
+          }),
+          {
+            status: 409,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Generic service error
+      // eslint-disable-next-line no-console
+      console.error("TagsService.deleteTag error:", {
+        userId,
+        tagId,
+        error: errorMessage,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: "Failed to delete tag",
+          details: errorMessage,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 4: Return 204 No Content (successful deletion)
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error) {
+    // Catch authentication errors (thrown as Response by requireAuth)
+    if (error instanceof Response) {
+      return error;
+    }
+
+    // Catch-all for unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in DELETE /api/tags/[id]:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: "An unexpected error occurred",
+        details: error instanceof Error ? error.message : "Unknown error occurred",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};

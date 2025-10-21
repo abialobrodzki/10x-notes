@@ -331,4 +331,52 @@ export class TagsService {
       updated_at: updatedTag.updated_at,
     };
   }
+
+  /**
+   * Delete tag by ID (owner only)
+   *
+   * Tag cannot be deleted if it has assigned notes (FK RESTRICT).
+   * Cascades deletion to tag_access records automatically.
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param tagId - Tag ID to delete
+   * @throws Error if tag not found, user not owner, or tag has notes
+   */
+  async deleteTag(userId: string, tagId: string): Promise<void> {
+    // Step 1: Check if tag exists and user is owner
+    const { data: existingTag, error: checkError } = await this.supabase
+      .from("tags")
+      .select("id, user_id")
+      .eq("id", tagId)
+      .single();
+
+    if (checkError || !existingTag) {
+      throw new Error("TAG_NOT_FOUND");
+    }
+
+    if (existingTag.user_id !== userId) {
+      throw new Error("TAG_NOT_OWNED");
+    }
+
+    // Step 2: Check if tag has assigned notes (cannot delete if notes exist)
+    const { count: noteCount, error: countError } = await this.supabase
+      .from("notes")
+      .select("*", { count: "exact", head: true })
+      .eq("tag_id", tagId);
+
+    if (countError) {
+      throw new Error(`Failed to check note count: ${countError.message}`);
+    }
+
+    if (noteCount && noteCount > 0) {
+      throw new Error("TAG_HAS_NOTES");
+    }
+
+    // Step 3: Delete tag (CASCADE will delete tag_access records automatically)
+    const { error: deleteError } = await this.supabase.from("tags").delete().eq("id", tagId).eq("user_id", userId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete tag: ${deleteError.message}`);
+    }
+  }
 }
