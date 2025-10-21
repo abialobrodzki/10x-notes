@@ -1,4 +1,3 @@
-import { supabaseAdmin } from "./supabase-admin";
 import { generatePublicLinkToken } from "../utils/token.utils";
 import type { Database } from "../../db/database.types";
 import type { PublicLinkDTO, PublicNoteDTO, UpdatePublicLinkCommand } from "../../types";
@@ -301,21 +300,22 @@ export class PublicLinksService {
    * Get public note by token (anonymous access)
    *
    * Public endpoint that returns note summary via public link token.
-   * No authentication required. Uses supabaseAdmin to bypass RLS.
+   * No authentication required. Uses RLS policies for secure anonymous access.
    *
    * Security considerations:
    * - Returns limited data (summary_text, meeting_date, goal_status, created_at)
    * - Does NOT return: original_content, id, user_id, tag info, AI metadata
    * - Only works if is_enabled = true
    * - Returns null for all access denial cases (security best practice)
+   * - Access controlled via RLS policies (anon can read enabled public links)
    *
    * @param token - Public link token (UUID v4)
    * @returns PublicNoteDTO or null if not found/disabled
    */
   async getPublicNote(token: string): Promise<PublicNoteDTO | null> {
-    // Use supabaseAdmin to bypass RLS for public access
+    // Use regular client (anon or auth) - RLS policies allow public access
     // Single query with JOIN for optimal performance
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await this.supabase
       .from("public_links")
       .select(
         `

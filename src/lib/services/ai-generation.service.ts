@@ -1,6 +1,7 @@
-import { supabaseAdmin } from "./supabase-admin";
+import type { Database } from "../../db/database.types";
 import type { AiSummaryDTO, GoalStatus } from "../../types";
 import type { GenerateAiSummaryInput } from "../validators/ai.schemas";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * OpenRouter API response structure
@@ -40,7 +41,7 @@ export class AiGenerationService {
   private readonly openRouterApiUrl = "https://openrouter.ai/api/v1/chat/completions";
   private readonly timeoutMs = 30000; // 30 seconds
 
-  constructor() {
+  constructor(private readonly supabase: SupabaseClient<Database>) {
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
@@ -282,6 +283,9 @@ ${content}`;
   /**
    * Log generation metrics to database (asynchronous)
    *
+   * Uses RLS policy to allow anonymous inserts to llm_generations table.
+   * This is a fire-and-forget operation - failures won't block the response.
+   *
    * @param data - Generation log data
    */
   private async logGeneration(data: {
@@ -294,7 +298,8 @@ ${content}`;
     errorMessage: string | null;
   }): Promise<void> {
     try {
-      const { error } = await supabaseAdmin.from("llm_generations").insert({
+      // Use regular client (anon or auth) - RLS policy allows insert
+      const { error } = await this.supabase.from("llm_generations").insert({
         user_id: data.userId,
         note_id: data.noteId,
         model_name: data.modelName,

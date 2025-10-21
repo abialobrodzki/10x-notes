@@ -25,7 +25,7 @@ export const prerender = false;
  * @returns 404 - Token not found, link disabled, or invalid token format
  * @returns 500 - Internal server error
  */
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   try {
     // Step 1: Validate token parameter
     const token = params.token;
@@ -61,11 +61,9 @@ export const GET: APIRoute = async ({ params }) => {
       );
     }
 
-    // Step 3: Fetch public note via service (uses supabaseAdmin internally)
-    // Note: PublicLinksService constructor requires a client, but getPublicNote
-    // uses supabaseAdmin internally and doesn't use the instance client
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const publicLinksService = new PublicLinksService({} as any);
+    // Step 3: Fetch public note via service
+    // Use regular client (anon) - RLS policies allow public access
+    const publicLinksService = new PublicLinksService(locals.supabase);
 
     let result: PublicNoteDTO | null;
 

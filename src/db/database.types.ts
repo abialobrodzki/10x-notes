@@ -220,6 +220,13 @@ export interface Database {
       };
     };
     Functions: {
+      delete_user_account: {
+        Args: {
+          p_user_id: string;
+          p_confirmation_email: string;
+        };
+        Returns: boolean;
+      };
       get_tag_access_list: {
         Args: {
           p_tag_id: string;

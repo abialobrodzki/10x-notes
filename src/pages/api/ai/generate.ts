@@ -87,7 +87,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Step 5: Generate AI summary
-    const aiService = new AiGenerationService();
+    const aiService = new AiGenerationService(locals.supabase);
     let result: AiSummaryDTO;
 
     try {
