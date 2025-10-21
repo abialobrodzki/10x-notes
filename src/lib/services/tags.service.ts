@@ -1,6 +1,6 @@
 import type { Database } from "../../db/database.types";
 import type { TagEntity, TagsListDTO, TagWithStatsDTO, TagDTO } from "../../types";
-import type { TagsListQueryInput, CreateTagInput } from "../validators/tags.schemas";
+import type { TagsListQueryInput, CreateTagInput, UpdateTagInput } from "../validators/tags.schemas";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -246,6 +246,89 @@ export class TagsService {
       name: newTag.name,
       created_at: newTag.created_at,
       updated_at: newTag.updated_at,
+    };
+  }
+
+  /**
+   * Update tag name (owner only)
+   *
+   * Validates ownership and uniqueness of new name (case-insensitive)
+   * Automatically sets updated_at to current timestamp
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param tagId - Tag ID to update
+   * @param input - Validated tag update data
+   * @returns Updated tag (id, name, created_at, updated_at)
+   * @throws Error if tag not found, user not owner, or name already exists
+   */
+  async updateTag(userId: string, tagId: string, input: UpdateTagInput): Promise<TagDTO> {
+    // Step 1: Check if tag exists and user is owner
+    const { data: existingTag, error: checkError } = await this.supabase
+      .from("tags")
+      .select("id, name, user_id")
+      .eq("id", tagId)
+      .single();
+
+    if (checkError || !existingTag) {
+      throw new Error("TAG_NOT_FOUND");
+    }
+
+    if (existingTag.user_id !== userId) {
+      throw new Error("TAG_NOT_OWNED");
+    }
+
+    // Step 2: Check if new name is different (optimization: skip uniqueness check if same)
+    const isSameName = existingTag.name.toLowerCase() === input.name.toLowerCase();
+
+    if (!isSameName) {
+      // Step 3: Check if new name is unique within user's tags
+      const { data: duplicateTag, error: duplicateError } = await this.supabase
+        .from("tags")
+        .select("id")
+        .eq("user_id", userId)
+        .ilike("name", input.name)
+        .neq("id", tagId) // Exclude current tag from check
+        .single();
+
+      if (duplicateTag) {
+        throw new Error("TAG_NAME_ALREADY_EXISTS");
+      }
+
+      // If error is not "no rows found", throw it
+      if (duplicateError && duplicateError.code !== "PGRST116") {
+        throw new Error(`Failed to check tag uniqueness: ${duplicateError.message}`);
+      }
+    }
+
+    // Step 4: Update tag name and updated_at
+    const { data: updatedTag, error: updateError } = await this.supabase
+      .from("tags")
+      .update({
+        name: input.name,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", tagId)
+      .select("id, name, created_at, updated_at")
+      .single();
+
+    if (updateError) {
+      // Handle unique constraint violation from database (in case of race condition)
+      if (updateError.code === "23505") {
+        throw new Error("TAG_NAME_ALREADY_EXISTS");
+      }
+      throw new Error(`Failed to update tag: ${updateError.message}`);
+    }
+
+    if (!updatedTag) {
+      throw new Error("Tag update failed: no data returned");
+    }
+
+    // Step 5: Return TagDTO (excludes user_id)
+    return {
+      id: updatedTag.id,
+      name: updatedTag.name,
+      created_at: updatedTag.created_at,
+      updated_at: updatedTag.updated_at,
     };
   }
 }

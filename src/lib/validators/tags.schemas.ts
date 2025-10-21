@@ -35,3 +35,21 @@ export const createTagSchema = z.object({
  * Use this type for validated tag creation input
  */
 export type CreateTagInput = z.infer<typeof createTagSchema>;
+
+/**
+ * Validation schema for PATCH /api/tags/{id}
+ * Updates tag name (must be unique per user)
+ */
+export const updateTagSchema = z.object({
+  /**
+   * New tag name - must be unique per user (case-insensitive)
+   * Automatically trimmed, 1-100 characters
+   */
+  name: z.string().trim().min(1, "Tag name is required").max(100, "Tag name must be at most 100 characters"),
+});
+
+/**
+ * TypeScript type inferred from Zod schema
+ * Use this type for validated tag update input
+ */
+export type UpdateTagInput = z.infer<typeof updateTagSchema>;
