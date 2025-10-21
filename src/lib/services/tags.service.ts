@@ -1,6 +1,6 @@
 import type { Database } from "../../db/database.types";
-import type { TagEntity, TagsListDTO, TagWithStatsDTO } from "../../types";
-import type { TagsListQueryInput } from "../validators/tags.schemas";
+import type { TagEntity, TagsListDTO, TagWithStatsDTO, TagDTO } from "../../types";
+import type { TagsListQueryInput, CreateTagInput } from "../validators/tags.schemas";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -186,5 +186,66 @@ export class TagsService {
     }
 
     return baseDTO;
+  }
+
+  /**
+   * Create a new tag for user
+   *
+   * Validates uniqueness of tag name (case-insensitive) within user's tags
+   * Automatically sets user_id to current user
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param input - Validated tag creation data
+   * @returns Created tag (id, name, created_at, updated_at)
+   * @throws Error if tag with this name already exists or database operation fails
+   */
+  async createTag(userId: string, input: CreateTagInput): Promise<TagDTO> {
+    // Step 1: Check if tag with this name already exists for this user (case-insensitive)
+    const { data: existingTag, error: checkError } = await this.supabase
+      .from("tags")
+      .select("id")
+      .eq("user_id", userId)
+      .ilike("name", input.name)
+      .single();
+
+    // If tag exists, throw error for 409 Conflict
+    if (existingTag) {
+      throw new Error("TAG_NAME_ALREADY_EXISTS");
+    }
+
+    // If error is not "no rows found", throw it
+    if (checkError && checkError.code !== "PGRST116") {
+      throw new Error(`Failed to check tag uniqueness: ${checkError.message}`);
+    }
+
+    // Step 2: Insert new tag
+    const { data: newTag, error: insertError } = await this.supabase
+      .from("tags")
+      .insert({
+        user_id: userId,
+        name: input.name,
+      })
+      .select("id, name, created_at, updated_at")
+      .single();
+
+    if (insertError) {
+      // Handle unique constraint violation from database (in case of race condition)
+      if (insertError.code === "23505") {
+        throw new Error("TAG_NAME_ALREADY_EXISTS");
+      }
+      throw new Error(`Failed to create tag: ${insertError.message}`);
+    }
+
+    if (!newTag) {
+      throw new Error("Tag creation failed: no data returned");
+    }
+
+    // Step 3: Return TagDTO (excludes user_id)
+    return {
+      id: newTag.id,
+      name: newTag.name,
+      created_at: newTag.created_at,
+      updated_at: newTag.updated_at,
+    };
   }
 }
