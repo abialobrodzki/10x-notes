@@ -70,3 +70,21 @@ export const updateTagSchema = z.object({
  * Use this type for validated tag update input
  */
 export type UpdateTagInput = z.infer<typeof updateTagSchema>;
+
+/**
+ * Validation schema for POST /api/tags/{id}/access
+ * Grants access to a tag to another user by email
+ */
+export const grantTagAccessSchema = z.object({
+  /**
+   * Recipient email address - must be valid email format
+   * User must exist in the system (auth.users)
+   */
+  recipient_email: z.string().email("Invalid email format"),
+});
+
+/**
+ * TypeScript type inferred from Zod schema
+ * Use this type for validated grant tag access input
+ */
+export type GrantTagAccessInput = z.infer<typeof grantTagAccessSchema>;

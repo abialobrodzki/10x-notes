@@ -230,6 +230,17 @@ export interface Database {
           granted_at: string;
         }[];
       };
+      grant_tag_access: {
+        Args: {
+          p_tag_id: string;
+          p_recipient_email: string;
+        };
+        Returns: {
+          recipient_id: string;
+          email: string;
+          granted_at: string;
+        }[];
+      };
     };
     Enums: {
       goal_status_enum: "achieved" | "not_achieved" | "undefined";
