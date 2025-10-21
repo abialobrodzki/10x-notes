@@ -122,4 +122,48 @@ export class TagAccessService {
       granted_at: result.granted_at,
     };
   }
+
+  /**
+   * Revoke access to a tag from a user
+   *
+   * Only tag owner can revoke access.
+   * Removes the tag_access record for specified recipient.
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param tagId - Tag ID to revoke access from
+   * @param recipientId - User ID whose access should be revoked
+   * @throws Error if tag not found, user not owner, or access grant not found
+   */
+  async revokeTagAccess(userId: string, tagId: string, recipientId: string): Promise<void> {
+    // Step 1: Check tag ownership - verify tag exists and current user is the owner
+    const { data: tag, error: tagError } = await this.supabase
+      .from("tags")
+      .select("id, user_id")
+      .eq("id", tagId)
+      .single();
+
+    if (tagError || !tag) {
+      throw new Error("TAG_NOT_FOUND");
+    }
+
+    if (tag.user_id !== userId) {
+      throw new Error("TAG_NOT_OWNED");
+    }
+
+    // Step 2: Delete the access grant
+    const { error: deleteError, count } = await this.supabase
+      .from("tag_access")
+      .delete({ count: "exact" })
+      .eq("tag_id", tagId)
+      .eq("recipient_id", recipientId);
+
+    if (deleteError) {
+      throw new Error(`Failed to revoke tag access: ${deleteError.message}`);
+    }
+
+    // Step 3: Check if any rows were deleted (0 means access grant didn't exist)
+    if (count === 0) {
+      throw new Error("ACCESS_NOT_FOUND");
+    }
+  }
 }
