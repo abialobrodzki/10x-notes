@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "./supabase-admin";
 import type { Database } from "../../db/database.types";
-import type { UserProfileDTO } from "../../types";
+import type { UserProfileDTO, UserStatsDTO } from "../../types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -120,5 +120,66 @@ export class UserService {
 
     // Step 5: Return success
     return true;
+  }
+
+  /**
+   * Get user statistics (AI generation metrics, notes count, tags count)
+   *
+   * Aggregates data from:
+   * - user_generation_stats VIEW (AI generation metrics)
+   * - notes table (count of user's notes)
+   * - tags table (count of user's tags)
+   *
+   * Performance: Executes 3 queries in parallel for optimal performance
+   *
+   * @param userId - User ID from JWT authentication
+   * @returns UserStatsDTO with aggregated statistics (nulls coalesced to 0)
+   * @throws Error if database query fails
+   */
+  async getUserStats(userId: string): Promise<UserStatsDTO> {
+    // Execute all queries in parallel for better performance
+    const [generationStatsResult, notesCountResult, tagsCountResult] = await Promise.all([
+      // Query 1: Fetch AI generation statistics from VIEW
+      this.supabase.from("user_generation_stats").select("*").eq("user_id", userId).maybeSingle(),
+
+      // Query 2: Count user's notes
+      this.supabase.from("notes").select("*", { count: "exact", head: true }).eq("user_id", userId),
+
+      // Query 3: Count user's tags
+      this.supabase.from("tags").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    ]);
+
+    // Handle errors from parallel queries
+    if (generationStatsResult.error) {
+      throw new Error(`Failed to fetch generation stats: ${generationStatsResult.error.message}`);
+    }
+
+    if (notesCountResult.error) {
+      throw new Error(`Failed to count notes: ${notesCountResult.error.message}`);
+    }
+
+    if (tagsCountResult.error) {
+      throw new Error(`Failed to count tags: ${tagsCountResult.error.message}`);
+    }
+
+    // Extract generation stats (may be null if user has no generations yet)
+    const generationStats = generationStatsResult.data;
+
+    // Extract counts (default to 0 if null)
+    const totalNotes = notesCountResult.count ?? 0;
+    const totalTags = tagsCountResult.count ?? 0;
+
+    // Build UserStatsDTO with coalesced values (null → 0)
+    // Note: If user has no AI generations, all generation metrics default to 0
+    return {
+      total_generations: generationStats?.total_generations ?? 0,
+      successful_generations: generationStats?.successful_generations ?? 0,
+      failed_generations: generationStats?.failed_generations ?? 0,
+      total_tokens: generationStats?.total_tokens ?? 0,
+      // avg_time_ms is a float from AVG(), round to integer
+      avg_time_ms: generationStats?.avg_time_ms ? Math.round(generationStats.avg_time_ms) : 0,
+      total_notes: totalNotes,
+      total_tags: totalTags,
+    };
   }
 }
