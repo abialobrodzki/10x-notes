@@ -172,4 +172,82 @@ export class PublicLinksService {
       updated_at: updatedLink.updated_at,
     };
   }
+
+  /**
+   * Rotate (change) public link token
+   *
+   * Generates a new cryptographically secure token and invalidates the old one.
+   * Only note owner can rotate tokens. This is a sensitive operation with lower rate limit.
+   *
+   * Security considerations:
+   * - Old token becomes immediately invalid
+   * - New token is generated using crypto.randomUUID()
+   * - Operation should be logged for security audit
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to rotate public link token for
+   * @returns Updated public link DTO with new token and updated_at timestamp
+   * @throws Error if note not found, user not owner, link not found, or database error
+   */
+  async rotateToken(userId: string, noteId: string): Promise<PublicLinkDTO> {
+    // Step 1: Check note ownership - verify note exists and current user is the owner
+    const { data: note, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id, user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !note) {
+      throw new Error("NOTE_NOT_FOUND");
+    }
+
+    if (note.user_id !== userId) {
+      throw new Error("NOTE_NOT_OWNED");
+    }
+
+    // Step 2: Check if public link exists for this note
+    const { data: existingLink, error: checkError } = await this.supabase
+      .from("public_links")
+      .select("id, is_enabled")
+      .eq("note_id", noteId)
+      .single();
+
+    if (checkError || !existingLink) {
+      throw new Error("LINK_NOT_FOUND");
+    }
+
+    // Step 3: Generate new cryptographically secure UUID v4 token
+    const newToken = generatePublicLinkToken();
+
+    // Step 4: Update public link with new token and updated_at
+    const { data: rotatedLink, error: updateError } = await this.supabase
+      .from("public_links")
+      .update({
+        token: newToken,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("note_id", noteId)
+      .select("token, is_enabled, updated_at")
+      .single();
+
+    if (updateError) {
+      // Handle unique constraint violation (extremely rare with UUID v4)
+      if (updateError.code === "23505") {
+        throw new Error("TOKEN_COLLISION");
+      }
+      throw new Error(`Failed to rotate public link token: ${updateError.message}`);
+    }
+
+    if (!rotatedLink) {
+      throw new Error("Public link token rotation failed: no data returned");
+    }
+
+    // Step 5: Return updated DTO without id field, with new token, relative URL, and updated_at
+    return {
+      token: rotatedLink.token,
+      url: `/public/${rotatedLink.token}`,
+      is_enabled: rotatedLink.is_enabled,
+      updated_at: rotatedLink.updated_at,
+    };
+  }
 }
