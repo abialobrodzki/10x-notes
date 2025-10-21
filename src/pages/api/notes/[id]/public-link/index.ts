@@ -426,3 +426,154 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     );
   }
 };
+
+/**
+ * DELETE /api/notes/{id}/public-link
+ *
+ * Delete the public link for a note
+ * Only note owner can delete. Token becomes immediately invalid after deletion.
+ *
+ * @param params.id - Note ID (UUID)
+ * @returns 204 - No Content (successful deletion)
+ * @returns 400 - Invalid UUID format
+ * @returns 401 - Missing or invalid authentication token
+ * @returns 403 - Not owner
+ * @returns 404 - Note or public link not found
+ * @returns 500 - Internal server error
+ */
+export const DELETE: APIRoute = async ({ params, locals }) => {
+  try {
+    // Step 1: Require authentication
+    const { userId } = await requireAuth(locals.supabase);
+
+    // Step 2: Validate UUID parameter
+    const noteId = params.id;
+
+    if (!noteId) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Note ID is required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const uuidValidation = uuidSchema.safeParse(noteId);
+
+    if (!uuidValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Bad request",
+          message: "Invalid note ID format",
+          details: "Note ID must be a valid UUID",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 3: Delete public link via service
+    const publicLinksService = new PublicLinksService(locals.supabase);
+
+    try {
+      await publicLinksService.deletePublicLink(userId, noteId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      // Handle specific error cases
+      if (errorMessage === "NOTE_NOT_FOUND") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Note not found",
+            details: "The requested note does not exist",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (errorMessage === "NOTE_NOT_OWNED") {
+        return new Response(
+          JSON.stringify({
+            error: "Forbidden",
+            message: "Access denied",
+            details: "You do not have permission to delete this note's public link",
+          }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (errorMessage === "LINK_NOT_FOUND") {
+        return new Response(
+          JSON.stringify({
+            error: "Not found",
+            message: "Public link not found",
+            details: "No public link exists for this note",
+          }),
+          {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Generic service error
+      // eslint-disable-next-line no-console
+      console.error("PublicLinksService.deletePublicLink error:", {
+        userId,
+        noteId,
+        error: errorMessage,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "Internal server error",
+          message: "Failed to delete public link",
+          details: errorMessage,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 4: Return 204 No Content (successful deletion)
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error) {
+    // Catch authentication errors (thrown as Response by requireAuth)
+    if (error instanceof Response) {
+      return error;
+    }
+
+    // Catch-all for unexpected errors
+    // eslint-disable-next-line no-console
+    console.error("Unexpected error in DELETE /api/notes/[id]/public-link:", error);
+
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: "An unexpected error occurred",
+        details: error instanceof Error ? error.message : "Unknown error occurred",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+};

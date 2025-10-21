@@ -250,4 +250,49 @@ export class PublicLinksService {
       updated_at: rotatedLink.updated_at,
     };
   }
+
+  /**
+   * Delete public link for a note
+   *
+   * Permanently removes the public link, making the token immediately invalid.
+   * Only note owner can delete public links.
+   *
+   * @param userId - Current user ID (from JWT)
+   * @param noteId - Note ID to delete public link for
+   * @returns void (success) or throws error
+   * @throws Error if note not found, user not owner, link not found, or database error
+   */
+  async deletePublicLink(userId: string, noteId: string): Promise<void> {
+    // Step 1: Check note ownership - verify note exists and current user is the owner
+    const { data: note, error: noteError } = await this.supabase
+      .from("notes")
+      .select("id, user_id")
+      .eq("id", noteId)
+      .single();
+
+    if (noteError || !note) {
+      throw new Error("NOTE_NOT_FOUND");
+    }
+
+    if (note.user_id !== userId) {
+      throw new Error("NOTE_NOT_OWNED");
+    }
+
+    // Step 2: Delete public link from database
+    const { error: deleteError, count } = await this.supabase
+      .from("public_links")
+      .delete({ count: "exact" })
+      .eq("note_id", noteId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete public link: ${deleteError.message}`);
+    }
+
+    // Step 3: Check if any rows were affected (if 0, link didn't exist)
+    if (count === 0) {
+      throw new Error("LINK_NOT_FOUND");
+    }
+
+    // Success - link deleted, token is now invalid
+  }
 }
