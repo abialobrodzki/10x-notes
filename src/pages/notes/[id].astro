@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import NoteDetailPage from "@/components/notes/NoteDetailPage";
+
+// Dynamic route - get note ID from params
+const { id } = Astro.params;
+
+// SSR disabled to allow client-side data fetching with SWR
+export const prerender = false;
+---
+
+<Layout title={`Notatka - 10xNotes`}>
+  <NoteDetailPage client:load noteId={id} />
+</Layout>
