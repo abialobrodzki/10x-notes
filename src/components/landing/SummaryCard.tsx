@@ -1,0 +1,66 @@
+import { Sparkles } from "lucide-react";
+import { GoalStatusDisplay } from "./GoalStatusDisplay";
+import { SuggestedTagBadge } from "./SuggestedTagBadge";
+import type { AiSummaryDTO } from "@/types";
+
+interface SummaryCardProps {
+  data: AiSummaryDTO;
+}
+
+/**
+ * SummaryCard - Display AI-generated summary results
+ * Features:
+ * - Summary text (XSS-safe, plain text only)
+ * - Goal achievement status with visual indicator
+ * - Suggested tag badge
+ * - Generation metrics (time, tokens)
+ * - ARIA role="status" for accessibility
+ */
+export function SummaryCard({ data }: SummaryCardProps) {
+  const formatGenerationTime = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
+
+  return (
+    <div
+      className="space-y-6 rounded-lg border border-green-500/30 bg-green-500/10 p-6"
+      role="status"
+      aria-live="polite"
+      aria-label="Wygenerowane podsumowanie"
+    >
+      {/* Header */}
+      <div className="flex items-center space-x-2">
+        <Sparkles className="h-5 w-5 text-green-400" aria-hidden="true" />
+        <h2 className="text-lg font-semibold text-green-200">Podsumowanie wygenerowane</h2>
+      </div>
+
+      {/* Summary Text */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-blue-200">Streszczenie:</h3>
+        <p className="whitespace-pre-wrap rounded-md bg-white/5 p-4 text-sm leading-relaxed text-blue-50">
+          {data.summary_text}
+        </p>
+      </div>
+
+      {/* Goal Status */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-blue-200">Status celów:</h3>
+        <GoalStatusDisplay status={data.goal_status} />
+      </div>
+
+      {/* Suggested Tag */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-blue-200">Sugerowana etykieta:</h3>
+        <SuggestedTagBadge tagName={data.suggested_tag} />
+      </div>
+
+      {/* Generation Metrics */}
+      <div className="flex items-center space-x-4 border-t border-white/10 pt-4 text-xs text-blue-300/70">
+        <span>Czas generowania: {formatGenerationTime(data.generation_time_ms)}</span>
+        <span>•</span>
+        <span>Tokeny: {data.tokens_used.toLocaleString("pl-PL")}</span>
+      </div>
+    </div>
+  );
+}

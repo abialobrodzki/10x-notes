@@ -1,8 +1,8 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Layout.astro";
+import { LandingPage } from "../components/landing/LandingPage";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="10xNotes - Wygeneruj podsumowanie spotkania">
+  <LandingPage client:load />
 </Layout>
