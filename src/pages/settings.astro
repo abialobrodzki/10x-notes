@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SettingsPage } from "../components/settings/SettingsPage";
+import { requireAuth } from "../lib/middleware/auth.middleware";
+import { UserService } from "../lib/services/user.service";
+import type { UserProfileDTO, UserStatsDTO } from "../types";
+
+// Disable prerendering - this is a dynamic page
+export const prerender = false;
+
+// Step 1: Check authentication
+let userId: string;
+try {
+  const authResult = await requireAuth(Astro.locals.supabase);
+  userId = authResult.userId;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+} catch (_error) {
+  // Redirect to login if not authenticated
+  return Astro.redirect("/login");
+}
+
+// Step 2: Fetch data from service (SSR)
+const userService = new UserService(Astro.locals.supabase);
+
+let profileData: UserProfileDTO | null = null;
+let statsData: UserStatsDTO | null = null;
+let error: string | null = null;
+
+try {
+  [profileData, statsData] = await Promise.all([userService.getUserProfile(userId), userService.getUserStats(userId)]);
+
+  // Handle edge case where profile is null (shouldn't happen for authenticated users)
+  if (!profileData) {
+    error = "Profil użytkownika nie został znaleziony.";
+  }
+} catch (err) {
+  // Handle errors from service
+  const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
+
+  // eslint-disable-next-line no-console
+  console.error("❌ Error fetching user data:", errorMessage);
+
+  error = "Błąd podczas pobierania danych użytkownika.";
+}
+---
+
+<Layout title="10xNotes - Ustawienia">
+  <SettingsPage client:load initialProfile={profileData} initialStats={statsData} initialError={error} />
+</Layout>

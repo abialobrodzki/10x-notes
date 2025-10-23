@@ -246,4 +246,31 @@
     background-color: #22c55e; /* green-500 */
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
   }
+
+  /* ========================================================================
+     GLOBAL HOVER EFFECTS & INTERACTIVE ELEMENTS
+     ======================================================================== */
+
+  /* Destructive button hover (red buttons) */
+  .hover-destructive:not(:disabled):hover {
+    @apply bg-red-700 shadow-lg;
+  }
+
+  /* Glass button hover (glassmorphism buttons) */
+  .hover-glass:not(:disabled):hover {
+    @apply border-glass-border-hover from-glass-bg-to to-glass-bg-from;
+  }
+
+  /* Tab hover effect (for navigation tabs) */
+  .hover-tab:not([data-disabled="true"]):not([data-state="active"]):hover {
+    @apply text-glass-text bg-white/5;
+  }
+
+  /* Smooth transitions for interactive elements */
+  button,
+  [role="button"],
+  [role="tab"],
+  a {
+    @apply transition-all duration-200;
+  }
 }
