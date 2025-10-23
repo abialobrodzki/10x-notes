@@ -1,0 +1,78 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { NotesListPage } from "../components/notes/NotesListPage";
+import { requireAuth } from "../lib/middleware/auth.middleware";
+import { NotesService } from "../lib/services/notes.service";
+import { TagsService } from "../lib/services/tags.service";
+import { notesListQuerySchema } from "../lib/validators/notes.schemas";
+import { tagsListQuerySchema } from "../lib/validators/tags.schemas";
+import type { NotesListDTO, TagsListDTO } from "../types";
+
+// Disable prerendering - this is a dynamic page
+export const prerender = false;
+
+// Step 1: Check authentication
+let userId: string;
+try {
+  const authResult = await requireAuth(Astro.locals.supabase);
+  userId = authResult.userId;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+} catch (_error) {
+  // Redirect to login if not authenticated
+  return Astro.redirect("/login");
+}
+
+// Step 2: Parse and validate query parameters
+const searchParams = Object.fromEntries(Astro.url.searchParams);
+
+// Validate notes query params
+const notesQueryResult = notesListQuerySchema.safeParse(searchParams);
+const notesQuery = notesQueryResult.success ? notesQueryResult.data : {};
+
+// Validate tags query params (include_shared from URL)
+const tagsQueryResult = tagsListQuerySchema.safeParse({
+  include_shared: searchParams.include_shared,
+});
+const tagsQuery = tagsQueryResult.success ? tagsQueryResult.data : {};
+
+// Step 3: Fetch data from services (SSR)
+const notesService = new NotesService(Astro.locals.supabase);
+const tagsService = new TagsService(Astro.locals.supabase);
+
+let notesData: NotesListDTO;
+let tagsData: TagsListDTO;
+let error: string | null = null;
+
+try {
+  [notesData, tagsData] = await Promise.all([
+    notesService.getNotes(userId, notesQuery),
+    tagsService.getTags(userId, tagsQuery),
+  ]);
+} catch (err) {
+  // eslint-disable-next-line no-console
+  console.error("Error fetching notes data:", err);
+  error = err instanceof Error ? err.message : "Unknown error occurred";
+
+  // Provide empty data on error
+  notesData = {
+    notes: [],
+    pagination: {
+      page: 1,
+      limit: 20,
+      total: 0,
+      total_pages: 0,
+    },
+  };
+  tagsData = { tags: [] };
+}
+---
+
+<Layout title="10xNotes - Moje notatki">
+  <NotesListPage
+    client:load
+    initialNotes={notesData}
+    initialTags={tagsData}
+    initialQuery={notesQuery}
+    initialError={error}
+  />
+</Layout>
