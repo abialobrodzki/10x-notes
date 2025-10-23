@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "../db/database.types.ts";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
@@ -17,4 +17,22 @@ if (!supabaseAnonKey) {
   );
 }
 
-export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+/**
+ * Supabase client for CLIENT-SIDE use (browser)
+ *
+ * Uses @supabase/ssr's createBrowserClient which automatically:
+ * - Stores auth session in cookies (not localStorage)
+ * - Syncs session between tabs
+ * - Works with SSR (server can read cookies)
+ *
+ * @example Client-side usage
+ * ```tsx
+ * import { supabaseClient } from "@/db/supabase.client";
+ *
+ * // Login form, client components, etc.
+ * const { data, error } = await supabaseClient.auth.signInWithPassword({
+ *   email, password
+ * });
+ * ```
+ */
+export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);

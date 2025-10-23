@@ -1,6 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { LandingPage } from "../components/landing/LandingPage";
+import { optionalAuth } from "../lib/middleware/auth.middleware";
+
+// Check if user is authenticated
+const userId = await optionalAuth(Astro.locals.supabase);
+
+// If authenticated, redirect to notes dashboard
+if (userId) {
+  return Astro.redirect("/notes");
+}
 ---
 
 <Layout title="10xNotes - Wygeneruj podsumowanie spotkania">
