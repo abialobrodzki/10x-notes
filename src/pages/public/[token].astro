@@ -1,0 +1,114 @@
+---
+import SummaryDisplay from "../../components/public-note/SummaryDisplay.astro";
+import GoalStatusBadge from "../../components/public-note/GoalStatusBadge.astro";
+import MeetingDateDisplay from "../../components/public-note/MeetingDateDisplay.astro";
+import ErrorState from "../../components/public-note/ErrorState.astro";
+import type { PublicNoteDTO } from "../../types";
+
+// Disable prerendering - this is a dynamic SSR page
+export const prerender = false;
+
+// Extract token from URL params
+const { token } = Astro.params;
+
+// Fetch public note data from API
+let publicNote: PublicNoteDTO | null = null;
+let errorCode: number | null = null;
+
+try {
+  // Make server-side API call
+  const apiUrl = new URL(`/api/public/${token}`, Astro.url.origin);
+  const response = await fetch(apiUrl.toString());
+
+  if (response.ok) {
+    publicNote = await response.json();
+  } else {
+    // Capture error code for error state display
+    errorCode = response.status;
+  }
+} catch (error) {
+  // Handle fetch errors as 500
+  // eslint-disable-next-line no-console
+  console.error("Failed to fetch public note:", error);
+  errorCode = 500;
+}
+
+// Helper function to get valid error code for ErrorState component
+const getErrorCode = (code: number | null): 404 | 429 | 500 => {
+  if (code === 404 || code === 429) return code;
+  return 500;
+};
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO protection - prevent indexing -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>Publiczne podsumowanie - 10xNotes</title>
+  </head>
+  <body class="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 min-h-screen">
+    {
+      errorCode ? (
+        <ErrorState code={getErrorCode(errorCode)} />
+      ) : publicNote ? (
+        <div class="container mx-auto px-4 py-16 max-w-3xl">
+          <article class="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8">
+            {/* Header with goal status badge */}
+            <div class="flex items-start justify-between mb-6">
+              <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-100 flex-1">Publiczne podsumowanie</h1>
+              <GoalStatusBadge value={publicNote.goal_status} />
+            </div>
+
+            {/* Meeting date */}
+            <MeetingDateDisplay meetingDate={publicNote.meeting_date} />
+
+            {/* Summary text */}
+            <SummaryDisplay text={publicNote.summary_text} />
+
+            {/* Footer with created date */}
+            <div class="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
+              <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                Link utworzony:{" "}
+                <time datetime={publicNote.created_at}>
+                  {new Date(publicNote.created_at).toLocaleDateString("pl-PL", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </time>
+              </p>
+            </div>
+
+            {/* CTA to homepage */}
+            <div class="mt-6 text-center">
+              <a
+                href="/"
+                class="inline-block px-6 py-3 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 dark:focus:ring-neutral-100"
+              >
+                Przejdź do 10xNotes
+              </a>
+            </div>
+          </article>
+        </div>
+      ) : null
+    }
+  </body>
+</html>
+
+<style>
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+  }
+</style>

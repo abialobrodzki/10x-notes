@@ -1,0 +1,16 @@
+---
+interface Props {
+  /** Summary text content */
+  text: string | null;
+}
+
+const { text } = Astro.props;
+---
+
+{
+  text && (
+    <div class="prose prose-neutral dark:prose-invert max-w-none">
+      <div class="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap">{text}</div>
+    </div>
+  )
+}

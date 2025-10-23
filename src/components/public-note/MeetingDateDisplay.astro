@@ -1,0 +1,55 @@
+---
+import type { DateISO, TimestampISO } from "../../types";
+
+interface Props {
+  /** Meeting date (YYYY-MM-DD format) */
+  meetingDate: DateISO | null;
+  /** Link creation timestamp (ISO format) */
+  createdAt?: TimestampISO;
+}
+
+const { meetingDate, createdAt } = Astro.props;
+
+// Format date to Polish locale
+const formatDate = (dateStr: string, includeTime = false) => {
+  const date = new Date(dateStr);
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  if (includeTime) {
+    options.hour = "2-digit";
+    options.minute = "2-digit";
+  }
+
+  return date.toLocaleDateString("pl-PL", options);
+};
+---
+
+{
+  meetingDate && (
+    <div class="flex items-center text-neutral-600 dark:text-neutral-400 mb-6">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+      <time datetime={meetingDate}>{formatDate(meetingDate)}</time>
+    </div>
+  )
+}
+
+{
+  createdAt && (
+    <div class="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
+      <p class="text-sm text-neutral-500 dark:text-neutral-400">
+        Link utworzony: <time datetime={createdAt}>{formatDate(createdAt, true)}</time>
+      </p>
+    </div>
+  )
+}
