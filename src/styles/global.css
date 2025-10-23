@@ -37,13 +37,13 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* Custom gradient colors for glassmorphism design */
-  --gradient-from: oklch(0.27 0.12 270); /* indigo-900 */
-  --gradient-via: oklch(0.24 0.14 290); /* purple-900 */
-  --gradient-to: oklch(0.3 0.12 250); /* blue-900 */
-  --gradient-heading-from: oklch(0.77 0.08 240); /* blue-200 */
-  --gradient-heading-via: oklch(0.8 0.1 290); /* purple-200 */
-  --gradient-heading-to: oklch(0.82 0.1 340); /* pink-200 */
+  /* Custom gradient colors for glassmorphism design - Tailwind v4 exact OKLCH values */
+  --gradient-from: oklch(0.3588 0.1354 278.7); /* indigo-900 */
+  --gradient-via: oklch(0.381 0.176 304.987); /* purple-900 */
+  --gradient-to: oklch(0.3791 0.1378 265.52); /* blue-900 */
+  --gradient-heading-from: oklch(0.882 0.059 254.128); /* blue-200 */
+  --gradient-heading-via: oklch(0.902 0.063 306.703); /* purple-200 */
+  --gradient-heading-to: oklch(0.899 0.061 343.231); /* pink-200 */
   --gradient-button-from: oklch(0.55 0.2 290); /* purple-500 */
   --gradient-button-to: oklch(0.65 0.2 340); /* pink-500 */
 
