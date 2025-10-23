@@ -16,9 +16,9 @@ export default function AlertArea({ messages }: AlertAreaProps) {
     <div
       role="alert"
       aria-live="polite"
-      className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 backdrop-blur-sm"
+      className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 backdrop-blur-sm"
     >
-      <ul className="list-disc space-y-1 pl-5 text-sm text-red-200">
+      <ul className="list-disc space-y-1 pl-5 text-sm text-glass-text">
         {messages.map((message, index) => (
           <li key={index}>{message}</li>
         ))}

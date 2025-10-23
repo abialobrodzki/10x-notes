@@ -66,11 +66,11 @@ export function CharCountTextarea({ value, onChange, disabled = false, error }: 
         maxLength={MAX_LENGTH}
         placeholder="Wklej tutaj notatki ze spotkania (do 5000 znaków)..."
         className={cn(
-          "min-h-[200px] resize-y bg-white/10 text-white placeholder:text-blue-200/50",
-          "border-white/20 focus-visible:border-blue-400 focus-visible:ring-blue-400/50",
-          isNearLimit && "border-yellow-400/50 focus-visible:border-yellow-400",
-          isAtLimit && "border-red-400/50 focus-visible:border-red-400",
-          error && "border-red-500/50 focus-visible:border-red-500"
+          "min-h-[200px] resize-y bg-input-bg text-input-text placeholder:text-input-placeholder",
+          "border-input-border",
+          isNearLimit && "border-yellow-400/50 focus-visible:border-yellow-400 focus-visible:ring-yellow-400/30",
+          isAtLimit && "border-red-400/50 focus-visible:border-red-400 focus-visible:ring-red-400/30",
+          error && "border-red-500/50 focus-visible:border-red-500 focus-visible:ring-red-500/30"
         )}
         aria-describedby={cn(counterId, error && errorId)}
         aria-invalid={!!error || isAtLimit}

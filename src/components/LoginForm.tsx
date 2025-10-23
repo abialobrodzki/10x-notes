@@ -17,6 +17,8 @@ export default function LoginForm({ onError }: LoginFormProps) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
+  const [hasSubmitError, setHasSubmitError] = useState(false);
 
   const emailId = useId();
   const passwordId = useId();
@@ -45,6 +47,18 @@ export default function LoginForm({ onError }: LoginFormProps) {
   }, [email, password]);
 
   /**
+   * Mark field as touched when user leaves it
+   */
+  const handleBlur = useCallback((field: "email" | "password") => {
+    setTouchedFields((prev) => ({ ...prev, [field]: true }));
+  }, []);
+
+  // Check if email has validation error OR submit failed
+  const emailHasError =
+    (touchedFields.email && (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) || hasSubmitError;
+  const passwordHasError = (touchedFields.password && !password) || hasSubmitError;
+
+  /**
    * Handles form submission with Supabase Auth
    */
   const handleSubmit = useCallback(
@@ -53,6 +67,9 @@ export default function LoginForm({ onError }: LoginFormProps) {
 
       // Clear previous errors
       onError([]);
+
+      // Mark all fields as touched on submit
+      setTouchedFields({ email: true, password: true });
 
       // Validate form
       const validationErrors = validateForm();
@@ -110,6 +127,9 @@ export default function LoginForm({ onError }: LoginFormProps) {
         // eslint-disable-next-line no-console
         console.error("Login error:", error);
 
+        // Mark submit as failed - show red borders
+        setHasSubmitError(true);
+
         if (error instanceof Error) {
           // Handle specific Supabase errors
           if (error.message.includes("Invalid login credentials")) {
@@ -133,7 +153,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       {/* Email input */}
       <div className="space-y-2">
-        <Label htmlFor={emailId} className="text-blue-100">
+        <Label htmlFor={emailId} className="text-glass-text">
           Email
         </Label>
         <Input
@@ -141,19 +161,23 @@ export default function LoginForm({ onError }: LoginFormProps) {
           type="email"
           placeholder="twoj@email.com"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (hasSubmitError) setHasSubmitError(false);
+          }}
+          onBlur={() => handleBlur("email")}
           disabled={isSubmitting}
           autoComplete="email"
           required
           aria-required="true"
-          aria-invalid={!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "true" : "false"}
-          className="border-white/20 bg-white/10 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/30"
+          aria-invalid={emailHasError ? "true" : "false"}
+          className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
         />
       </div>
 
       {/* Password input */}
       <div className="space-y-2">
-        <Label htmlFor={passwordId} className="text-blue-100">
+        <Label htmlFor={passwordId} className="text-glass-text">
           Hasło
         </Label>
         <Input
@@ -161,13 +185,17 @@ export default function LoginForm({ onError }: LoginFormProps) {
           type={showPassword ? "text" : "password"}
           placeholder="Twoje hasło"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (hasSubmitError) setHasSubmitError(false);
+          }}
+          onBlur={() => handleBlur("password")}
           disabled={isSubmitting}
           autoComplete="current-password"
           required
           aria-required="true"
-          aria-invalid={!password ? "true" : "false"}
-          className="border-white/20 bg-white/10 text-white placeholder:text-white/50 focus:border-white/40 focus:ring-white/30"
+          aria-invalid={passwordHasError ? "true" : "false"}
+          className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
         />
       </div>
 
@@ -179,9 +207,9 @@ export default function LoginForm({ onError }: LoginFormProps) {
           checked={showPassword}
           onChange={(e) => setShowPassword(e.target.checked)}
           disabled={isSubmitting}
-          className="h-4 w-4 rounded border-white/30 bg-white/10 text-purple-500 focus:ring-2 focus:ring-purple-400"
+          className="h-4 w-4 rounded border-input-border bg-input-bg text-gradient-button-from focus:ring-2 focus:ring-gradient-button-from"
         />
-        <Label htmlFor={showPasswordId} className="text-sm font-normal text-blue-100/90">
+        <Label htmlFor={showPasswordId} className="text-sm font-normal text-glass-text-muted">
           Pokaż hasło
         </Label>
       </div>
@@ -189,7 +217,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
       {/* Submit button */}
       <Button
         type="submit"
-        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-lg disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-gradient-button-from to-gradient-button-to font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-lg disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Logowanie..." : "Zaloguj się"}

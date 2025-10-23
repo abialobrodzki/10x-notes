@@ -37,26 +37,26 @@ export function SummaryCard({ data }: SummaryCardProps) {
 
       {/* Summary Text */}
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-blue-200">Streszczenie:</h3>
-        <p className="whitespace-pre-wrap rounded-md bg-white/5 p-4 text-sm leading-relaxed text-blue-50">
+        <h3 className="text-sm font-medium text-glass-text">Streszczenie:</h3>
+        <p className="whitespace-pre-wrap rounded-md bg-glass-bg-to p-4 text-sm leading-relaxed text-glass-text-hover">
           {data.summary_text}
         </p>
       </div>
 
       {/* Goal Status */}
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-blue-200">Status celów:</h3>
+        <h3 className="text-sm font-medium text-glass-text">Status celów:</h3>
         <GoalStatusDisplay status={data.goal_status} />
       </div>
 
       {/* Suggested Tag */}
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-blue-200">Sugerowana etykieta:</h3>
+        <h3 className="text-sm font-medium text-glass-text">Sugerowana etykieta:</h3>
         <SuggestedTagBadge tagName={data.suggested_tag} />
       </div>
 
       {/* Generation Metrics */}
-      <div className="flex items-center space-x-4 border-t border-white/10 pt-4 text-xs text-blue-300/70">
+      <div className="flex items-center space-x-4 border-t border-glass-border pt-4 text-xs text-glass-text-muted">
         <span>Czas generowania: {formatGenerationTime(data.generation_time_ms)}</span>
         <span>•</span>
         <span>Tokeny: {data.tokens_used.toLocaleString("pl-PL")}</span>

@@ -50,5 +50,14 @@
     "fs",
     "http",
     "net"
-  ]
+  ],
+  "css.validate": false,
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "tailwindCSS.experimental.configFile": null,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }

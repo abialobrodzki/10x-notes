@@ -86,7 +86,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
             onChange={(e) => setEditedValue(e.target.value)}
             disabled={isSaving || !isOwner}
             placeholder="Wprowadź podsumowanie notatki..."
-            className="min-h-[200px] border-input-border bg-glass-bg-from text-white placeholder:text-input-placeholder focus:border-input-border-focus focus:ring-input-ring"
+            className="min-h-[200px] border-input-border bg-glass-bg-from text-white placeholder:text-input-placeholder"
             aria-label="Podsumowanie notatki"
             aria-describedby="summary-char-count"
           />

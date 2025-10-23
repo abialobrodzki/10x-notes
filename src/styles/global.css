@@ -36,6 +36,35 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom gradient colors for glassmorphism design */
+  --gradient-from: oklch(0.27 0.12 270); /* indigo-900 */
+  --gradient-via: oklch(0.24 0.14 290); /* purple-900 */
+  --gradient-to: oklch(0.3 0.12 250); /* blue-900 */
+  --gradient-heading-from: oklch(0.77 0.08 240); /* blue-200 */
+  --gradient-heading-via: oklch(0.8 0.1 290); /* purple-200 */
+  --gradient-heading-to: oklch(0.82 0.1 340); /* pink-200 */
+  --gradient-button-from: oklch(0.55 0.2 290); /* purple-500 */
+  --gradient-button-to: oklch(0.65 0.2 340); /* pink-500 */
+
+  /* Glassmorphism colors */
+  --glass-bg-from: oklch(1 0 0 / 10%); /* white/10 */
+  --glass-bg-to: oklch(1 0 0 / 5%); /* white/5 */
+  --glass-border: oklch(1 0 0 / 10%); /* white/10 */
+  --glass-border-hover: oklch(1 0 0 / 40%); /* white/40 for hover */
+  --glass-text: oklch(0.77 0.08 240); /* blue-100 */
+  --glass-text-muted: oklch(0.77 0.08 240 / 70%); /* blue-100/70 */
+  --glass-text-hover: oklch(1 0 0); /* white on hover */
+
+  /* Input specific colors */
+  --input-border: oklch(1 0 0 / 20%); /* white/20 */
+  --input-bg: oklch(1 0 0 / 10%); /* white/10 */
+  --input-text: oklch(1 0 0); /* white */
+  --input-placeholder: oklch(1 0 0 / 50%); /* white/50 */
+  --input-border-focus: oklch(0.65 0.24 235); /* bright blue for focus - very visible */
+  --input-ring: oklch(0.65 0.24 235 / 40%); /* bright blue/40 for focus ring */
+  --input-border-error: oklch(0.62 0.26 20); /* bright red for errors - very visible */
+  --input-ring-error: oklch(0.62 0.26 20 / 40%); /* bright red/40 for error ring */
 }
 
 .dark {
@@ -108,6 +137,35 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Custom gradient colors */
+  --color-gradient-from: var(--gradient-from);
+  --color-gradient-via: var(--gradient-via);
+  --color-gradient-to: var(--gradient-to);
+  --color-gradient-heading-from: var(--gradient-heading-from);
+  --color-gradient-heading-via: var(--gradient-heading-via);
+  --color-gradient-heading-to: var(--gradient-heading-to);
+  --color-gradient-button-from: var(--gradient-button-from);
+  --color-gradient-button-to: var(--gradient-button-to);
+
+  /* Glassmorphism colors */
+  --color-glass-bg-from: var(--glass-bg-from);
+  --color-glass-bg-to: var(--glass-bg-to);
+  --color-glass-border: var(--glass-border);
+  --color-glass-border-hover: var(--glass-border-hover);
+  --color-glass-text: var(--glass-text);
+  --color-glass-text-muted: var(--glass-text-muted);
+  --color-glass-text-hover: var(--glass-text-hover);
+
+  /* Input colors */
+  --color-input-border: var(--input-border);
+  --color-input-bg: var(--input-bg);
+  --color-input-text: var(--input-text);
+  --color-input-placeholder: var(--input-placeholder);
+  --color-input-border-focus: var(--input-border-focus);
+  --color-input-ring: var(--input-ring);
+  --color-input-border-error: var(--input-border-error);
+  --color-input-ring-error: var(--input-ring-error);
 }
 
 @layer base {
@@ -116,5 +174,44 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Global input focus styles - niebieska obwódka */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply border-input-border-focus ring-2 ring-input-ring outline-none;
+  }
+
+  /* Global validation error styles - czerwona obwódka */
+  input[aria-invalid="true"],
+  textarea[aria-invalid="true"],
+  select[aria-invalid="true"] {
+    @apply border-input-border-error ring-2 ring-input-ring-error;
+  }
+
+  /* Error state takes priority over focus */
+  input[aria-invalid="true"]:focus,
+  textarea[aria-invalid="true"]:focus,
+  select[aria-invalid="true"]:focus {
+    @apply border-input-border-error ring-2 ring-input-ring-error;
+  }
+
+  /* Disable yellow autocomplete background - aggressive override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: white !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+    box-shadow: inset 0 0 20px 20px rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    caret-color: white !important;
+  }
+
+  /* Alternative for browsers that support it */
+  input[autocomplete]:-webkit-autofill {
+    filter: none !important;
   }
 }
