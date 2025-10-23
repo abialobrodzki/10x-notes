@@ -27,13 +27,21 @@ const searchParams = Object.fromEntries(Astro.url.searchParams);
 
 // Validate notes query params
 const notesQueryResult = notesListQuerySchema.safeParse(searchParams);
-const notesQuery = notesQueryResult.success ? notesQueryResult.data : {};
+const notesQuery = notesQueryResult.success
+  ? notesQueryResult.data
+  : {
+      include_shared: false,
+      sort_by: "meeting_date" as const,
+      order: "desc" as const,
+      page: 1,
+      limit: 20,
+    };
 
 // Validate tags query params (include_shared from URL)
 const tagsQueryResult = tagsListQuerySchema.safeParse({
   include_shared: searchParams.include_shared,
 });
-const tagsQuery = tagsQueryResult.success ? tagsQueryResult.data : {};
+const tagsQuery = tagsQueryResult.success ? tagsQueryResult.data : { include_shared: false };
 
 // Step 3: Fetch data from services (SSR)
 const notesService = new NotesService(Astro.locals.supabase);
@@ -49,9 +57,20 @@ try {
     tagsService.getTags(userId, tagsQuery),
   ]);
 } catch (err) {
-  // eslint-disable-next-line no-console
-  console.error("Error fetching notes data:", err);
-  error = err instanceof Error ? err.message : "Unknown error occurred";
+  // Check for specific database errors and provide helpful messages
+  const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+
+  if (errorMessage.includes("infinite recursion")) {
+    // eslint-disable-next-line no-console
+    console.error("❌ Database Configuration Error: Infinite recursion in RLS policies");
+    // eslint-disable-next-line no-console
+    console.error("   Please run: supabase db reset (or apply pending migrations)");
+    error = "Database configuration error. Please contact the administrator.";
+  } else {
+    // eslint-disable-next-line no-console
+    console.error("❌ Error fetching notes data:", errorMessage);
+    error = errorMessage;
+  }
 
   // Provide empty data on error
   notesData = {
