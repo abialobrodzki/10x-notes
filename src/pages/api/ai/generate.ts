@@ -87,14 +87,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Step 5: Generate AI summary
-    const aiService = new AiGenerationService(locals.supabase);
     let result: AiSummaryDTO;
 
     try {
+      const aiService = new AiGenerationService(locals.supabase);
       result = await aiService.generateSummary(validatedInput, userId);
     } catch (error) {
       // Handle specific error cases
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+      // Configuration error - missing API key (503)
+      if (errorMessage.includes("OPENROUTER_API_KEY") || errorMessage.includes("Missing")) {
+        // eslint-disable-next-line no-console
+        console.error("❌ AI Service Configuration Error:", errorMessage);
+        return new Response(
+          JSON.stringify({
+            error: "Service unavailable",
+            message: "AI service is not configured",
+            details: "Please contact the administrator",
+          }),
+          {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
 
       // Timeout error (408)
       if (errorMessage.includes("timeout")) {
