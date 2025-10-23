@@ -214,4 +214,36 @@
   input[autocomplete]:-webkit-autofill {
     filter: none !important;
   }
+
+  /* Password strength indicator styles */
+  .password-strength-bar {
+    height: 8px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: transparent; /* No background - only colored fill visible */
+  }
+
+  .password-strength-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition:
+      width 300ms ease-out,
+      background-color 300ms ease-out,
+      box-shadow 300ms ease-out;
+  }
+
+  /* Password strength colors - 3 levels */
+  .password-strength-weak {
+    background-color: #f97316; /* orange-500 */
+  }
+
+  .password-strength-medium {
+    background-color: #eab308; /* yellow-500 */
+  }
+
+  .password-strength-strong {
+    background-color: #22c55e; /* green-500 */
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+  }
 }
