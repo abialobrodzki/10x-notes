@@ -1,4 +1,4 @@
-import { User, BarChart3, Shield, AlertTriangle } from "lucide-react";
+import { User, BarChart3, Shield, AlertTriangle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import AlertArea from "@/components/AlertArea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,6 +41,17 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
     <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
       <div className="mx-auto max-w-6xl">
         <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+          {/* Breadcrumb */}
+          <nav className="mb-6" aria-label="Breadcrumb">
+            <a
+              href="/notes"
+              className="inline-flex items-center gap-2 text-sm text-glass-text-muted transition-colors hover:text-glass-text"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Powrót do notatek
+            </a>
+          </nav>
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="mb-2 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">

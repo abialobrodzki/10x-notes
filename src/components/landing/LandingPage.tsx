@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { CharCountTextarea } from "./CharCountTextarea";
 import { GenerateButton } from "./GenerateButton";
 import { GenerationSkeleton } from "./GenerationSkeleton";
+import { SaveNoteButton } from "./SaveNoteButton";
 import { SavePromptBanner } from "./SavePromptBanner";
 import { SummaryCard } from "./SummaryCard";
 import type { AiSummaryDTO } from "@/types";
@@ -17,11 +18,18 @@ interface LandingVM {
   result?: AiSummaryDTO;
 }
 
+interface LandingPageProps {
+  /** Whether user is authenticated */
+  isAuthenticated: boolean;
+}
+
 /**
- * LandingPage - Main container for anonymous AI generation
- * Allows users to paste content (up to 5000 chars) and generate summary without login
+ * LandingPage - Main container for AI generation
+ * Allows users to paste content (up to 5000 chars) and generate summary
+ * - Anonymous users: shown SavePromptBanner (login/register to save)
+ * - Authenticated users: shown SaveNoteButton (direct save)
  */
-export function LandingPage() {
+export function LandingPage({ isAuthenticated }: LandingPageProps) {
   const [state, setState] = useState<LandingVM>({
     input: "",
     isGenerating: false,
@@ -219,7 +227,11 @@ export function LandingPage() {
             {state.result && !state.isGenerating && (
               <div className="space-y-6">
                 <SummaryCard data={state.result} />
-                <SavePromptBanner originalContent={state.input} aiResult={state.result} />
+                {isAuthenticated ? (
+                  <SaveNoteButton originalContent={state.input} aiResult={state.result} />
+                ) : (
+                  <SavePromptBanner originalContent={state.input} aiResult={state.result} />
+                )}
               </div>
             )}
           </div>

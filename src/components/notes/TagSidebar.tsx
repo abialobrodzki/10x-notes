@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { CreateTagDialog } from "./CreateTagDialog";
+import { DeleteTagDialog } from "./DeleteTagDialog";
 import type { TagWithStatsDTO } from "@/types";
 
 interface TagSidebarProps {
@@ -20,7 +21,9 @@ interface TagSidebarProps {
  * - List of tags with note counts
  * - Visual indicator for shared tags
  * - Tag selection updates URL
- * - Future: CRUD operations (create, rename, delete, manage access)
+ * - Create new tags (CreateTagDialog)
+ * - Delete tags (DeleteTagDialog - only owners, protected when tag has notes)
+ * - Future: rename, manage access
  */
 export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps) {
   return (
@@ -61,30 +64,41 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
             <div className="p-4 text-center text-sm text-glass-text-muted">Brak etykiet. Utwórz pierwszą etykietę.</div>
           ) : (
             tags.map((tag) => (
-              <Button
-                key={tag.id}
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start gap-2 hover:!bg-white/5 hover:!text-glass-text",
-                  selectedTagId === tag.id
-                    ? "bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:!from-glass-bg-to hover:!to-glass-bg-from"
-                    : "text-glass-text-muted"
-                )}
-                onClick={() => onTagSelect(tag.id)}
-              >
-                <Tag className="h-4 w-4" />
-                <span className="flex-1 truncate text-left">{tag.name}</span>
+              <div key={tag.id} className="group relative flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "flex-1 justify-start gap-2 hover:!bg-white/5 hover:!text-glass-text",
+                    selectedTagId === tag.id
+                      ? "bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:!from-glass-bg-to hover:!to-glass-bg-from"
+                      : "text-glass-text-muted"
+                  )}
+                  onClick={() => onTagSelect(tag.id)}
+                >
+                  <Tag className="h-4 w-4" />
+                  <span className="flex-1 truncate text-left">{tag.name}</span>
 
-                {/* Shared tag indicator */}
-                {!tag.is_owner && (
-                  <Users className="h-3 w-3 text-glass-text-muted" aria-label="Współdzielona etykieta" />
-                )}
+                  {/* Shared tag indicator */}
+                  {!tag.is_owner && (
+                    <Users className="h-3 w-3 text-glass-text-muted" aria-label="Współdzielona etykieta" />
+                  )}
 
-                {/* Note count */}
-                <Badge variant="outline" className="ml-auto border-glass-border text-glass-text">
-                  {tag.note_count}
-                </Badge>
-              </Button>
+                  {/* Note count */}
+                  <Badge variant="outline" className="ml-auto border-glass-border text-glass-text">
+                    {tag.note_count}
+                  </Badge>
+                </Button>
+
+                {/* Delete button - only for owners */}
+                {tag.is_owner && (
+                  <DeleteTagDialog
+                    tagId={tag.id}
+                    tagName={tag.name}
+                    noteCount={tag.note_count}
+                    onSuccess={() => window.location.reload()}
+                  />
+                )}
+              </div>
             ))
           )}
         </div>

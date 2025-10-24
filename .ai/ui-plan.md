@@ -18,27 +18,65 @@
   - Wyróżnianie fraz w wynikach wyszukiwania, debounce 300 ms.
   - Jasne stany: loading/success/error, puste stany, 429 (countdown z `Retry-After`).
 
+## 1.1. Globalna nawigacja (Navbar)
+
+- Komponent: `Navbar` (`src/components/layout/Navbar.tsx`)
+- Integracja: conditional rendering w `Layout.astro` (tylko dla zalogowanych użytkowników)
+- Główny cel: globalna nawigacja między widokami, wylogowanie, dostęp do ustawień, **generowanie nowych notatek**
+- Kluczowe elementy:
+  - **Logo/Brand**: link do `/notes` (zalogowani) lub `/` (niezalogowani)
+  - **Link "Moje notatki"**: nawigacja do `/notes`
+  - **Przycisk "Generuj notatkę"** (NOWY): link do `/` z gradientem purple→pink, ikona Plus
+  - **User menu** (desktop):
+    - Email użytkownika widoczny obok ikony (z `GET /api/user/profile`)
+    - Dropdown z opcjami:
+      - "Ustawienia" → `/settings`
+      - "Wyloguj się" → `supabaseClient.auth.signOut()` + clear storage + redirect `/`
+  - **Mobile menu**: hamburger z tymi samymi opcjami (Moje notatki, Generuj notatkę, Ustawienia, Wyloguj), email widoczny obok ikony
+  - **Niezalogowani** (landing page): przyciski "Zaloguj się" (ghost) + "Zarejestruj się" (gradient CTA)
+- Design:
+  - Glassmorphism: `bg-gradient-to-r from-gradient-from/90 via-gradient-via/90 to-gradient-to/90`, `border-glass-border`, `backdrop-blur-xl`
+  - Kolory tekstu: `text-glass-text`, `hover:text-glass-text-hover`
+  - Focus ring: `focus:ring-2 focus:ring-input-border-focus`
+  - Destructive (logout): `text-destructive`, `hover:bg-destructive/10`
+  - CTA gradient: `from-gradient-button-from to-gradient-button-to` (purple→pink)
+- UX/a11y:
+  - Sticky positioning (`sticky top-0 z-50`)
+  - Keyboard navigation (focus trap w dropdown)
+  - Screen reader labels (`sr-only`)
+  - Toast notification po wylogowaniu
+  - Spójne hover states (white/5 dla przezroczystości glassmorphism)
+- Security:
+  - Proper logout flow (signOut + clear localStorage/sessionStorage)
+  - No PII exposure (tylko email, który jest już znany użytkownikowi)
+
 ## 2. Lista widoków
 
-1. Widok: Landing – Generowanie podsumowania (anon)
+1. Widok: Landing – Generowanie podsumowania (wszyscy użytkownicy)
 
 - Ścieżka: `/`
-- Główny cel: wklejenie treści (do 5000 znaków) i wygenerowanie podsumowania bez logowania.
+- Główny cel: wklejenie treści (do 5000 znaków) i wygenerowanie podsumowania dla wszystkich użytkowników.
+- **UWAGA**: Widok dostępny zarówno dla zalogowanych jak i niezalogowanych - nie ma redirectu.
 - Kluczowe informacje:
   - Textarea z licznikiem znaków i walidacją limitu.
   - Po wygenerowaniu: streszczenie, status celów (✓/✗/?), sugerowana etykieta.
-  - Komunikat/CTA „Zaloguj się, aby zapisać notatkę” + zachowanie danych w storage (24h).
+  - **Niezalogowani**: Komunikat/CTA „Zaloguj się, aby zapisać notatkę" + zachowanie danych w storage (24h).
+  - **Zalogowani**: Przycisk „Zapisz notatkę" → bezpośredni zapis (POST /api/notes) → redirect do `/notes/{id}`.
 - Kluczowe komponenty widoku:
-  - Textarea z licznikiem (CharCountTextarea), przycisk „Generuj podsumowanie”.
+  - Textarea z licznikiem (CharCountTextarea), przycisk „Generuj podsumowanie".
   - Skeleton/loader dla statusu generowania (3–10 s, timeout 30 s). Toast/retry przy błędach.
-  - Podsumowanie (SummaryCard) + Radio Group dla statusu celów (achieved/not_achieved/undefined) – edytowalne przed zapisem.
-  - Combobox etykiety (opcje: istniejące po zalogowaniu lub tekst „Utwórz nową: {name}” po zapisie).
+  - Podsumowanie (SummaryCard).
+  - **Warunkowe renderowanie**:
+    - SaveNoteButton (zalogowani): zielony banner z przyciskiem zapisu
+    - SavePromptBanner (niezalogowani): niebieski banner z przyciskami logowania/rejestracji
 - UX, dostępność i bezpieczeństwo:
   - A11y: aria-describedby (licznik + błąd), role="status" dla wyników AI (`aria-live="polite"`).
   - Limit 5000 (blokada inputu), ostrzeżenie wizualne >4500.
-  - Timeout 30 s: komunikat z opcją „Spróbuj ponownie” lub „Zapisz ręcznie po zalogowaniu”.
-  - Storage TTL 24h; brak PII; XSS: automatyczny escape + ostrożność przy renderze.
-- Wykorzystywane endpointy API: `POST /api/ai/generate`.
+  - Timeout 30 s: komunikat z opcją „Spróbuj ponownie".
+  - Storage TTL 24h (tylko dla niezalogowanych); brak PII; XSS: automatyczny escape + ostrożność przy renderze.
+- Wykorzystywane endpointy API:
+  - `POST /api/ai/generate` (wszyscy)
+  - `POST /api/notes` (tylko zalogowani)
 
 2. Widok: Logowanie
 
@@ -147,13 +185,21 @@ Stany błędów i puste stany (globalnie, stosowane w widokach):
 
 ## 3. Mapa podróży użytkownika
 
-Przepływ 1: Generuj bez logowania → Rejestracja/Logowanie → Zapis
+Przepływ 1A: Generuj jako niezalogowany → Rejestracja/Logowanie → Zapis
 
-1. `/` – wklej tekst (limit 5000) → „Generuj” → `POST /api/ai/generate` (loader/skeleton, timeout 30 s, retry).
-2. Wynik: streszczenie + status celów + sugerowana etykieta → CTA „Zaloguj się, aby zapisać” (dane → storage TTL 24h).
+1. `/` – wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 30 s, retry).
+2. Wynik: streszczenie + status celów + sugerowana etykieta → CTA „Zaloguj się, aby zapisać" (dane → storage TTL 24h).
 3. `/login` lub `/register` → po sukcesie odczyt storage i pre-wypełnienie formularza zapisu.
-4. „Zapisz” → `POST /api/notes` (z `tag_id` lub `tag_name`; walidacja XOR). Toast „Zapisano”.
+4. „Zapisz" → `POST /api/notes` (z `tag_id` lub `tag_name`; walidacja XOR). Toast „Zapisano".
 5. Redirect → `/notes/{id}` (szczegóły).
+
+Przepływ 1B: Generuj jako zalogowany → Bezpośredni zapis (NOWY)
+
+1. Kliknij "Generuj notatkę" w navbar → `/`
+2. Wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 30 s, retry).
+3. Wynik: streszczenie + status celów + sugerowana etykieta → zielony banner „Gotowe! Zapisz notatkę".
+4. Kliknij „Zapisz notatkę" → `POST /api/notes` (z wygenerowanymi danymi). Toast „Notatka zapisana!".
+5. Redirect → `/notes/{id}` (szczegóły nowej notatki).
 
 Przepływ 2: Zarządzanie notatkami i etykietami
 
@@ -208,6 +254,7 @@ Przepływ 4: Usunięcie konta (RODO)
   - Lista etykiet z `note_count`, akcje: create (Combobox „Utwórz nową: {name}”), inline rename (z potwierdzeniem), delete (z komunikatem o `note_count`), „Zarządzaj dostępem”.
 - NoteList (+ NoteListItem)
   - Kafelki/wiersze: tytuł (z fragmentu streszczenia), data, status celu (ikona/kolor), etykieta, wskaźniki AI/public link/owner. Wirtualizacja >100.
+  - **Empty state** (NOWY): gdy brak notatek, pokazuje komunikat "Brak notatek" + przycisk "Generuj pierwszą notatkę" (link do `/`) z gradientem purple→pink. Przycisk nie pojawia się gdy lista jest pusta przez wyszukiwanie.
 - FiltersPanel
   - DateRangePicker (shadcn/ui), GoalStatusMultiSelect, SortSelect, Reset/Apply. Aktualizuje URL i odświeża listę.
 - SearchInput
@@ -216,6 +263,8 @@ Przepływ 4: Usunięcie konta (RODO)
   - Live counter, ostrzeżenie >4500, blokada na 5000 (maxlength), komunikaty błędów.
 - SummaryCard
   - Prezentacja wyników AI: streszczenie, status celów (GoalStatusRadio), sugerowana etykieta.
+- SaveNoteButton (NOWY)
+  - Dla zalogowanych użytkowników na landing page. Zielony banner z przyciskiem "Zapisz notatkę" (gradient purple→pink). Wywołuje POST /api/notes i redirectuje do /notes/{id}. Obsługuje loading state i błędy (401, 400, 429).
 - GoalStatusRadio
   - Trzy stany: achieved (zielony ✓), not_achieved (czerwony ✗), undefined (szary ?); z etykietami dostępnościowymi.
 - PublicLinkControls

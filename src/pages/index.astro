@@ -5,13 +5,9 @@ import { optionalAuth } from "../lib/middleware/auth.middleware";
 
 // Check if user is authenticated
 const userId = await optionalAuth(Astro.locals.supabase);
-
-// If authenticated, redirect to notes dashboard
-if (userId) {
-  return Astro.redirect("/notes");
-}
+const isAuthenticated = !!userId;
 ---
 
 <Layout title="10xNotes - Wygeneruj podsumowanie spotkania">
-  <LandingPage client:load />
+  <LandingPage client:load isAuthenticated={isAuthenticated} />
 </Layout>

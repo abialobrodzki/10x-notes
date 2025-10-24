@@ -2,21 +2,27 @@
 
 ## 1. Przegląd
 
-Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowania bez logowania jako „test drive”. Po sukcesie wyświetla streszczenie, status celów i sugerowaną etykietę oraz zachęca do zalogowania się celem zapisu. Dane tymczasowe są przechowywane w local/sessionStorage (TTL 24h) do automatycznego pre-wypełnienia po logowaniu.
+Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowania dla **wszystkich użytkowników** (zalogowanych i niezalogowanych):
+
+- **Niezalogowani**: Po wygenerowaniu pokazuje SavePromptBanner zachęcający do zalogowania/rejestracji. Dane są zapisywane w localStorage (TTL 24h) i przywracane po logowaniu.
+- **Zalogowani**: Po wygenerowaniu pokazuje SaveNoteButton umożliwiający bezpośredni zapis notatki (POST /api/notes) z automatycznym przekierowaniem do szczegółów nowej notatki.
 
 ## 2. Routing widoku
 
-- Ścieżka: `/` (publiczny)
-- SSR: brak wymogu; preferowany CSR z naciskiem na wydajność
+- Ścieżka: `/` (publiczny, dostępny dla wszystkich)
+- SSR: `optionalAuth` middleware - sprawdza czy użytkownik jest zalogowany, przekazuje `isAuthenticated` do komponentu
+- **UWAGA**: Brak redirectu dla zalogowanych użytkowników - landing page jest dostępny dla wszystkich jako główny generator notatek
 
 ## 3. Struktura komponentów
 
-- LandingPage (kontener)
+- LandingPage (kontener, przyjmuje prop `isAuthenticated`)
   - CharCountTextarea (textarea + licznik + walidacja limitu)
   - GenerateButton
   - GenerationSkeleton (loading 3–10s, timeout 30s)
   - SummaryCard (wynik AI: streszczenie, goal status, sugerowana etykieta)
-  - SavePromptBanner (CTA do logowania/rejestracji + zapis do storage)
+  - **Warunkowe renderowanie:**
+    - SaveNoteButton (zalogowani: bezpośredni zapis → POST /api/notes)
+    - SavePromptBanner (niezalogowani: CTA do logowania/rejestracji + zapis do storage)
   - ToastHost (powiadomienia)
 
 ## 4. Szczegóły komponentów
@@ -56,14 +62,24 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 - Typy: `AiSummaryDTO`.
 - Propsy: `{ data: AiSummaryDTO }`.
 
-### SavePromptBanner
+### SaveNoteButton (nowy komponent - dla zalogowanych)
 
-- Opis: CTA „Zaloguj się, aby zapisać notatkę”; zapisuje dane do storage (TTL 24h) i kieruje do `/login`.
-- Elementy: komunikat, przyciski „Zaloguj się” / „Zarejestruj się”.
+- Opis: Bezpośredni zapis wygenerowanej notatki dla zalogowanych użytkowników.
+- Elementy: zielony komunikat „Gotowe! Zapisz notatkę", przycisk „Zapisz notatkę" z gradientem.
+- Interakcje: onClick → POST `/api/notes` (z credentials: include) → redirect do `/notes/{id}` (szczegóły).
+- Walidacja: obsługa błędów API (401, 400, 429).
+- Typy: przyjmuje `originalContent: string`, `aiResult: AiSummaryDTO`.
+- Propsy: `{ originalContent: string; aiResult: AiSummaryDTO }`.
+- Stan: `isSaving: boolean` (loading state podczas zapisu).
+
+### SavePromptBanner (dla niezalogowanych)
+
+- Opis: CTA „Zaloguj się, aby zapisać notatkę"; zapisuje dane do storage (TTL 24h) i kieruje do `/login`.
+- Elementy: niebieski komunikat, przyciski „Zaloguj się" / „Zarejestruj się".
 - Interakcje: onClick → zapis `pendingGeneratedNote` (content + wynik AI + timestamp) → redirect.
 - Walidacja: TTL 24h (po zalogowaniu weryfikacja wieku danych).
 - Typy: `PendingGeneratedNoteVM` (nowy VM).
-- Propsy: `{ data: AiSummaryDTO & { original_content: string } }`.
+- Propsy: `{ originalContent: string; aiResult: AiSummaryDTO }`.
 
 ## 5. Typy
 
@@ -80,10 +96,15 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 
 ## 7. Integracja API
 
-- POST `/api/ai/generate`
+- POST `/api/ai/generate` (wszyscy użytkownicy)
   - Request: `GenerateAiSummaryCommand` `{ original_content: string, model_name?: string }`
   - Response: `AiSummaryDTO` `{ summary_text, goal_status, suggested_tag, generation_time_ms, tokens_used }`
   - Statusy błędów: 400 (walidacja), 408 (timeout), 429 (rate limit), 503 (AI service)
+
+- POST `/api/notes` (tylko zalogowani - SaveNoteButton)
+  - Request: `CreateNoteCommand` `{ original_content, summary_text, goal_status, tag_name, is_ai_generated }`
+  - Response: `NoteDTO` `{ id, ...note data }`
+  - Statusy błędów: 400 (walidacja), 401 (brak autentykacji), 429 (rate limit)
 
 ## 8. Interakcje użytkownika
 
@@ -106,10 +127,14 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 
 ## 11. Kroki implementacji
 
-1. Utwórz stronę `/src/pages/index.astro` (jeśli niewystarczająca, zmień na layout + React entry) i komponent `LandingPage` (React).
-2. Zaimplementuj `CharCountTextarea` z licznikami i walidacją.
-3. Obsłuż `GenerateButton` z POST `/api/ai/generate`, skeleton i timeout 30s.
-4. Dodaj `SummaryCard` do prezentacji wyniku AI.
-5. Dodaj `SavePromptBanner` zapisujący `pendingGeneratedNote` do storage i redirect do `/login`.
-6. Dodaj toast dla błędów i countdown dla 429.
-7. Testy manualne: limity znaków, timeout, 429, retry, przejście do logowania i wsteczne wczytanie danych po zalogowaniu.
+1. ✅ Utwórz stronę `/src/pages/index.astro` z `optionalAuth` middleware przekazującym `isAuthenticated` do komponentu `LandingPage` (React).
+2. ✅ Zaimplementuj `CharCountTextarea` z licznikami i walidacją.
+3. ✅ Obsłuż `GenerateButton` z POST `/api/ai/generate`, skeleton i timeout 30s.
+4. ✅ Dodaj `SummaryCard` do prezentacji wyniku AI.
+5. ✅ Dodaj `SaveNoteButton` dla zalogowanych użytkowników (POST `/api/notes` → redirect do `/notes/{id}`).
+6. ✅ Dodaj `SavePromptBanner` dla niezalogowanych zapisujący `pendingGeneratedNote` do storage i redirect do `/login`.
+7. ✅ Dodaj toast dla błędów i countdown dla 429.
+8. ✅ Zaimplementuj warunkowe renderowanie SaveNoteButton vs SavePromptBanner w zależności od `isAuthenticated`.
+9. Testy manualne:
+   - Niezalogowany: limity znaków, timeout, 429, retry, przejście do logowania i wsteczne wczytanie danych po zalogowaniu
+   - Zalogowany: generowanie → zapis → redirect do szczegółów nowej notatki

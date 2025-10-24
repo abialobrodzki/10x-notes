@@ -49,11 +49,19 @@ export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteList
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-12 text-center backdrop-blur-xl">
         <FileText className="mb-4 h-12 w-12 text-glass-text-muted" />
         <h3 className="mb-2 text-lg font-semibold text-glass-text">Brak notatek</h3>
-        <p className="text-sm text-glass-text-muted">
+        <p className="mb-6 text-sm text-glass-text-muted">
           {searchTerm
             ? "Nie znaleziono notatek pasujących do Twojego wyszukiwania."
             : "Nie masz jeszcze żadnych notatek. Utwórz pierwszą notatkę."}
         </p>
+        {!searchTerm && (
+          <a
+            href="/"
+            className="rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-6 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-xl"
+          >
+            Generuj pierwszą notatkę
+          </a>
+        )}
       </div>
     );
   }

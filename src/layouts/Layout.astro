@@ -1,12 +1,19 @@
 ---
 import "../styles/global.css";
+import { Navbar } from "../components/layout/Navbar";
 import { ToasterProvider } from "../components/ToasterProvider";
+import { optionalAuth } from "../lib/middleware/auth.middleware";
 
 interface Props {
   title?: string;
+  showNavbar?: boolean;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter", showNavbar = true } = Astro.props;
+
+// Check if user is authenticated
+const userId = await optionalAuth(Astro.locals.supabase);
+const isAuthenticated = !!userId;
 ---
 
 <!doctype html>
@@ -19,6 +26,7 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    {showNavbar && <Navbar client:load isAuthenticated={isAuthenticated} />}
     <slot />
     <ToasterProvider client:load />
   </body>
