@@ -285,7 +285,7 @@
   /* Glass select component styles (for consistent icon colors and hover) */
   [data-slot="select-trigger"].glass-select,
   button.glass-select {
-    @apply !hover:bg-white/5;
+    @apply hover:!bg-white/5;
   }
 
   [data-slot="select-trigger"].glass-select svg,
