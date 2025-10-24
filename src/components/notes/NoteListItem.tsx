@@ -60,31 +60,37 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
   };
 
   return (
-    <Card className="cursor-pointer transition-colors hover:bg-accent" onClick={() => onClick(item.id)}>
+    <Card
+      className="cursor-pointer border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl transition-all hover:border-glass-border-hover hover:from-glass-bg-to hover:to-glass-bg-from"
+      onClick={() => onClick(item.id)}
+    >
       <CardContent className="p-4">
         <div className="space-y-3">
           {/* Header: Date + Indicators */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-glass-text-muted">
               <Calendar className="h-4 w-4" />
               <time dateTime={item.meeting_date}>{format(meetingDate, "PPP", { locale: pl })}</time>
             </div>
 
             <div className="flex items-center gap-2">
               {item.is_ai_generated && (
-                <Sparkles className="h-4 w-4 text-purple-500" aria-label="Wygenerowane przez AI" />
+                <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
               )}
-              {item.has_public_link && <Globe className="h-4 w-4 text-blue-500" aria-label="Link publiczny" />}
-              {!item.is_owner && <User className="h-4 w-4 text-amber-500" aria-label="Współdzielona notatka" />}
+              {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
+              {!item.is_owner && <User className="h-4 w-4 text-amber-400" aria-label="Współdzielona notatka" />}
             </div>
           </div>
 
           {/* Summary Preview */}
-          <p className="line-clamp-3 text-sm leading-relaxed">{highlightText(summaryPreview)}</p>
+          <p className="line-clamp-3 text-sm leading-relaxed text-glass-text">{highlightText(summaryPreview)}</p>
 
           {/* Footer: Tag + Goal Status */}
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
+            <Badge
+              variant="secondary"
+              className="border-glass-border bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
+            >
               {item.tag.name}
             </Badge>
 

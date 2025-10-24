@@ -34,15 +34,25 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
       limit: filters.limit,
       sort_by: "meeting_date",
       order: "desc",
+      date_from: undefined,
+      date_to: undefined,
+      goal_status: undefined,
+      tag_id: filters.tag_id, // Keep tag filter (from sidebar)
+      include_shared: filters.include_shared, // Keep shared notes toggle
     });
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-border bg-card p-4">
+    <div className="space-y-4 rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Filtry i sortowanie</h3>
+        <h3 className="text-sm font-medium text-glass-text">Filtry i sortowanie</h3>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleReset} className="h-8 px-2 lg:px-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="h-8 px-2 text-glass-text-muted hover:bg-white/5 hover:text-glass-text lg:px-3"
+          >
             <X className="mr-2 h-4 w-4" />
             Wyczyść
           </Button>
@@ -52,7 +62,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
       <div className="space-y-3">
         {/* Date Range */}
         <div>
-          <div className="mb-2 block text-xs font-medium text-muted-foreground">Zakres dat</div>
+          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Zakres dat</div>
           <DateRangePicker
             dateFrom={filters.date_from}
             dateTo={filters.date_to}
@@ -63,7 +73,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
 
         {/* Goal Status */}
         <div>
-          <div className="mb-2 block text-xs font-medium text-muted-foreground">Status celu</div>
+          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Status celu</div>
           <GoalStatusMultiSelect
             value={filters.goal_status}
             onChange={(goal_status) => onChange({ ...filters, goal_status, page: 1 })}
@@ -72,7 +82,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
 
         {/* Sort */}
         <div>
-          <div className="mb-2 block text-xs font-medium text-muted-foreground">Sortowanie</div>
+          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Sortowanie</div>
           <SortSelect
             sortBy={filters.sort_by}
             order={filters.order}

@@ -34,12 +34,16 @@ export function SortSelect({ sortBy, order, onSortByChange, onOrderChange }: Sor
     <div className="flex flex-col gap-2 sm:flex-row">
       {/* Sort By Field */}
       <Select value={currentSortBy} onValueChange={(value) => onSortByChange(value as NotesSortBy)}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[180px]">
           <SelectValue placeholder="Sortuj według" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
           {SORT_BY_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="glass-select text-glass-text focus:bg-white/5 focus:text-glass-text"
+            >
               {option.label}
             </SelectItem>
           ))}
@@ -48,12 +52,16 @@ export function SortSelect({ sortBy, order, onSortByChange, onOrderChange }: Sor
 
       {/* Sort Order */}
       <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
-        <SelectTrigger className="w-full sm:w-[140px]">
+        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[140px]">
           <SelectValue placeholder="Kolejność" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
           {ORDER_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="glass-select text-glass-text focus:bg-white/5 focus:text-glass-text"
+            >
               {option.label}
             </SelectItem>
           ))}

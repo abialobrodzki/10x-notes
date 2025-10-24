@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,14 +38,20 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-full justify-between sm:w-[200px]">
+        <Button
+          variant="outline"
+          className="glass-select w-full justify-between border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[200px]"
+        >
           <span className="truncate">{selectedLabel}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
-        <DropdownMenuLabel>Status celu</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent
+        align="start"
+        className="w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
+      >
+        <DropdownMenuLabel className="text-glass-text">Status celu</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-glass-border" />
 
         {/* Clear selection */}
         <DropdownMenuCheckboxItem
@@ -54,14 +60,12 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
             onChange(undefined);
             setOpen(false);
           }}
+          className="text-glass-text focus:bg-white/5 focus:text-glass-text"
         >
-          <span className="flex w-full items-center justify-between">
-            Wszystkie
-            {!value && <Check className="h-4 w-4" />}
-          </span>
+          Wszystkie
         </DropdownMenuCheckboxItem>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-glass-border" />
 
         {/* Status options */}
         {GOAL_STATUS_OPTIONS.map((option) => (
@@ -72,11 +76,9 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
               onChange(option.value);
               setOpen(false);
             }}
+            className="text-glass-text focus:bg-white/5 focus:text-glass-text"
           >
-            <span className="flex w-full items-center justify-between">
-              {option.label}
-              {value === option.value && <Check className="h-4 w-4" />}
-            </span>
+            {option.label}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

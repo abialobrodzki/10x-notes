@@ -25,13 +25,16 @@ export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteList
     return (
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="rounded-lg border border-border bg-card p-4">
+          <div
+            key={i}
+            className="rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl"
+          >
             <div className="space-y-3">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-4 w-32 bg-white/20" />
+              <Skeleton className="h-16 w-full bg-white/20" />
               <div className="flex gap-2">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-20 bg-white/20" />
+                <Skeleton className="h-6 w-24 bg-white/20" />
               </div>
             </div>
           </div>
@@ -43,10 +46,10 @@ export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteList
   // Empty state
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-12 text-center">
-        <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 text-lg font-semibold">Brak notatek</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-12 text-center backdrop-blur-xl">
+        <FileText className="mb-4 h-12 w-12 text-glass-text-muted" />
+        <h3 className="mb-2 text-lg font-semibold text-glass-text">Brak notatek</h3>
+        <p className="text-sm text-glass-text-muted">
           {searchTerm
             ? "Nie znaleziono notatek pasujących do Twojego wyszukiwania."
             : "Nie masz jeszcze żadnych notatek. Utwórz pierwszą notatkę."}

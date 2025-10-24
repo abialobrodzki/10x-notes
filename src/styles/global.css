@@ -215,6 +215,22 @@
     filter: none !important;
   }
 
+  /* Hide native search cancel button (we use custom button) */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    display: none !important;
+  }
+
+  /* Additional reset for search input */
+  input[type="search"] {
+    -webkit-appearance: textfield;
+    appearance: textfield;
+  }
+
   /* Password strength indicator styles */
   .password-strength-bar {
     height: 8px;
@@ -264,6 +280,21 @@
   /* Tab hover effect (for navigation tabs) */
   .hover-tab:not([data-disabled="true"]):not([data-state="active"]):hover {
     @apply text-glass-text bg-white/5;
+  }
+
+  /* Glass select component styles (for consistent icon colors and hover) */
+  [data-slot="select-trigger"].glass-select,
+  button.glass-select {
+    @apply !hover:bg-white/5;
+  }
+
+  [data-slot="select-trigger"].glass-select svg,
+  button.glass-select svg {
+    @apply !text-glass-text !opacity-100;
+  }
+
+  [data-slot="select-item"].glass-select svg {
+    @apply !text-glass-text;
   }
 
   /* Smooth transitions for interactive elements */

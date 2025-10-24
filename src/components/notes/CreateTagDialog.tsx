@@ -79,20 +79,24 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-glass-text hover:bg-white/5 hover:text-glass-text">
           <Plus className="h-4 w-4" />
           <span className="sr-only">Utwórz nową etykietę</span>
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Utwórz nową etykietę</DialogTitle>
-            <DialogDescription>Podaj nazwę nowej etykiety dla swoich notatek.</DialogDescription>
+            <DialogTitle className="text-glass-text">Utwórz nową etykietę</DialogTitle>
+            <DialogDescription className="text-glass-text-muted">
+              Podaj nazwę nowej etykiety dla swoich notatek.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
-            <Label htmlFor="tag-name">Nazwa etykiety</Label>
+            <Label htmlFor="tag-name" className="text-glass-text">
+              Nazwa etykiety
+            </Label>
             <Input
               id="tag-name"
               value={name}
@@ -101,17 +105,31 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
                 setError(null);
               }}
               placeholder="np. Projekty, Spotkania, Pomysły"
-              className="mt-2"
+              className="mt-2 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
               disabled={isLoading}
             />
-            {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+            {error && (
+              <p className="mt-2 text-sm text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                {error}
+              </p>
+            )}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isLoading}
+              className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
+            >
               Anuluj
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-gradient-to-r from-gradient-button-from to-gradient-button-to text-white hover:from-purple-600 hover:to-pink-600"
+            >
               {isLoading ? "Tworzenie..." : "Utwórz"}
             </Button>
           </DialogFooter>

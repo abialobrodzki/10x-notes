@@ -38,15 +38,18 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal sm:w-[200px]",
-              !fromDate && "text-muted-foreground"
+              "glass-select w-full justify-start text-left font-normal sm:w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              !fromDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {fromDate ? format(fromDate, "PPP", { locale: pl }) : "Data od"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent
+          className="w-auto border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+          align="start"
+        >
           <Calendar
             mode="single"
             selected={fromDate}
@@ -56,6 +59,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             }}
             initialFocus
             locale={pl}
+            className="text-glass-text"
           />
         </PopoverContent>
       </Popover>
@@ -66,15 +70,18 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal sm:w-[200px]",
-              !toDate && "text-muted-foreground"
+              "glass-select w-full justify-start text-left font-normal sm:w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              !toDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {toDate ? format(toDate, "PPP", { locale: pl }) : "Data do"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent
+          className="w-auto border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+          align="start"
+        >
           <Calendar
             mode="single"
             selected={toDate}
@@ -91,6 +98,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             }}
             initialFocus
             locale={pl}
+            className="text-glass-text"
           />
         </PopoverContent>
       </Popover>

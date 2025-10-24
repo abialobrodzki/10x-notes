@@ -137,24 +137,27 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
   const hasMore = notes.pagination.page < notes.pagination.total_pages;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r border-border bg-card md:block">
+      <aside className="hidden w-64 border-r border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block">
         <TagSidebar tags={tags.tags} selectedTagId={selectedTagId} onTagSelect={handleTagSelect} />
       </aside>
 
       {/* Mobile Header + Content */}
       <div className="flex flex-1 flex-col">
         {/* Mobile Header */}
-        <header className="flex h-14 items-center gap-4 border-b border-border bg-card px-4 md:hidden">
+        <header className="flex h-14 items-center gap-4 border-b border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to px-4 backdrop-blur-xl md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-glass-text hover:text-glass-text-hover">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
+            <SheetContent
+              side="left"
+              className="w-64 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+            >
               <TagSidebar
                 tags={tags.tags}
                 selectedTagId={selectedTagId}
@@ -165,23 +168,29 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
               />
             </SheetContent>
           </Sheet>
-          <h1 className="text-lg font-semibold">Moje notatki</h1>
+          <h1 className="bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-lg font-semibold text-transparent drop-shadow-lg">
+            Moje notatki
+          </h1>
         </header>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {error && (
-            <div className="mb-4 rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
-              <p className="text-sm font-medium">Błąd ładowania danych</p>
-              <p className="text-sm">{error}</p>
+            <div className="mb-4 rounded-md border border-destructive/50 bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
+              <p className="text-sm font-medium text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                Błąd ładowania danych
+              </p>
+              <p className="text-sm text-glass-text-muted">{error}</p>
             </div>
           )}
 
           <div className="mx-auto max-w-5xl space-y-6">
             {/* Desktop Title */}
             <div className="hidden md:block">
-              <h1 className="text-3xl font-bold">Moje notatki</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <h1 className="bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
+                Moje notatki
+              </h1>
+              <p className="mt-2 text-sm text-glass-text-muted drop-shadow-md">
                 Znaleziono {filteredNotes.length} z {notes.pagination.total} notatek
               </p>
             </div>

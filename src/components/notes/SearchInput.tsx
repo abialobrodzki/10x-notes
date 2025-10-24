@@ -41,19 +41,19 @@ export function SearchInput({ value, onChange, placeholder = "Szukaj w notatkach
 
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-glass-text" />
       <Input
-        type="search"
+        type="text"
         placeholder={placeholder}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        className="pl-9 pr-9"
+        className="relative border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to pl-9 pr-9 text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
       />
       {inputValue && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-glass-text-muted hover:!bg-white/5 hover:!text-glass-text"
           onClick={handleClear}
         >
           <X className="h-4 w-4" />
