@@ -40,18 +40,15 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="glass-select w-full justify-between border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text"
+          className="glass-select dropdown-glass-base w-full justify-between hover:text-glass-text"
         >
           <span className="truncate">{selectedLabel}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
-      >
-        <DropdownMenuLabel className="text-glass-text">Status celu</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-glass-border" />
+      <DropdownMenuContent align="start" className="w-[200px] dropdown-content-glass">
+        <DropdownMenuLabel className="dropdown-label-glass">Status celu</DropdownMenuLabel>
+        <DropdownMenuSeparator className="dropdown-separator-glass" />
 
         {/* Clear selection */}
         <DropdownMenuCheckboxItem
@@ -60,12 +57,12 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
             onChange(undefined);
             setOpen(false);
           }}
-          className="text-glass-text focus:bg-white/5 focus:text-glass-text"
+          className="dropdown-item-glass"
         >
           Wszystkie
         </DropdownMenuCheckboxItem>
 
-        <DropdownMenuSeparator className="bg-glass-border" />
+        <DropdownMenuSeparator className="dropdown-separator-glass" />
 
         {/* Status options */}
         {GOAL_STATUS_OPTIONS.map((option) => (
@@ -76,7 +73,7 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
               onChange(option.value);
               setOpen(false);
             }}
-            className="text-glass-text focus:bg-white/5 focus:text-glass-text"
+            className="dropdown-item-glass"
           >
             {option.label}
           </DropdownMenuCheckboxItem>

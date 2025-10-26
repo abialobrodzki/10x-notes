@@ -38,7 +38,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "glass-select w-full justify-start text-left font-normal sm:flex-1 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              "glass-select dropdown-glass-base w-full justify-start text-left font-normal sm:flex-1",
               !fromDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >
@@ -46,10 +46,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             {fromDate ? format(fromDate, "PPP", { locale: pl }) : "Data od"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
-          align="start"
-        >
+        <PopoverContent className="w-auto dropdown-content-glass p-0" align="start">
           <Calendar
             mode="single"
             selected={fromDate}
@@ -70,7 +67,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "glass-select w-full justify-start text-left font-normal sm:flex-1 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              "glass-select dropdown-glass-base w-full justify-start text-left font-normal sm:flex-1",
               !toDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >
@@ -78,10 +75,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             {toDate ? format(toDate, "PPP", { locale: pl }) : "Data do"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
-          align="start"
-        >
+        <PopoverContent className="w-auto dropdown-content-glass p-0" align="start">
           <Calendar
             mode="single"
             selected={toDate}

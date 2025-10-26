@@ -341,6 +341,54 @@
   .btn-gradient-primary:disabled {
     @apply from-gray-500 to-gray-600 opacity-50;
   }
+
+  /* ========================================================================
+     DROPDOWN/SELECT COMPONENTS - Glass effect patterns
+     ======================================================================== */
+
+  /* Base glass background for dropdowns/selects - use on triggers */
+  .dropdown-glass-base {
+    @apply border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to;
+    @apply backdrop-blur-xl text-glass-text;
+  }
+
+  /* Glass content container - use on DropdownMenuContent, PopoverContent, SelectContent */
+  .dropdown-content-glass {
+    @apply border-glass-border backdrop-blur-xl;
+    background-color: transparent !important;
+    background-image: linear-gradient(to bottom, var(--glass-bg-from), var(--glass-bg-to)) !important;
+  }
+
+  /* Glass content container without border - use with custom border (e.g. border-input-border) */
+  .dropdown-content-glass-no-border {
+    @apply backdrop-blur-xl;
+    background-color: transparent !important;
+    background-image: linear-gradient(to bottom, var(--glass-bg-from), var(--glass-bg-to)) !important;
+  }
+
+  /* Glass menu/select item - use on DropdownMenuItem, SelectItem, CommandItem */
+  .dropdown-item-glass {
+    @apply text-glass-text;
+  }
+
+  .dropdown-item-glass:hover,
+  .dropdown-item-glass:focus,
+  .dropdown-item-glass[data-selected="true"],
+  .dropdown-item-glass[aria-selected="true"],
+  .dropdown-item-glass[data-state="checked"] {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--glass-text) !important;
+  }
+
+  /* Glass separator - use on DropdownMenuSeparator */
+  .dropdown-separator-glass {
+    @apply bg-glass-border;
+  }
+
+  /* Glass label - use on DropdownMenuLabel */
+  .dropdown-label-glass {
+    @apply text-glass-text;
+  }
 }
 
 @layer utilities {

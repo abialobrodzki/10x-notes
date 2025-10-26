@@ -132,10 +132,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                     <User className="h-5 w-5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-48 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
-                >
+                <DropdownMenuContent align="end" className="w-48 dropdown-content-glass">
                   <DropdownMenuItem asChild>
                     <a
                       href="/settings"
@@ -145,7 +142,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                       <span>Ustawienia</span>
                     </a>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-glass-border" />
+                  <DropdownMenuSeparator className="dropdown-separator-glass" />
                   <DropdownMenuItem
                     onClick={handleLogout}
                     disabled={isLoggingOut}
@@ -170,10 +167,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="w-64 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
-                >
+                <SheetContent side="right" className="w-64 dropdown-content-glass">
                   <div className="flex flex-col gap-4 py-4">
                     {/* Navigation Links */}
                     <a

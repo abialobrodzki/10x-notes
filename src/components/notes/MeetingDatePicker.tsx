@@ -75,10 +75,7 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
             {value && dateValue ? format(dateValue, "d MMMM yyyy", { locale: pl }) : <span>Wybierz datę</span>}
           </Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-auto border-input-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
-          align="start"
-        >
+        <PopoverContent className="w-auto border-input-border dropdown-content-glass-no-border p-0" align="start">
           <Calendar
             mode="single"
             selected={dateValue}

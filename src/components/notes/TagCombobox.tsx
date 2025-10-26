@@ -127,7 +127,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[--radix-popover-trigger-width] border-input-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl">
+        <PopoverContent className="w-[--radix-popover-trigger-width] border-input-border dropdown-content-glass-no-border p-0">
           <Command className="bg-transparent">
             <CommandInput
               placeholder="Szukaj etykiety..."
@@ -142,13 +142,13 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
 
               {/* Existing tags */}
               {filteredTags.length > 0 && (
-                <CommandGroup heading="Etykiety" className="text-glass-text-muted">
+                <CommandGroup>
                   {filteredTags.map((tag) => (
                     <CommandItem
                       key={tag.id}
                       value={tag.id}
                       onSelect={() => handleSelectTag(tag.id)}
-                      className="cursor-pointer text-glass-text aria-selected:bg-input-bg"
+                      className="dropdown-item-glass cursor-pointer"
                     >
                       <Check className={`mr-2 h-4 w-4 ${currentTag.id === tag.id ? "opacity-100" : "opacity-0"}`} />
                       <span className="flex-1">{tag.name}</span>
@@ -162,11 +162,11 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
 
               {/* Create new tag option */}
               {showCreateOption && (
-                <CommandGroup heading="Akcje" className="text-glass-text-muted">
+                <CommandGroup>
                   <CommandItem
                     value={`create-${searchQuery}`}
                     onSelect={handleCreateTag}
-                    className="cursor-pointer text-green-200 aria-selected:bg-input-bg"
+                    className="dropdown-item-glass cursor-pointer text-green-200"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     <span>Utwórz nową: &quot;{searchQuery.trim()}&quot;</span>
