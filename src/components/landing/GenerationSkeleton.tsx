@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * GenerationSkeleton - Loading state for AI generation (3-10s expected, 30s timeout)
+ * GenerationSkeleton - Loading state for AI generation (3-10s expected, 60s timeout)
  * Displays placeholder cards and bars to indicate processing
  */
 export function GenerationSkeleton() {
@@ -45,7 +45,7 @@ export function GenerationSkeleton() {
       </div>
 
       {/* Processing time notice */}
-      <p className="text-xs text-blue-300/70">Proces może potrwać do 30 sekund</p>
+      <p className="text-xs text-blue-300/70">Proces może potrwać do 60 sekund</p>
     </div>
   );
 }

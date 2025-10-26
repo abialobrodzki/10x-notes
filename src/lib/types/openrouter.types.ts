@@ -82,7 +82,7 @@ export interface OpenRouterResponse<T = string> {
  * Configuration options for OpenRouter service
  */
 export interface OpenRouterServiceOptions {
-  /** Request timeout in milliseconds (default: 30000) */
+  /** Request timeout in milliseconds (default: 60000) */
   timeoutMs?: number;
   /** Number of retry attempts for transient failures (default: 2) */
   retryAttempts?: number;

@@ -58,9 +58,9 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
     setState((prev) => ({ ...prev, isGenerating: true, error: undefined }));
 
     try {
-      // Setup timeout controller (30s as per plan)
+      // Setup timeout controller (60s as per plan)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       const response = await fetch("/api/ai/generate", {
         method: "POST",
@@ -146,7 +146,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
     } catch (error) {
       // Handle timeout (AbortError)
       if (error instanceof Error && error.name === "AbortError") {
-        const errorMsg = "Przekroczono limit czasu (30s). Spróbuj ponownie";
+        const errorMsg = "Przekroczono limit czasu (60s). Spróbuj ponownie";
         setState((prev) => ({
           ...prev,
           isGenerating: false,

@@ -115,7 +115,7 @@ export class OpenRouterService {
         userId: request.userId,
         noteId: request.noteId,
         modelName: request.modelName ?? this.defaultModel,
-        status: "error",
+        status: "failure",
         generationTimeMs,
         errorMessage: error instanceof Error ? error.message : String(error),
       });
@@ -575,7 +575,7 @@ export class OpenRouterService {
     userId?: string;
     noteId?: string;
     modelName: string;
-    status: "success" | "error";
+    status: "success" | "failure";
     generationTimeMs: number;
     tokensUsed?: number;
     errorMessage?: string;
