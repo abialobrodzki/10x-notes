@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabaseClient } from "@/db/supabase.client";
+import { validateEmail, validatePasswordLogin } from "@/lib/validators/auth.validators";
 
 interface LoginFormProps {
   onError: (errors: string[]) => void;
@@ -30,19 +31,8 @@ export default function LoginForm({ onError }: LoginFormProps) {
    */
   const validateForm = useCallback((): string[] => {
     const errors: string[] = [];
-
-    // Email validation
-    if (!email.trim()) {
-      errors.push("Adres email jest wymagany");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push("Podaj poprawny adres email");
-    }
-
-    // Password validation
-    if (!password) {
-      errors.push("Hasło jest wymagane");
-    }
-
+    errors.push(...validateEmail(email));
+    errors.push(...validatePasswordLogin(password));
     return errors;
   }, [email, password]);
 
@@ -54,9 +44,8 @@ export default function LoginForm({ onError }: LoginFormProps) {
   }, []);
 
   // Check if email has validation error OR submit failed
-  const emailHasError =
-    (touchedFields.email && (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) || hasSubmitError;
-  const passwordHasError = (touchedFields.password && !password) || hasSubmitError;
+  const emailHasError = (touchedFields.email && validateEmail(email).length > 0) || hasSubmitError;
+  const passwordHasError = (touchedFields.password && validatePasswordLogin(password).length > 0) || hasSubmitError;
 
   /**
    * Handles form submission with Supabase Auth

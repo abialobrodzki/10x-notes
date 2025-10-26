@@ -1,5 +1,6 @@
 import { Zap, CheckCircle2, XCircle, Coins, Clock, FileText, Tag } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 import type { UserStatsDTO } from "@/types";
 
 interface StatsSectionProps {
@@ -19,7 +20,7 @@ interface StatCardProps {
  */
 function StatCard({ icon, label, value, description }: StatCardProps) {
   return (
-    <div className="flex items-start gap-4 rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-4 shadow-md">
+    <GlassCard padding="sm" className="flex items-start gap-4">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gradient-button-from to-gradient-button-to text-white shadow-lg">
         {icon}
       </div>
@@ -28,7 +29,7 @@ function StatCard({ icon, label, value, description }: StatCardProps) {
         <p className="text-2xl font-bold text-glass-text">{value}</p>
         {description && <p className="text-xs text-glass-text-muted">{description}</p>}
       </div>
-    </div>
+    </GlassCard>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 import GoalStatusRadio from "./GoalStatusRadio";
 import MeetingDatePicker from "./MeetingDatePicker";
 import NoteDetailSkeleton from "./NoteDetailSkeleton";
@@ -295,7 +296,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 text-center backdrop-blur-xl">
+          <GlassCard padding="lg" className="text-center">
             <h1 className="mb-4 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-4xl font-bold text-transparent">
               Nie znaleziono notatki
             </h1>
@@ -303,7 +304,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
             <a href="/notes" className="inline-block rounded-lg btn-gradient-primary px-6 py-3 hover-gradient">
               Powrót do listy notatek
             </a>
-          </div>
+          </GlassCard>
         </div>
       </div>
     );
@@ -345,42 +346,42 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
         <OriginalContentSection originalContent={note.original_content} />
 
         {/* Summary editor panel */}
-        <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+        <GlassCard padding="lg">
           <SummaryEditor
             value={note.summary_text}
             isOwner={note.is_owner}
             onSave={handleSaveSummary}
             isSaving={savingFields.summary}
           />
-        </div>
+        </GlassCard>
 
         {/* Goal status and meeting date grid */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Goal status */}
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+          <GlassCard padding="lg">
             <GoalStatusRadio
               value={note.goal_status}
               isOwner={note.is_owner}
               onChange={handleGoalStatusChange}
               isSaving={savingFields.goal}
             />
-          </div>
+          </GlassCard>
 
           {/* Meeting date */}
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+          <GlassCard padding="lg">
             <MeetingDatePicker
               value={note.meeting_date}
               isOwner={note.is_owner}
               onChange={handleMeetingDateChange}
               isSaving={savingFields.date}
             />
-          </div>
+          </GlassCard>
         </div>
 
         {/* Tag selection and access management */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Tag combobox */}
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+          <GlassCard padding="lg">
             <TagCombobox
               currentTag={note.tag}
               isOwner={note.is_owner}
@@ -388,24 +389,24 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
               onCreateTag={handleCreateTag}
               isSaving={savingFields.tag}
             />
-          </div>
+          </GlassCard>
 
           {/* Tag access management */}
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+          <GlassCard padding="lg">
             <TagAccessButton tagId={note.tag.id} isOwner={note.is_owner} />
-          </div>
+          </GlassCard>
         </div>
 
         {/* Public link section (only for owners) */}
         {note.is_owner && (
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+          <GlassCard padding="lg">
             <PublicLinkSection
               publicLink={note.public_link}
               noteId={noteId}
               isOwner={note.is_owner}
               onUpdate={handlePublicLinkUpdate}
             />
-          </div>
+          </GlassCard>
         )}
       </div>
     </div>

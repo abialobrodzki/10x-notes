@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 import type { TagAccessRecipientDTO } from "@/types";
 
 interface RecipientItemProps {
@@ -37,8 +38,9 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
   };
 
   return (
-    <div
-      className="flex items-center justify-between rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-3 backdrop-blur-xl transition-opacity"
+    <GlassCard
+      padding="sm"
+      className="flex items-center justify-between transition-opacity"
       style={{ opacity: isRemoving ? 0.5 : 1 }}
     >
       <div className="flex-1 space-y-1">
@@ -57,6 +59,6 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
         <Trash2 className="h-4 w-4" />
         {isRemoving ? "Usuwanie..." : "Usuń"}
       </Button>
-    </div>
+    </GlassCard>
   );
 }

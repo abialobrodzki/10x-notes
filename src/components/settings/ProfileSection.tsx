@@ -1,5 +1,6 @@
 import { User, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 import { Label } from "@/components/ui/label";
 import type { UserProfileDTO } from "@/types";
 
@@ -37,13 +38,11 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
           <Label htmlFor="email" className="text-sm font-medium text-glass-text">
             Adres e-mail
           </Label>
-          <div
-            id="email"
-            className="rounded-md border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg px-3 py-2 text-sm text-glass-text"
-            aria-readonly="true"
-          >
-            {profile.email}
-          </div>
+          <GlassCard padding="sm" className="rounded-md">
+            <div id="email" className="text-sm text-glass-text" aria-readonly="true">
+              {profile.email}
+            </div>
+          </GlassCard>
         </div>
 
         {/* Account creation date */}
@@ -52,13 +51,11 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
             <Calendar className="h-4 w-4" />
             Data utworzenia konta
           </Label>
-          <div
-            id="created-at"
-            className="rounded-md border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg px-3 py-2 text-sm text-glass-text"
-            aria-readonly="true"
-          >
-            {formattedDate}
-          </div>
+          <GlassCard padding="sm" className="rounded-md">
+            <div id="created-at" className="text-sm text-glass-text" aria-readonly="true">
+              {formattedDate}
+            </div>
+          </GlassCard>
         </div>
       </CardContent>
     </Card>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabaseClient } from "@/db/supabase.client";
+import { validateEmail, validatePasswordRegister, validatePasswordConfirm } from "@/lib/validators/auth.validators";
 
 interface RegisterFormProps {
   onError: (errors: string[]) => void;
@@ -37,28 +38,9 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
    */
   const validateForm = useCallback((): string[] => {
     const errors: string[] = [];
-
-    // Email validation
-    if (!email.trim()) {
-      errors.push("Adres email jest wymagany");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push("Podaj poprawny adres email");
-    }
-
-    // Password validation
-    if (!password) {
-      errors.push("Hasło jest wymagane");
-    } else if (password.length < 8) {
-      errors.push("Hasło musi mieć co najmniej 8 znaków");
-    }
-
-    // Confirm password validation
-    if (!confirmPassword) {
-      errors.push("Potwierdzenie hasła jest wymagane");
-    } else if (password !== confirmPassword) {
-      errors.push("Hasła muszą być identyczne");
-    }
-
+    errors.push(...validateEmail(email));
+    errors.push(...validatePasswordRegister(password));
+    errors.push(...validatePasswordConfirm(password, confirmPassword));
     return errors;
   }, [email, password, confirmPassword]);
 
@@ -70,11 +52,10 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
   }, []);
 
   // Check if fields have validation errors OR submit failed
-  const emailHasError =
-    (touchedFields.email && (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) || hasSubmitError;
-  const passwordHasError = (touchedFields.password && (!password || password.length < 8)) || hasSubmitError;
+  const emailHasError = (touchedFields.email && validateEmail(email).length > 0) || hasSubmitError;
+  const passwordHasError = (touchedFields.password && validatePasswordRegister(password).length > 0) || hasSubmitError;
   const confirmPasswordHasError =
-    (touchedFields.confirmPassword && (!confirmPassword || password !== confirmPassword)) || hasSubmitError;
+    (touchedFields.confirmPassword && validatePasswordConfirm(password, confirmPassword).length > 0) || hasSubmitError;
 
   /**
    * Handles form submission with Supabase Auth

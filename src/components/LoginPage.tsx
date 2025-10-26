@@ -2,6 +2,7 @@ import { useState } from "react";
 import AlertArea from "@/components/AlertArea";
 import LoginForm from "@/components/LoginForm";
 import RedirectHint from "@/components/RedirectHint";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 
 /**
  * LoginPage component - main container for login view
@@ -14,7 +15,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
       <div className="mx-auto flex min-h-screen max-w-md items-center">
-        <div className="w-full rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+        <GlassCard padding="lg" className="w-full">
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="mb-2 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-4xl font-bold text-transparent drop-shadow-lg">
@@ -29,7 +30,7 @@ export default function LoginPage() {
             <LoginForm onError={setErrors} />
             <RedirectHint />
           </div>
-        </div>
+        </GlassCard>
       </div>
     </div>
   );

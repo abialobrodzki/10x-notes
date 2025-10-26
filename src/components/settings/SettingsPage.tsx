@@ -1,6 +1,7 @@
 import { User, BarChart3, Shield, AlertTriangle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import AlertArea from "@/components/AlertArea";
+import { GlassCard } from "@/components/ui/composed/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DangerZone } from "./DangerZone";
 import { ProfileSection } from "./ProfileSection";
@@ -26,12 +27,12 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
     return (
       <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+          <GlassCard padding="lg">
             <h1 className="mb-6 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
               Ustawienia
             </h1>
             <AlertArea messages={errors} />
-          </div>
+          </GlassCard>
         </div>
       </div>
     );
@@ -40,7 +41,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
   return (
     <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+        <GlassCard padding="lg">
           {/* Breadcrumb */}
           <nav className="mb-6" aria-label="Breadcrumb">
             <a href="/notes" className="inline-flex items-center gap-2 text-sm text-glass-text-muted hover-link">
@@ -117,7 +118,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               <DangerZone userEmail={initialProfile.email} />
             </TabsContent>
           </Tabs>
-        </div>
+        </GlassCard>
       </div>
     </div>
   );
