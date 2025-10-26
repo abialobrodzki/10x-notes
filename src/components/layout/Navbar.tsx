@@ -121,7 +121,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
               </a>
               <a
                 href="/"
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-4 py-2 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-xl"
+                className="flex items-center gap-2 rounded-lg btn-gradient-primary px-4 py-2 text-sm font-medium hover-gradient"
               >
                 <Plus className="h-4 w-4" />
                 <span>Generuj notatkę</span>
@@ -193,7 +193,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
                     <a
                       href="/"
-                      className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-3 py-2 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600"
+                      className="flex items-center gap-2 rounded-lg btn-gradient-primary px-3 py-2 text-sm font-medium hover-gradient"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Plus className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
               </a>
               <a
                 href="/register"
-                className="rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-4 py-2 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-xl"
+                className="rounded-lg btn-gradient-primary px-4 py-2 text-sm font-medium hover-gradient"
               >
                 Zarejestruj się
               </a>
@@ -256,7 +256,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
               </a>
               <a
                 href="/register"
-                className="rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-3 py-1.5 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-xl"
+                className="rounded-lg btn-gradient-primary px-3 py-1.5 text-sm font-medium hover-gradient"
               >
                 Rejestracja
               </a>

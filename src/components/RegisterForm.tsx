@@ -273,11 +273,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
       </div>
 
       {/* Submit button */}
-      <Button
-        type="submit"
-        className="w-full bg-gradient-to-r from-gradient-button-from to-gradient-button-to font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-lg disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
-        disabled={isSubmitting}
-      >
+      <Button type="submit" className="w-full btn-gradient-primary hover-gradient" disabled={isSubmitting}>
         {isSubmitting ? "Rejestracja..." : "Zarejestruj się"}
       </Button>
     </form>

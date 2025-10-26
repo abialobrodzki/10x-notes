@@ -300,10 +300,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
               Nie znaleziono notatki
             </h1>
             <p className="mb-6 text-glass-text-muted">Notatka o podanym ID nie istnieje lub została usunięta.</p>
-            <a
-              href="/notes"
-              className="inline-block rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-6 py-3 font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600"
-            >
+            <a href="/notes" className="inline-block rounded-lg btn-gradient-primary px-6 py-3 hover-gradient">
               Powrót do listy notatek
             </a>
           </div>
@@ -322,7 +319,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
             <p className="mb-6 text-red-100/90">{error.message}</p>
             <button
               onClick={() => window.location.reload()}
-              className="inline-block rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-6 py-3 font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600"
+              className="inline-block rounded-lg btn-gradient-primary px-6 py-3 hover-gradient"
             >
               Spróbuj ponownie
             </button>

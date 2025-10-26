@@ -55,10 +55,7 @@ export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteList
             : "Nie masz jeszcze żadnych notatek. Utwórz pierwszą notatkę."}
         </p>
         {!searchTerm && (
-          <a
-            href="/"
-            className="rounded-lg bg-gradient-to-r from-gradient-button-from to-gradient-button-to px-6 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-xl"
-          >
+          <a href="/" className="rounded-lg btn-gradient-primary px-6 py-2.5 text-sm font-medium hover-gradient">
             Generuj pierwszą notatkę
           </a>
         )}

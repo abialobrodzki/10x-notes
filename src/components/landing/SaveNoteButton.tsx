@@ -107,12 +107,7 @@ export function SaveNoteButton({ originalContent, aiResult }: SaveNoteButtonProp
       </p>
 
       {/* Save Button */}
-      <Button
-        onClick={handleSave}
-        disabled={isSaving}
-        size="lg"
-        className="w-full bg-gradient-to-r from-gradient-button-from to-gradient-button-to font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-lg disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
-      >
+      <Button onClick={handleSave} disabled={isSaving} size="lg" className="w-full btn-gradient-primary hover-gradient">
         <Save className="mr-2 h-4 w-4" aria-hidden="true" />
         {isSaving ? "Zapisywanie..." : "Zapisz notatkę"}
       </Button>

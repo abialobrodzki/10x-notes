@@ -105,7 +105,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
             <Button
               onClick={handleSave}
               disabled={isSaving || !hasChanges || isOverLimit}
-              className="bg-gradient-to-r from-gradient-button-from to-gradient-button-to font-semibold text-white transition-all hover:from-purple-600 hover:to-pink-600 hover:shadow-lg disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
+              className="btn-gradient-primary hover-gradient"
             >
               {isSaving ? "Zapisywanie..." : "Zapisz"}
             </Button>

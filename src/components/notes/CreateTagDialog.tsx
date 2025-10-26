@@ -125,11 +125,7 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
             >
               Anuluj
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-gradient-to-r from-gradient-button-from to-gradient-button-to text-white hover:from-purple-600 hover:to-pink-600"
-            >
+            <Button type="submit" disabled={isLoading} className="btn-gradient-primary hover-gradient">
               {isLoading ? "Tworzenie..." : "Utwórz"}
             </Button>
           </DialogFooter>

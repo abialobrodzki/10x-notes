@@ -349,3 +349,25 @@
     @apply transition-all duration-200;
   }
 }
+
+@layer components {
+  /* Primary gradient button - base styles */
+  .btn-gradient-primary {
+    @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
+    @apply text-white font-semibold transition-all shadow-lg;
+  }
+
+  .btn-gradient-primary:disabled {
+    @apply from-gray-500 to-gray-600 opacity-50;
+  }
+}
+
+@layer utilities {
+  /* Gradient button hover (primary action buttons) */
+  .hover-gradient:not(:disabled):hover {
+    background-image: linear-gradient(to right, rgb(147 51 234), rgb(219 39 119));
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+}
