@@ -59,9 +59,7 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
           <Button
             variant="outline"
             disabled={!isOwner || isSaving}
-            className={`w-full justify-start border-input-border bg-glass-bg-from text-left font-normal text-glass-text hover-glass ${
-              !value && "text-input-placeholder"
-            }`}
+            className={`w-full justify-start text-left font-normal ${!value && "text-input-placeholder"}`}
             aria-label="Wybierz datę spotkania"
           >
             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

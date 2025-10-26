@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import type { DateISO } from "@/types";
 
 interface DateRangePickerProps {
@@ -35,13 +34,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
       {/* Date From */}
       <Popover open={fromOpen} onOpenChange={setFromOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "glass-select dropdown-glass-base w-full justify-start text-left font-normal sm:flex-1",
-              !fromDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
-            )}
-          >
+          <Button variant="outline" className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text">
             <CalendarIcon className="mr-2 h-4 w-4" />
             {fromDate ? format(fromDate, "PPP", { locale: pl }) : "Data od"}
           </Button>
@@ -64,13 +57,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
       {/* Date To */}
       <Popover open={toOpen} onOpenChange={setToOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "glass-select dropdown-glass-base w-full justify-start text-left font-normal sm:flex-1",
-              !toDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
-            )}
-          >
+          <Button variant="outline" className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text">
             <CalendarIcon className="mr-2 h-4 w-4" />
             {toDate ? format(toDate, "PPP", { locale: pl }) : "Data do"}
           </Button>

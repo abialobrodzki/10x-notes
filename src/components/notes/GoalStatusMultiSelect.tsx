@@ -1,14 +1,4 @@
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { GoalStatus } from "@/types";
 
 interface GoalStatusMultiSelectProps {
@@ -31,54 +21,30 @@ const GOAL_STATUS_OPTIONS: { value: GoalStatus; label: string }[] = [
  * - Polish labels
  */
 export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelectProps) {
-  const [open, setOpen] = useState(false);
-
+  const NULL_VALUE = "__null__";
+  const displayValue = value || NULL_VALUE;
   const selectedLabel = value ? GOAL_STATUS_OPTIONS.find((opt) => opt.value === value)?.label : "Status celu";
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="glass-select dropdown-glass-base w-full justify-between hover:text-glass-text"
-        >
-          <span className="truncate">{selectedLabel}</span>
-          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px] dropdown-content-glass">
-        <DropdownMenuLabel className="dropdown-label-glass">Status celu</DropdownMenuLabel>
-        <DropdownMenuSeparator className="dropdown-separator-glass" />
-
-        {/* Clear selection */}
-        <DropdownMenuCheckboxItem
-          checked={!value}
-          onCheckedChange={() => {
-            onChange(undefined);
-            setOpen(false);
-          }}
-          className="dropdown-item-glass"
-        >
+    <Select
+      value={displayValue}
+      onValueChange={(newValue) => {
+        onChange(newValue === NULL_VALUE ? undefined : (newValue as GoalStatus));
+      }}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={selectedLabel} />
+      </SelectTrigger>
+      <SelectContent className="dropdown-content-glass" align="start">
+        <SelectItem value={NULL_VALUE} className="dropdown-item-glass">
           Wszystkie
-        </DropdownMenuCheckboxItem>
-
-        <DropdownMenuSeparator className="dropdown-separator-glass" />
-
-        {/* Status options */}
+        </SelectItem>
         {GOAL_STATUS_OPTIONS.map((option) => (
-          <DropdownMenuCheckboxItem
-            key={option.value}
-            checked={value === option.value}
-            onCheckedChange={() => {
-              onChange(option.value);
-              setOpen(false);
-            }}
-            className="dropdown-item-glass"
-          >
+          <SelectItem key={option.value} value={option.value} className="dropdown-item-glass">
             {option.label}
-          </DropdownMenuCheckboxItem>
+          </SelectItem>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </SelectContent>
+    </Select>
   );
 }

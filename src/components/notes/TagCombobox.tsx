@@ -111,7 +111,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
             role="combobox"
             aria-expanded={isOpen}
             disabled={!isOwner || isSaving}
-            className="glass-select w-full justify-between border-input-border bg-glass-bg-from text-glass-text"
+            className="w-full justify-between"
           >
             <div className="flex items-center gap-2">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
