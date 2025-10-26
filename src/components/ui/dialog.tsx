@@ -53,10 +53,7 @@ function DialogContent({
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            className="absolute right-4 top-4 rounded-xs text-glass-text hover-close focus:ring-2 focus:ring-glass-border focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-          >
+          <DialogPrimitive.Close data-slot="dialog-close" className="dialog-close-pattern absolute right-4 top-4">
             <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

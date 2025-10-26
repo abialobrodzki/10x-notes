@@ -243,7 +243,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
               onClick={() => setShowRotateDialog(true)}
               disabled={isRotating}
               variant="outline"
-              className="border-yellow-400/30 bg-yellow-500/20 text-yellow-100 hover:border-yellow-400/50 hover:bg-yellow-500/30"
+              className="btn-variant-warning"
             >
               <RotateCw className={`mr-2 h-4 w-4 ${isRotating ? "animate-spin" : ""}`} />
               {isRotating ? "Zmienianie..." : "Zmień token"}
