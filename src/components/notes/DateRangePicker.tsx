@@ -38,7 +38,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "glass-select w-full justify-start text-left font-normal sm:w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              "glass-select w-full justify-start text-left font-normal sm:flex-1 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
               !fromDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >
@@ -70,7 +70,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
           <Button
             variant="outline"
             className={cn(
-              "glass-select w-full justify-start text-left font-normal sm:w-[200px] border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+              "glass-select w-full justify-start text-left font-normal sm:flex-1 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
               !toDate ? "text-glass-text-muted hover:text-glass-text-muted" : "text-glass-text hover:text-glass-text"
             )}
           >

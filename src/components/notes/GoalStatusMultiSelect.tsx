@@ -40,7 +40,7 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="glass-select w-full justify-between border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[200px]"
+          className="glass-select w-full justify-between border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text"
         >
           <span className="truncate">{selectedLabel}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

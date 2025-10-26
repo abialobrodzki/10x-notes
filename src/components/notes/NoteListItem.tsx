@@ -11,13 +11,19 @@ interface NoteListItemProps {
   searchTerm?: string;
 }
 
-const GOAL_STATUS_LABELS: Record<
-  string,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
-> = {
-  achieved: { label: "Osiągnięty", variant: "default" },
-  not_achieved: { label: "Nieosiągnięty", variant: "destructive" },
-  undefined: { label: "Nieokreślony", variant: "outline" },
+const GOAL_STATUS_LABELS: Record<string, { label: string; className: string }> = {
+  achieved: {
+    label: "Osiągnięty",
+    className: "bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30",
+  },
+  not_achieved: {
+    label: "Nieosiągnięty",
+    className: "bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30",
+  },
+  undefined: {
+    label: "Nieokreślony",
+    className: "bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/30",
+  },
 };
 
 /**
@@ -94,11 +100,7 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
               {item.tag.name}
             </Badge>
 
-            {goalStatusInfo && (
-              <Badge variant={goalStatusInfo.variant} className="text-xs">
-                {goalStatusInfo.label}
-              </Badge>
-            )}
+            {goalStatusInfo && <Badge className={`text-xs ${goalStatusInfo.className}`}>{goalStatusInfo.label}</Badge>}
           </div>
         </div>
       </CardContent>

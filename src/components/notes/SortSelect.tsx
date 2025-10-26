@@ -34,7 +34,7 @@ export function SortSelect({ sortBy, order, onSortByChange, onOrderChange }: Sor
     <div className="flex flex-col gap-2 sm:flex-row">
       {/* Sort By Field */}
       <Select value={currentSortBy} onValueChange={(value) => onSortByChange(value as NotesSortBy)}>
-        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[180px]">
+        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:flex-1">
           <SelectValue placeholder="Sortuj według" />
         </SelectTrigger>
         <SelectContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
@@ -52,7 +52,7 @@ export function SortSelect({ sortBy, order, onSortByChange, onOrderChange }: Sor
 
       {/* Sort Order */}
       <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
-        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:w-[140px]">
+        <SelectTrigger className="glass-select w-full border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text backdrop-blur-xl hover:text-glass-text sm:flex-1">
           <SelectValue placeholder="Kolejność" />
         </SelectTrigger>
         <SelectContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">

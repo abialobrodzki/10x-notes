@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "./DateRangePicker";
 import { GoalStatusMultiSelect } from "./GoalStatusMultiSelect";
@@ -21,6 +22,8 @@ interface FiltersPanelProps {
  * - Syncs with URL on change
  */
 export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const hasActiveFilters =
     filters.date_from ||
     filters.date_to ||
@@ -45,7 +48,13 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
   return (
     <div className="space-y-4 rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-glass-text">Filtry i sortowanie</h3>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center gap-2 text-sm font-medium text-glass-text transition-colors hover:text-glass-text-hover"
+        >
+          <span>Filtry i sortowanie</span>
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -59,38 +68,40 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
         )}
       </div>
 
-      <div className="space-y-3">
-        {/* Date Range */}
-        <div>
-          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Zakres dat</div>
-          <DateRangePicker
-            dateFrom={filters.date_from}
-            dateTo={filters.date_to}
-            onDateFromChange={(date_from) => onChange({ ...filters, date_from, page: 1 })}
-            onDateToChange={(date_to) => onChange({ ...filters, date_to, page: 1 })}
-          />
-        </div>
+      {isExpanded && (
+        <div className="flex flex-wrap items-start gap-4">
+          {/* Date Range */}
+          <div className="w-full md:flex-1">
+            <div className="mb-2 block text-xs font-medium text-glass-text-muted">Zakres dat</div>
+            <DateRangePicker
+              dateFrom={filters.date_from}
+              dateTo={filters.date_to}
+              onDateFromChange={(date_from) => onChange({ ...filters, date_from, page: 1 })}
+              onDateToChange={(date_to) => onChange({ ...filters, date_to, page: 1 })}
+            />
+          </div>
 
-        {/* Goal Status */}
-        <div>
-          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Status celu</div>
-          <GoalStatusMultiSelect
-            value={filters.goal_status}
-            onChange={(goal_status) => onChange({ ...filters, goal_status, page: 1 })}
-          />
-        </div>
+          {/* Goal Status */}
+          <div className="w-full md:flex-1">
+            <div className="mb-2 block text-xs font-medium text-glass-text-muted">Status celu</div>
+            <GoalStatusMultiSelect
+              value={filters.goal_status}
+              onChange={(goal_status) => onChange({ ...filters, goal_status, page: 1 })}
+            />
+          </div>
 
-        {/* Sort */}
-        <div>
-          <div className="mb-2 block text-xs font-medium text-glass-text-muted">Sortowanie</div>
-          <SortSelect
-            sortBy={filters.sort_by}
-            order={filters.order}
-            onSortByChange={(sort_by) => onChange({ ...filters, sort_by, page: 1 })}
-            onOrderChange={(order) => onChange({ ...filters, order, page: 1 })}
-          />
+          {/* Sort */}
+          <div className="w-full md:flex-1">
+            <div className="mb-2 block text-xs font-medium text-glass-text-muted">Sortowanie</div>
+            <SortSelect
+              sortBy={filters.sort_by}
+              order={filters.order}
+              onSortByChange={(sort_by) => onChange({ ...filters, sort_by, page: 1 })}
+              onOrderChange={(order) => onChange({ ...filters, order, page: 1 })}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
