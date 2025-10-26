@@ -149,7 +149,7 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-destructive text-white hover:bg-red-700 hover:shadow-lg transition-all disabled:opacity-50"
+              className="bg-destructive text-white hover-destructive-action transition-all disabled:opacity-50"
             >
               {isDeleting ? "Usuwanie..." : "Usuń etykietę"}
             </AlertDialogAction>

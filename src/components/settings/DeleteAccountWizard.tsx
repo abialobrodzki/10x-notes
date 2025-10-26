@@ -168,7 +168,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="w-full sm:w-auto hover:bg-red-700 hover:shadow-lg transition-all">
+        <Button variant="destructive" className="w-full sm:w-auto hover-destructive-action transition-all">
           <AlertTriangle className="mr-2 h-4 w-4" />
           Usuń konto
         </Button>
@@ -256,7 +256,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
               handleDelete();
             }}
             disabled={!canSubmit}
-            className="bg-destructive text-white hover:bg-red-700 hover:shadow-lg transition-all"
+            className="bg-destructive text-white hover-destructive-action transition-all"
           >
             {isDeleting ? "Usuwanie..." : "Usuń konto na zawsze"}
           </AlertDialogAction>

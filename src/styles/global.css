@@ -438,4 +438,21 @@
   .hover-tab:not([data-disabled="true"]):not([data-state="active"]):hover {
     @apply text-glass-text bg-white/5;
   }
+
+  /* 9. Destructive action button - for critical delete operations with shadow */
+  .hover-destructive-action:not(:disabled):hover {
+    @apply bg-red-700 shadow-lg;
+  }
+
+  /* 10. Blue gradient hover - for AI/generation primary actions */
+  .hover-blue-gradient:not(:disabled):hover {
+    background-image: linear-gradient(to right, rgb(37 99 235), rgb(147 51 234));
+    /* blue-600 → purple-600 */
+  }
+
+  /* 11. Yellow gradient hover - for warning/rotation actions */
+  .hover-yellow-gradient:not(:disabled):hover {
+    background-image: linear-gradient(to right, rgb(202 138 4), rgb(234 88 12));
+    /* yellow-600 → orange-600 */
+  }
 }

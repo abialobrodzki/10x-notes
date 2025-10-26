@@ -20,7 +20,7 @@ export function GenerateButton({ onClick, disabled = false, isLoading = false }:
       onClick={onClick}
       disabled={disabled || isLoading}
       size="lg"
-      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
+      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white hover-blue-gradient disabled:from-gray-500 disabled:to-gray-600 disabled:opacity-50"
       aria-busy={isLoading}
     >
       {isLoading ? (

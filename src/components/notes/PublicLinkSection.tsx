@@ -268,7 +268,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRotate}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover-yellow-gradient"
             >
               Tak, zmień token
             </AlertDialogAction>
