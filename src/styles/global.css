@@ -332,16 +332,6 @@
 }
 
 @layer components {
-  /* Primary gradient button - base styles */
-  .btn-gradient-primary {
-    @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
-    @apply text-white font-semibold transition-all shadow-lg;
-  }
-
-  .btn-gradient-primary:disabled {
-    @apply from-gray-500 to-gray-600 opacity-50;
-  }
-
   /* ========================================================================
      DROPDOWN/SELECT COMPONENTS - Glass effect patterns
      ======================================================================== */
@@ -475,21 +465,6 @@
     @apply hover:bg-destructive/10 hover:text-destructive;
   }
 
-  /* Interactive Menu Item - for Radix UI dropdown/select/command items */
-  .interactive-menu-item {
-    @apply outline-none select-none cursor-default transition-all;
-    @apply focus:bg-accent focus:text-accent-foreground;
-    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50;
-    @apply data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
-  }
-
-  /* Interactive Nav Link - for navigation menu items */
-  .interactive-nav-link {
-    @apply outline-none transition-all;
-    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50;
-    @apply hover:bg-white/5 hover:text-glass-text-hover;
-  }
-
   /* Interactive Close Button - for dialog/sheet X buttons */
   .interactive-close {
     @apply opacity-70 transition-opacity;
@@ -502,44 +477,22 @@
      SPECIALIZED COMPONENT PATTERNS - Ready-to-use compositions
      ======================================================================== */
 
-  /* Dropdown Item Pattern - for DropdownMenuItem, SelectItem, CommandItem */
-  .dropdown-item-pattern {
-    @apply interactive-menu-item;
-    @apply data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground;
-    @apply data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground;
-    @apply [&_svg:not([class*='text-'])]:text-muted-foreground;
-    @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
-  }
-
-  /* Dropdown Destructive Item - for delete actions in menus */
-  .dropdown-item-destructive {
-    @apply dropdown-item-pattern;
-    @apply data-[variant=destructive]:text-destructive;
-    @apply data-[variant=destructive]:focus:bg-destructive/10;
-    @apply data-[variant=destructive]:focus:text-destructive;
-    @apply data-[variant=destructive]:*:[svg]:!text-destructive;
-  }
-
   /* Dialog Close Pattern - for DialogPrimitive.Close */
   .dialog-close-pattern {
-    @apply interactive-close;
+    @apply opacity-70 transition-opacity hover:opacity-100;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none;
+    @apply disabled:pointer-events-none;
     @apply rounded-xs text-glass-text;
     @apply [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
   }
 
   /* Sheet Close Pattern - for SheetPrimitive.Close */
   .sheet-close-pattern {
-    @apply interactive-close;
+    @apply opacity-70 transition-opacity hover:opacity-100;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none;
+    @apply disabled:pointer-events-none;
     @apply ring-offset-background data-[state=open]:bg-secondary;
     @apply focus-visible:ring-offset-2;
-  }
-
-  /* Calendar Navigation Button - for prev/next buttons */
-  .calendar-nav-button {
-    @apply outline-none transition-all;
-    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply select-none;
   }
 
   /* ========================================================================
@@ -548,7 +501,9 @@
 
   /* Glass Button Variant - outline button with glass effect */
   .btn-variant-glass {
-    @apply interactive-glass;
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
     @apply hover:border-glass-border-hover hover:from-glass-bg-to hover:to-glass-bg-from;
     @apply bg-gradient-to-b from-glass-bg-from to-glass-bg-to;
     @apply border-glass-border text-glass-text;
@@ -556,7 +511,9 @@
 
   /* Gradient Button Variant - primary action gradient */
   .btn-variant-gradient {
-    @apply interactive-glass;
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
     @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
     @apply text-white font-semibold shadow-lg;
   }
@@ -572,9 +529,31 @@
     @apply from-gray-500 to-gray-600;
   }
 
+  /* Primary Gradient Button - alias dla btn-variant-gradient */
+  .btn-gradient-primary {
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
+    @apply text-white font-semibold shadow-lg;
+  }
+
+  .btn-gradient-primary:not(:disabled):hover {
+    background-image: linear-gradient(to right, rgb(147 51 234), rgb(219 39 119));
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  .btn-gradient-primary:disabled {
+    @apply from-gray-500 to-gray-600;
+  }
+
   /* Blue Gradient Variant - AI/generation actions */
   .btn-variant-blue-gradient {
-    @apply interactive-glass;
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
     @apply bg-gradient-to-r from-blue-600 to-purple-600;
     @apply text-white font-semibold shadow-lg;
   }
@@ -585,7 +564,9 @@
 
   /* Yellow Warning Variant - warning/rotation actions */
   .btn-variant-warning {
-    @apply interactive-glass;
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
     @apply border-yellow-400/30 bg-yellow-500/20 text-yellow-100;
   }
 
@@ -595,73 +576,14 @@
 
   /* Destructive Action Variant - critical delete operations */
   .btn-variant-destructive-action {
-    @apply interactive-destructive;
+    @apply outline-none transition-all;
+    @apply focus-visible:ring-[3px] focus-visible:ring-destructive/20;
+    @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
+    @apply hover:bg-destructive/10 hover:text-destructive;
     @apply bg-red-600 text-white font-semibold shadow-lg;
   }
 
   .btn-variant-destructive-action:not(:disabled):hover {
     @apply bg-red-700 shadow-lg;
   }
-
-  /* Nav Link Variant - for navigation menu links */
-  .btn-variant-nav-link {
-    @apply interactive-nav-link;
-    @apply text-glass-text;
-  }
-
-  /* ========================================================================
-     PUBLIC PAGE PATTERNS - For non-authenticated pages
-     ======================================================================== */
-
-  /* Public CTA Button - neutral design for error pages */
-  .btn-public-cta {
-    @apply outline-none transition-colors;
-    @apply focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none;
-    @apply bg-neutral-900 dark:bg-neutral-100;
-    @apply text-white dark:text-neutral-900;
-    @apply hover:bg-neutral-800 dark:hover:bg-neutral-200;
-    @apply focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-100;
-  }
-
-  /* ========================================================================
-     PATTERN USAGE GUIDE
-     ========================================================================
-     
-     BASE PATTERNS (use as building blocks):
-     - .interactive-glass → glass-styled interactive elements
-     - .interactive-destructive → delete/logout actions
-     - .interactive-menu-item → Radix UI menu items
-     - .interactive-nav-link → navigation links
-     - .interactive-close → close (X) buttons
-     
-     COMPONENT PATTERNS (ready-to-use):
-     - .dropdown-item-pattern → DropdownMenuItem, SelectItem, CommandItem
-     - .dropdown-item-destructive → destructive menu items
-     - .dialog-close-pattern → Dialog close button
-     - .sheet-close-pattern → Sheet close button
-     - .calendar-nav-button → Calendar prev/next buttons
-     
-     BUTTON VARIANTS (semantic button styles):
-     - .btn-variant-glass → outline glass button
-     - .btn-variant-gradient → primary gradient button
-     - .btn-variant-blue-gradient → AI/generation button
-     - .btn-variant-warning → yellow warning button
-     - .btn-variant-destructive-action → critical delete button
-     - .btn-variant-nav-link → navigation link button
-     
-     PUBLIC PAGE PATTERNS:
-     - .btn-public-cta → neutral CTA for error pages
-     
-     MIGRATION GUIDE:
-     
-     Before: className="focus:bg-accent outline-hidden focus-visible:ring-[3px] ..."
-     After:  className="dropdown-item-pattern"
-     
-     Before: className="border-yellow-400/30 bg-yellow-500/20 hover:border-yellow-400/50 ..."
-     After:  className="btn-variant-warning"
-     
-     Before: className="hover-close focus:ring-2 focus:outline-hidden disabled:pointer-events-none"
-     After:  className="dialog-close-pattern"
-     
-     ======================================================================== */
 }

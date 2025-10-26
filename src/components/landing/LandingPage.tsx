@@ -1,7 +1,8 @@
+import { Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { CharCountTextarea } from "./CharCountTextarea";
-import { GenerateButton } from "./GenerateButton";
 import { GenerationSkeleton } from "./GenerationSkeleton";
 import { SaveNoteButton } from "./SaveNoteButton";
 import { SavePromptBanner } from "./SavePromptBanner";
@@ -195,11 +196,16 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
               error={state.error}
             />
 
-            <GenerateButton
+            <Button
               onClick={handleGenerate}
+              variant="blue-gradient"
+              size="default"
               disabled={state.isGenerating || !state.input.trim() || state.input.length > 5000}
-              isLoading={state.isGenerating}
-            />
+              className="w-full"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {state.isGenerating ? "Generowanie..." : "Generuj notatkę"}
+            </Button>
 
             {/* Loading State */}
             {state.isGenerating && <GenerationSkeleton />}

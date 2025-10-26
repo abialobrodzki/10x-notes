@@ -215,7 +215,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
       </div>
 
       {/* Submit button */}
-      <Button type="submit" className="w-full btn-gradient-primary hover-gradient" disabled={isSubmitting}>
+      <Button type="submit" variant="gradient" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Logowanie..." : "Zaloguj się"}
       </Button>
     </form>

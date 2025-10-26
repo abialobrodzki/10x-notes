@@ -116,17 +116,11 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isLoading}
-              className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
               Anuluj
             </Button>
-            <Button type="submit" disabled={isLoading} className="btn-gradient-primary hover-gradient">
-              {isLoading ? "Tworzenie..." : "Utwórz"}
+            <Button type="submit" variant="gradient" disabled={isLoading}>
+              {isLoading ? "Tworzenie..." : "Utwórz Tag"}
             </Button>
           </DialogFooter>
         </form>

@@ -244,21 +244,22 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel
-            disabled={isDeleting}
-            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
-          >
-            Anuluj
+          <AlertDialogCancel asChild>
+            <Button variant="outline" disabled={isDeleting}>
+              Anuluj
+            </Button>
           </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault(); // Prevent default dialog close
-              handleDelete();
-            }}
-            disabled={!canSubmit}
-            className="bg-destructive text-white hover-destructive-action transition-all"
-          >
-            {isDeleting ? "Usuwanie..." : "Usuń konto na zawsze"}
+          <AlertDialogAction asChild>
+            <Button
+              variant="destructive-action"
+              disabled={!canSubmit}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.preventDefault(); // Prevent default dialog close
+                handleDelete();
+              }}
+            >
+              {isDeleting ? "Usuwanie..." : "Usuń konto na zawsze"}
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

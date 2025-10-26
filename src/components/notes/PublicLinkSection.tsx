@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/composed";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { NoteDetailDTO, PublicLinkDTO } from "@/types";
@@ -206,16 +207,18 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
       {isEnabled && publicLink && (
         <div className="space-y-4">
           {/* URL display */}
-          <div className="flex items-center gap-2 rounded-lg border border-glass-border bg-glass-bg-to p-3">
-            <Link className="h-4 w-4 flex-shrink-0 text-glass-text-muted" />
-            <input
-              type="text"
-              value={fullUrl}
-              readOnly
-              className="flex-1 bg-transparent text-sm text-glass-text outline-none"
-              onClick={(e) => e.currentTarget.select()}
-            />
-          </div>
+          <GlassCard padding="sm">
+            <div className="flex items-center gap-2">
+              <Link className="h-4 w-4 flex-shrink-0 text-glass-text-muted" />
+              <input
+                type="text"
+                value={fullUrl}
+                readOnly
+                className="flex-1 bg-transparent text-sm text-glass-text outline-none"
+                onClick={(e) => e.currentTarget.select()}
+              />
+            </div>
+          </GlassCard>
 
           {/* Action buttons */}
           <div className="flex gap-3">
@@ -239,12 +242,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             </Button>
 
             {/* Rotate button */}
-            <Button
-              onClick={() => setShowRotateDialog(true)}
-              disabled={isRotating}
-              variant="outline"
-              className="btn-variant-warning"
-            >
+            <Button onClick={() => setShowRotateDialog(true)} disabled={isRotating} variant="warning">
               <RotateCw className={`mr-2 h-4 w-4 ${isRotating ? "animate-spin" : ""}`} />
               {isRotating ? "Zmienianie..." : "Zmień token"}
             </Button>
@@ -263,14 +261,13 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-input-border bg-glass-bg-from text-glass-text hover-glass">
-              Anuluj
+            <AlertDialogCancel asChild>
+              <Button variant="outline">Anuluj</Button>
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRotate}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover-yellow-gradient"
-            >
-              Tak, zmień token
+            <AlertDialogAction asChild>
+              <Button variant="warning" onClick={handleRotate}>
+                Tak, zmień token
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

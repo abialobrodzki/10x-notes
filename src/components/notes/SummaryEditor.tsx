@@ -102,19 +102,10 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
 
           {/* Action buttons */}
           <div className="flex gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !hasChanges || isOverLimit}
-              className="btn-gradient-primary hover-gradient"
-            >
+            <Button onClick={handleSave} variant="gradient" disabled={!hasChanges || isOverLimit || isSaving}>
               {isSaving ? "Zapisywanie..." : "Zapisz"}
             </Button>
-            <Button
-              onClick={handleCancel}
-              disabled={isSaving}
-              variant="outline"
-              className="border-input-border bg-glass-bg-from text-glass-text hover-glass"
-            >
+            <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
               Anuluj
             </Button>
           </div>

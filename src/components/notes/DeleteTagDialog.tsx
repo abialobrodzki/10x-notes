@@ -139,19 +139,16 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel
-            disabled={isDeleting}
-            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
-          >
-            Anuluj
+          <AlertDialogCancel asChild>
+            <Button variant="outline" disabled={isDeleting}>
+              Anuluj
+            </Button>
           </AlertDialogCancel>
           {noteCount === 0 && (
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-white hover-destructive-action transition-all disabled:opacity-50"
-            >
-              {isDeleting ? "Usuwanie..." : "Usuń etykietę"}
+            <AlertDialogAction asChild>
+              <Button variant="destructive-action" disabled={isDeleting} onClick={handleDelete}>
+                {isDeleting ? "Usuwanie..." : "Usuń Tag"}
+              </Button>
             </AlertDialogAction>
           )}
         </AlertDialogFooter>

@@ -3,7 +3,7 @@ import { pl } from "date-fns/locale";
 import { Calendar, Sparkles, Globe, User } from "lucide-react";
 import { GoalStatusBadge } from "@/components/shared/GoalStatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/composed";
 import type { NoteListItemDTO } from "@/types";
 
 interface NoteListItemProps {
@@ -51,44 +51,39 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
   };
 
   return (
-    <Card
-      className="cursor-pointer border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl hover-glass"
-      onClick={() => onClick(item.id)}
-    >
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          {/* Header: Date + Indicators */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm text-glass-text-muted">
-              <Calendar className="h-4 w-4" />
-              <time dateTime={item.meeting_date}>{format(meetingDate, "PPP", { locale: pl })}</time>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {item.is_ai_generated && (
-                <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
-              )}
-              {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
-              {!item.is_owner && <User className="h-4 w-4 text-amber-400" aria-label="Współdzielona notatka" />}
-            </div>
+    <GlassCard hover padding="sm" className="cursor-pointer" onClick={() => onClick(item.id)}>
+      <div className="space-y-3">
+        {/* Header: Date + Indicators */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm text-glass-text-muted">
+            <Calendar className="h-4 w-4" />
+            <time dateTime={item.meeting_date}>{format(meetingDate, "PPP", { locale: pl })}</time>
           </div>
 
-          {/* Summary Preview */}
-          <p className="line-clamp-3 text-sm leading-relaxed text-glass-text">{highlightText(summaryPreview)}</p>
-
-          {/* Footer: Tag + Goal Status */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="secondary"
-              className="border-glass-border bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
-            >
-              {item.tag.name}
-            </Badge>
-
-            <GoalStatusBadge status={item.goal_status} className="text-xs" />
+          <div className="flex items-center gap-2">
+            {item.is_ai_generated && (
+              <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
+            )}
+            {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
+            {!item.is_owner && <User className="h-4 w-4 text-amber-400" aria-label="Współdzielona notatka" />}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Summary Preview */}
+        <p className="line-clamp-3 text-sm leading-relaxed text-glass-text">{highlightText(summaryPreview)}</p>
+
+        {/* Footer: Tag + Goal Status */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="secondary"
+            className="border-glass-border bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
+          >
+            {item.tag.name}
+          </Badge>
+
+          <GoalStatusBadge status={item.goal_status} className="text-xs" />
+        </div>
+      </div>
+    </GlassCard>
   );
 }

@@ -107,8 +107,7 @@ export function SaveNoteButton({ originalContent, aiResult }: SaveNoteButtonProp
       </p>
 
       {/* Save Button */}
-      <Button onClick={handleSave} disabled={isSaving} size="lg" className="w-full btn-gradient-primary hover-gradient">
-        <Save className="mr-2 h-4 w-4" aria-hidden="true" />
+      <Button onClick={handleSave} variant="gradient" disabled={isSaving} className="w-full">
         {isSaving ? "Zapisywanie..." : "Zapisz notatkę"}
       </Button>
     </div>
