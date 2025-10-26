@@ -223,7 +223,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             <Button
               onClick={handleCopy}
               variant="outline"
-              className="flex-1 border-input-border bg-glass-bg-from text-glass-text hover:border-glass-border-hover hover:bg-input-bg"
+              className="flex-1 border-input-border bg-glass-bg-from text-glass-text hover-glass"
             >
               {copied ? (
                 <>
@@ -263,7 +263,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-input-border bg-glass-bg-from text-glass-text hover:border-glass-border-hover hover:bg-input-bg">
+            <AlertDialogCancel className="border-input-border bg-glass-bg-from text-glass-text hover-glass">
               Anuluj
             </AlertDialogCancel>
             <AlertDialogAction

@@ -46,7 +46,7 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
       Icon: CheckCircle2,
       iconColor: "text-status-success-text",
       colorClasses:
-        "border-status-success-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-success-text hover:border-status-success-border-hover hover:from-glass-bg-to hover:to-glass-bg-from",
+        "border-status-success-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-success-text hover-glass",
       selectedClasses:
         "border-status-success-border-selected bg-gradient-to-b from-status-success-bg to-status-success-bg/50 backdrop-blur-xl text-status-success-text",
     },
@@ -57,7 +57,7 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
       Icon: XCircle,
       iconColor: "text-status-error-text",
       colorClasses:
-        "border-status-error-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-error-text hover:border-status-error-border-hover hover:from-glass-bg-to hover:to-glass-bg-from",
+        "border-status-error-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-error-text hover-glass",
       selectedClasses:
         "border-status-error-border-selected bg-gradient-to-b from-status-error-bg to-status-error-bg/50 backdrop-blur-xl text-status-error-text",
     },
@@ -85,7 +85,7 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
               aria-labelledby={`${option.id}-label`}
               disabled={isDisabled}
               onClick={() => handleChange(option.value)}
-              className={`flex w-full items-center gap-3 rounded-lg border p-3 transition-all ${
+              className={`flex w-full items-center gap-3 rounded-lg border p-3 ${
                 isSelected ? option.selectedClasses : option.colorClasses
               } ${isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
             >

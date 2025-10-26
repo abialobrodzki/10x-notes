@@ -59,7 +59,7 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
           <Button
             variant="outline"
             disabled={!isOwner || isSaving}
-            className={`w-full justify-start border-input-border bg-glass-bg-from text-left font-normal text-glass-text hover:border-glass-border-hover hover:bg-input-bg ${
+            className={`w-full justify-start border-input-border bg-glass-bg-from text-left font-normal text-glass-text hover-glass ${
               !value && "text-input-placeholder"
             }`}
             aria-label="Wybierz datę spotkania"

@@ -29,10 +29,7 @@ export default function RegisterPage() {
             {/* RedirectHint - link to login */}
             <p className="text-center text-sm text-glass-text-muted">
               Masz już konto?{" "}
-              <a
-                href="/login"
-                className="font-medium text-glass-text underline-offset-4 transition-colors hover:text-glass-text-hover hover:underline"
-              >
+              <a href="/login" className="font-medium text-glass-text hover-link">
                 Zaloguj się
               </a>
             </p>

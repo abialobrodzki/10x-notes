@@ -17,7 +17,7 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
       <nav className="mb-4 text-sm text-glass-text-muted" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">
           <li>
-            <a href="/notes" className="hover:text-glass-text hover:underline">
+            <a href="/notes" className="hover-link">
               Notatki
             </a>
           </li>
@@ -33,7 +33,7 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
         {/* Tag badge - clickable to filter */}
         <a
           href={`/notes?tag_id=${tag.id}`}
-          className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-sm font-medium text-purple-100 transition-colors hover:border-purple-400/50 hover:bg-purple-500/30"
+          className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-sm font-medium text-purple-100 hover-tag"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path

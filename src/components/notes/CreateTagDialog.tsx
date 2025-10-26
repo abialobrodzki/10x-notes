@@ -79,7 +79,7 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-glass-text hover:bg-white/5 hover:text-glass-text">
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-glass-text hover-nav">
           <Plus className="h-4 w-4" />
           <span className="sr-only">Utwórz nową etykietę</span>
         </Button>

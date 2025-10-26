@@ -246,7 +246,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
         <AlertDialogFooter>
           <AlertDialogCancel
             disabled={isDeleting}
-            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover:from-glass-bg-to hover:to-glass-bg-from hover:border-glass-border-hover transition-all"
+            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
           >
             Anuluj
           </AlertDialogCancel>

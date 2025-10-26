@@ -307,25 +307,6 @@
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
   }
 
-  /* ========================================================================
-     GLOBAL HOVER EFFECTS & INTERACTIVE ELEMENTS
-     ======================================================================== */
-
-  /* Destructive button hover (red buttons) */
-  .hover-destructive:not(:disabled):hover {
-    @apply bg-red-700 shadow-lg;
-  }
-
-  /* Glass button hover (glassmorphism buttons) */
-  .hover-glass:not(:disabled):hover {
-    @apply border-glass-border-hover from-glass-bg-to to-glass-bg-from;
-  }
-
-  /* Tab hover effect (for navigation tabs) */
-  .hover-tab:not([data-disabled="true"]):not([data-state="active"]):hover {
-    @apply text-glass-text bg-white/5;
-  }
-
   /* Glass select component styles (for consistent icon colors and hover) */
   [data-slot="select-trigger"].glass-select,
   button.glass-select {
@@ -363,11 +344,50 @@
 }
 
 @layer utilities {
-  /* Gradient button hover (primary action buttons) */
+  /* ========================================================================
+     HOVER UTILITIES - Reusable hover effects for consistency and DRY code
+     ======================================================================== */
+
+  /* 1. Gradient button hover - for primary action buttons */
   .hover-gradient:not(:disabled):hover {
     background-image: linear-gradient(to right, rgb(147 51 234), rgb(219 39 119));
     box-shadow:
       0 20px 25px -5px rgb(0 0 0 / 0.1),
       0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+
+  /* 2. Glass hover - for outline buttons, cards, inputs with glassmorphism */
+  .hover-glass:not(:disabled):hover {
+    @apply border-glass-border-hover from-glass-bg-to to-glass-bg-from;
+  }
+
+  /* 3. Navigation hover - for links in navbar, menu, sidebar */
+  .hover-nav:hover {
+    @apply bg-white/5 text-glass-text-hover;
+  }
+
+  /* 4. Destructive hover - for delete/logout buttons */
+  .hover-destructive:hover {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  /* 5. Close button hover - for X buttons in dialogs, sheets */
+  .hover-close {
+    @apply opacity-70 transition-opacity hover:opacity-100;
+  }
+
+  /* 6. Tag hover - for tag badges */
+  .hover-tag:hover {
+    @apply border-purple-400/50 bg-purple-500/30;
+  }
+
+  /* 7. Link hover - for text links with underline effect */
+  .hover-link:hover {
+    @apply text-glass-text-hover underline;
+  }
+
+  /* 8. Tab hover - for navigation tabs (data-state aware) */
+  .hover-tab:not([data-disabled="true"]):not([data-state="active"]):hover {
+    @apply text-glass-text bg-white/5;
   }
 }

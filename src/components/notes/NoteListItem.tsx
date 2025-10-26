@@ -52,7 +52,7 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
 
   return (
     <Card
-      className="cursor-pointer border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl transition-all hover:border-glass-border-hover hover:from-glass-bg-to hover:to-glass-bg-from"
+      className="cursor-pointer border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl hover-glass"
       onClick={() => onClick(item.id)}
     >
       <CardContent className="p-4">

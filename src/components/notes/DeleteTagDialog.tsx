@@ -108,7 +108,7 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-glass-text-muted hover:bg-destructive/10 hover:text-destructive"
+          className="h-6 w-6 text-glass-text-muted hover-destructive"
           aria-label="Usuń etykietę"
         >
           <Trash2 className="h-3 w-3" />
@@ -141,7 +141,7 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
         <AlertDialogFooter>
           <AlertDialogCancel
             disabled={isDeleting}
-            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover:from-glass-bg-to hover:to-glass-bg-from hover:border-glass-border-hover transition-all"
+            className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text hover-glass"
           >
             Anuluj
           </AlertDialogCancel>

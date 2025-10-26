@@ -113,10 +113,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
           <>
             {/* Authenticated - Desktop Navigation */}
             <nav className="hidden items-center gap-4 md:flex">
-              <a
-                href="/notes"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover"
-              >
+              <a href="/notes" className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav">
                 Moje notatki
               </a>
               <a
@@ -130,7 +127,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
               {/* User Menu Dropdown - Email visible next to icon */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full px-3 py-1.5 text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover focus:outline-none focus:ring-2 focus:ring-input-border-focus">
+                  <button className="flex items-center gap-2 rounded-full px-3 py-1.5 text-glass-text hover-nav focus:outline-none focus:ring-2 focus:ring-input-border-focus">
                     <span className="text-sm font-medium">{userProfile?.email || "Ładowanie..."}</span>
                     <User className="h-5 w-5" />
                   </button>
@@ -168,11 +165,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-glass-text hover:bg-white/5 hover:text-glass-text-hover"
-                  >
+                  <Button variant="ghost" size="icon" className="text-glass-text hover-nav">
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Toggle menu</span>
                   </Button>
@@ -185,7 +178,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                     {/* Navigation Links */}
                     <a
                       href="/notes"
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text hover-nav"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Moje notatki
@@ -202,7 +195,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
                     <a
                       href="/settings"
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text hover-nav"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Settings className="h-4 w-4" />
@@ -218,7 +211,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                         handleLogout();
                       }}
                       disabled={isLoggingOut}
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover-destructive disabled:opacity-50"
                     >
                       <LogOut className="h-4 w-4" />
                       {isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}
@@ -232,10 +225,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
           <>
             {/* Public - Desktop Navigation */}
             <nav className="hidden items-center gap-4 md:flex">
-              <a
-                href="/login"
-                className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover"
-              >
+              <a href="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav">
                 Zaloguj się
               </a>
               <a
@@ -248,10 +238,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
             {/* Public - Mobile Navigation */}
             <div className="flex items-center gap-3 md:hidden">
-              <a
-                href="/login"
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-glass-text transition-colors hover:bg-white/5 hover:text-glass-text-hover"
-              >
+              <a href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-glass-text hover-nav">
                 Zaloguj
               </a>
               <a

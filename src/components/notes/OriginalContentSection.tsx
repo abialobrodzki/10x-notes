@@ -29,7 +29,7 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm font-medium text-glass-text underline-offset-4 transition-colors hover:text-glass-text-hover hover:underline"
+            className="text-sm font-medium text-glass-text hover-link"
             aria-expanded={isExpanded}
             aria-controls="original-content"
           >

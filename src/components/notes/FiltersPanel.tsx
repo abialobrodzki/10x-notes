@@ -50,7 +50,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
       <div className="flex items-center justify-between">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm font-medium text-glass-text transition-colors hover:text-glass-text-hover"
+          className="flex items-center gap-2 text-sm font-medium text-glass-text hover-nav"
         >
           <span>Filtry i sortowanie</span>
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -60,7 +60,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
             variant="ghost"
             size="sm"
             onClick={handleReset}
-            className="h-8 px-2 text-glass-text-muted hover:bg-white/5 hover:text-glass-text lg:px-3"
+            className="h-8 px-2 text-glass-text-muted hover-nav lg:px-3"
           >
             <X className="mr-2 h-4 w-4" />
             Wyczyść
