@@ -79,7 +79,7 @@ export type SortOrder = "asc" | "desc";
 export interface GenerateAiSummaryCommand {
   /** Raw meeting notes content */
   original_content: string;
-  /** AI model name (default: 'openai/gpt-5-nano') */
+  /** AI model name (default: 'x-ai/grok-4-fast') */
   model_name?: LlmGenerationEntity["model_name"];
 }
 

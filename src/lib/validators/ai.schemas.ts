@@ -16,14 +16,14 @@ export const generateAiSummarySchema = z.object({
   /**
    * AI model name for generation
    * - Optional field
-   * - Defaults to 'openai/gpt-5-nano' (cost-effective model)
+   * - Defaults to 'x-ai/grok-4-fast' (excellent JSON Schema support, fast, currently free)
    * - Must follow OpenRouter model naming convention: 'provider/model-name'
    */
   model_name: z
     .string()
     .regex(/^[\w-]+\/[\w-]+$/, "Model name must follow format: 'provider/model-name'")
     .optional()
-    .default("openai/gpt-5-nano"),
+    .default("x-ai/grok-4-fast"),
 });
 
 /**

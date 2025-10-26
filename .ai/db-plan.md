@@ -138,7 +138,7 @@ Logging table for AI model invocations (monitoring, analytics, cost tracking).
 | `id`                 | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                    | Unique generation log identifier                        |
 | `note_id`            | UUID        | NULLABLE, REFERENCES notes(id) ON DELETE SET NULL         | Associated note (NULL if generation failed before save) |
 | `user_id`            | UUID        | NULLABLE, REFERENCES auth.users(id) ON DELETE SET NULL    | User who triggered generation (NULL for anonymous)      |
-| `model_name`         | TEXT        | NOT NULL                                                  | AI model used (e.g., "openai/gpt-5-nano")               |
+| `model_name`         | TEXT        | NOT NULL                                                  | AI model used (e.g., "x-ai/grok-4-fast")                |
 | `generation_time_ms` | INTEGER     | NOT NULL, CHECK (generation_time_ms >= 0)                 | Generation time in milliseconds (non-negative)          |
 | `tokens_used`        | INTEGER     | NULLABLE, CHECK (tokens_used IS NULL OR tokens_used >= 0) | Total tokens consumed (non-negative if present)         |
 | `status`             | TEXT        | NOT NULL, CHECK (status IN ('success', 'failure'))        | Generation status: 'success' or 'failure'               |

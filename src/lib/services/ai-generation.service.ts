@@ -24,16 +24,16 @@ const AI_SUMMARY_SCHEMA: JSONSchema & { name: string } = {
   properties: {
     summary_text: {
       type: "string",
-      description: "ULTRA-SHORT summary in same language as input (1-2 sentences MAXIMUM, 20-40 words)",
+      description: "1-2 sentences, 20-40 words, same language as input",
     },
     goal_status: {
       type: "string",
       enum: ["achieved", "not_achieved", "undefined"],
-      description: "Whether meeting goals were achieved",
+      description: "Goal achievement status",
     },
     suggested_tag: {
       type: ["string", "null"],
-      description: "Suggested tag/category in the same language as input (1-3 words)",
+      description: "1-3 word tag, same language as input",
     },
   },
   required: ["summary_text", "goal_status", "suggested_tag"],
@@ -50,6 +50,7 @@ export class AiGenerationService {
   constructor(supabase: SupabaseClient<Database>) {
     // Initialize OpenRouter service with Supabase for telemetry
     this.openRouterService = new OpenRouterService(supabase, {
+      defaultModel: "x-ai/grok-4-fast", // Grok-4-Fast: excellent JSON Schema support, fast, currently free on OpenRouter
       timeoutMs: 60000, // 60 seconds (1 minute)
       retryAttempts: 2, // Retry transient failures
       appUrl: "https://10xnotes.app",
@@ -77,6 +78,7 @@ export class AiGenerationService {
       responseSchema: AI_SUMMARY_SCHEMA,
       parameters: {
         temperature: 0.3, // Lower temperature for more consistent outputs
+        max_tokens: 1000, // Conservative limit - can be reduced based on actual usage
       },
       userId: userId ?? undefined,
       noteId: undefined, // No note ID for anonymous generation
@@ -97,8 +99,8 @@ export class AiGenerationService {
   /**
    * Build prompt template for AI generation
    *
-   * Note: JSON output format is enforced by JSON Schema (AI_SUMMARY_SCHEMA)
-   * passed to OpenRouterService, so no need for JSON format instructions in prompt.
+   * Note: Output structure and constraints (word limits, language matching, etc.)
+   * are enforced by JSON Schema (AI_SUMMARY_SCHEMA), keeping prompt concise.
    *
    * @param content - Raw meeting notes content
    * @returns System and user prompts for AI model
@@ -107,37 +109,20 @@ export class AiGenerationService {
     system: string;
     user: string;
   } {
-    const system = `You are an AI assistant that creates ULTRA-SHORT summaries of meeting notes.
+    const system = `Summarize meeting notes focusing on BUSINESS OUTCOMES in 1-2 sentences (20-40 words max) in the same language as input.
 
-Your task is to:
-1. Detect the language of the input notes
-2. Create an EXTREMELY BRIEF summary (MAXIMUM 1-2 sentences, 20-40 words ONLY) in the SAME language as the input
-   - Extract ONLY the single most important point or decision
-   - ONE key takeaway - nothing more
-   - Skip ALL details, context, background, explanations
-   - Use absolute minimum words
-3. Determine if meeting goals were achieved:
-   - "achieved" - goals were clearly met
-   - "not_achieved" - goals were not met or missed
-   - "undefined" - no clear goal was mentioned
-4. Suggest a relevant tag/category (1-3 words) in the SAME language as the input
+Extract ONE key business decision/outcome/blocker.
 
-CRITICAL RULES - FOLLOW STRICTLY:
-- MAXIMUM 1-2 sentences for summary_text
-- MAXIMUM 20-40 words total
-- If you write more than 40 words, you FAILED
-- Extract ONLY the most critical information
-- Omit everything that is not absolutely essential
-- The summary_text and suggested_tag MUST be in the same language as the input notes
-- Think: "What is the ONE thing someone must know?" - write only that
+Goal status (choose one, prefer binary values):
+- "achieved" - meeting goals were clearly met OR progress was made
+- "not_achieved" - goals were missed, blocked, or no clear goals mentioned
+- "undefined" - ONLY if truly unable to determine goal achievement (use rarely)
 
-Example of correct length:
-❌ BAD (too long): "During the meeting we discussed project timeline and decided to extend the deadline by two weeks due to resource constraints. The team agreed to prioritize the core features first."
-✅ GOOD (correct): "Extended project deadline by 2 weeks. Prioritizing core features."
+Suggest 1-3 word tag in same language.
 
-Your summary must be like a telegram - shortest possible message.`;
+Example: "Extended deadline 2 weeks due to resource constraints. Prioritizing revenue-generating features."`;
 
-    const user = `Create an ULTRA-SHORT summary (1-2 sentences MAX, 20-40 words) in the same language as these notes:
+    const user = `Summarize:
 
 ${content}`;
 

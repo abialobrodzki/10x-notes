@@ -57,7 +57,7 @@ export class OpenRouterService {
     this.timeoutMs = options?.timeoutMs ?? 60000; // 60 seconds (1 minute)
     this.retryAttempts = options?.retryAttempts ?? 2;
     this.retryDelayMs = options?.retryDelayMs ?? 1000; // 1 second base delay
-    this.defaultModel = options?.defaultModel ?? "openai/gpt-5-nano";
+    this.defaultModel = options?.defaultModel ?? "x-ai/grok-4-fast";
     this.appUrl = options?.appUrl;
     this.appName = options?.appName;
   }
@@ -153,7 +153,7 @@ export class OpenRouterService {
 
     // Validate model name format (provider/model-name)
     if (request.modelName && !/^[a-z0-9-]+\/[a-z0-9-._]+$/i.test(request.modelName)) {
-      throw new OpenRouterValidationError("modelName must be in format: provider/model-name (e.g., openai/gpt-5-nano)");
+      throw new OpenRouterValidationError("modelName must be in format: provider/model-name (e.g., x-ai/grok-4-fast)");
     }
 
     // Validate response schema if provided
@@ -433,6 +433,13 @@ export class OpenRouterService {
 
     const content = choice.message.content;
 
+    // Check if response was truncated by max_tokens limit
+    if (choice.finish_reason === "length") {
+      throw new OpenRouterParseError(
+        `Response truncated by max_tokens limit. Increase max_tokens parameter. Content received: ${content.substring(0, 200)}...`
+      );
+    }
+
     // If no schema, return raw text
     if (!schema) {
       return content as T;
@@ -443,8 +450,10 @@ export class OpenRouterService {
     try {
       parsedData = JSON.parse(content);
     } catch (error) {
+      // Log the raw content for debugging (truncate if too long)
+      const contentPreview = content.length > 500 ? `${content.substring(0, 500)}...` : content;
       throw new OpenRouterParseError(
-        `Failed to parse JSON response: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to parse JSON response: ${error instanceof Error ? error.message : String(error)}. Content received: ${contentPreview}`
       );
     }
 

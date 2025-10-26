@@ -36,7 +36,7 @@ Generate AI summary from meeting notes content (no authentication required).
 ```json
 {
   "original_content": "Raw meeting notes...", // string, required, max 5000 chars
-  "model_name": "openai/gpt-5-nano" // string, optional, default: 'openai/gpt-5-nano'
+  "model_name": "x-ai/grok-4-fast" // string, optional, default: 'x-ai/grok-4-fast'
 }
 ```
 
@@ -86,7 +86,7 @@ Backend Code Pattern:
 const { data, error } = await supabaseServiceRole.from("llm_generations").insert({
   note_id: null, // or note.id after save
   user_id: userId || null, // null for anonymous
-  model_name: "openai/gpt-5-nano",
+  model_name: "x-ai/grok-4-fast",
   generation_time_ms: elapsed,
   tokens_used: response.usage.total_tokens,
   status: "success",

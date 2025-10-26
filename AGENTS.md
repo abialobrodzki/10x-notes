@@ -196,7 +196,7 @@ HTTP Request
 `OpenRouterService` provides secure, type-safe communication with OpenRouter API for LLM generation:
 
 - **Architecture:** Abstraction layer over HTTP with timeout/retry/parsing logic
-- **Default Model:** `openai/gpt-5-nano` (configurable per request)
+- **Default Model:** `x-ai/grok-4-fast` (configurable per request)
 - **Multi-Language:** Automatic language detection - summaries generated in the same language as input
 - **Type Safety:** Generic types with JSON Schema validation for structured outputs
 - **Reliability:** Automatic retry with exponential backoff for transient failures
@@ -208,7 +208,7 @@ HTTP Request
 
 ```typescript
 const service = new OpenRouterService(supabase, {
-  defaultModel: "openai/gpt-5-nano",
+  defaultModel: "x-ai/grok-4-fast",
   timeoutMs: 60000,
   retryAttempts: 2,
 });

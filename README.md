@@ -37,7 +37,7 @@ A lightweight AI-powered meeting notes management application that helps you org
 ### 🧠 AI Integration
 
 - **OpenRouter API** - Access to multiple LLM providers (OpenAI, Anthropic, Google, etc.) via custom service layer:
-  - **Default Model**: `openai/gpt-5-nano` (configurable per request)
+  - **Default Model**: `x-ai/grok-4-fast` (configurable per request)
   - **OpenRouterService**: Type-safe abstraction with retry logic, telemetry, and JSON Schema validation
   - **Reliability**: Automatic retry with exponential backoff, timeout management (60s)
   - **Type Safety**: Generic types for structured outputs with runtime validation
