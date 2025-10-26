@@ -3,6 +3,15 @@ import { AiGenerationService } from "../../../lib/services/ai-generation.service
 import { generateAiSummarySchema, type GenerateAiSummaryInput } from "../../../lib/validators/ai.schemas";
 import type { AiSummaryDTO } from "../../../types";
 import type { APIRoute } from "astro";
+import {
+  OpenRouterTimeoutError,
+  OpenRouterAuthError,
+  OpenRouterRateLimitError,
+  OpenRouterNetworkError,
+  OpenRouterServiceError,
+  OpenRouterValidationError,
+  OpenRouterError,
+} from "../../../lib/errors/openrouter.errors";
 
 // Disable prerendering - this is a dynamic API endpoint
 export const prerender = false;
@@ -93,11 +102,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const aiService = new AiGenerationService(locals.supabase);
       result = await aiService.generateSummary(validatedInput, userId);
     } catch (error) {
-      // Handle specific error cases
+      // Handle specific OpenRouter error types with instanceof checks
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      // Configuration error - missing API key (503)
-      if (errorMessage.includes("OPENROUTER_API_KEY") || errorMessage.includes("Missing")) {
+      // Authentication error - missing or invalid API key (503)
+      if (error instanceof OpenRouterAuthError) {
         // eslint-disable-next-line no-console
         console.error("❌ AI Service Configuration Error:", errorMessage);
         return new Response(
@@ -113,23 +122,44 @@ export const POST: APIRoute = async ({ request, locals }) => {
         );
       }
 
-      // Timeout error (408)
-      if (errorMessage.includes("timeout")) {
+      // Timeout error - request exceeded 30s limit (504 Gateway Timeout)
+      if (error instanceof OpenRouterTimeoutError) {
+        // eslint-disable-next-line no-console
+        console.error("AI generation timeout:", errorMessage);
         return new Response(
           JSON.stringify({
-            error: "Request timeout",
-            message: "AI generation timeout (exceeded 30 seconds)",
+            error: "Gateway timeout",
+            message: "AI generation exceeded time limit (30 seconds)",
             details: "Try again with shorter content or contact support",
           }),
           {
-            status: 408,
+            status: 504,
             headers: { "Content-Type": "application/json" },
           }
         );
       }
 
-      // OpenRouter API error (503)
-      if (errorMessage.includes("OpenRouter")) {
+      // Rate limit error - too many requests (429)
+      if (error instanceof OpenRouterRateLimitError) {
+        // eslint-disable-next-line no-console
+        console.error("OpenRouter rate limit exceeded:", errorMessage);
+        return new Response(
+          JSON.stringify({
+            error: "Too many requests",
+            message: "OpenRouter API rate limit exceeded",
+            details: "Please wait a moment and try again",
+          }),
+          {
+            status: 429,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Service/Network errors - OpenRouter unavailable or connection issues (503)
+      if (error instanceof OpenRouterServiceError || error instanceof OpenRouterNetworkError) {
+        // eslint-disable-next-line no-console
+        console.error("AI service unavailable:", errorMessage);
         return new Response(
           JSON.stringify({
             error: "Service unavailable",
@@ -143,7 +173,41 @@ export const POST: APIRoute = async ({ request, locals }) => {
         );
       }
 
-      // Generic error (500)
+      // Validation error - invalid input to OpenRouter (400)
+      if (error instanceof OpenRouterValidationError) {
+        // eslint-disable-next-line no-console
+        console.error("OpenRouter validation error:", errorMessage);
+        return new Response(
+          JSON.stringify({
+            error: "Bad request",
+            message: "Invalid request to AI service",
+            details: errorMessage,
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Catch-all for any other OpenRouter errors (503)
+      if (error instanceof OpenRouterError) {
+        // eslint-disable-next-line no-console
+        console.error("OpenRouter error:", errorMessage);
+        return new Response(
+          JSON.stringify({
+            error: "Service unavailable",
+            message: "AI service encountered an error",
+            details: "Please try again in a few moments",
+          }),
+          {
+            status: 503,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      // Generic error for non-OpenRouter errors (500)
       // eslint-disable-next-line no-console
       console.error("AI generation error:", error);
       return new Response(
