@@ -168,7 +168,7 @@ create table llm_generations (
   id uuid primary key default gen_random_uuid(),
   note_id uuid references notes(id) on delete set null,           -- null if generation failed before save
   user_id uuid references auth.users(id) on delete set null,      -- null for anonymous generations
-  model_name text not null,                                        -- e.g., "openai/gpt-4o-mini"
+  model_name text not null,                                        -- e.g., "openai/gpt-5-nano"
   generation_time_ms integer not null,
   tokens_used integer,
   status text not null,

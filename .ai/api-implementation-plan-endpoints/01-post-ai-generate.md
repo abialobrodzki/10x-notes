@@ -33,14 +33,14 @@ This API uses the following HTTP status codes:
 - **Required**:
   - `original_content` (string) - Raw note content, max 5000 characters
 - **Optional**:
-  - `model_name` (string) - AI model name, default: `'openai/gpt-4o-mini'`
+  - `model_name` (string) - AI model name, default: `'openai/gpt-5-nano'`
 
 **Request Body**:
 
 ```json
 {
   "original_content": "Raw meeting note content...",
-  "model_name": "openai/gpt-4o-mini"
+  "model_name": "openai/gpt-5-nano"
 }
 ```
 
@@ -61,7 +61,7 @@ This API uses the following HTTP status codes:
 ```typescript
 export const generateAiSummarySchema = z.object({
   original_content: z.string().min(1, "Content is required").max(5000, "Content exceeds 5000 character limit"),
-  model_name: z.string().optional().default("openai/gpt-4o-mini"),
+  model_name: z.string().optional().default("openai/gpt-5-nano"),
 });
 ```
 

@@ -153,9 +153,7 @@ export class OpenRouterService {
 
     // Validate model name format (provider/model-name)
     if (request.modelName && !/^[a-z0-9-]+\/[a-z0-9-._]+$/i.test(request.modelName)) {
-      throw new OpenRouterValidationError(
-        "modelName must be in format: provider/model-name (e.g., openai/gpt-4o-mini)"
-      );
+      throw new OpenRouterValidationError("modelName must be in format: provider/model-name (e.g., openai/gpt-5-nano)");
     }
 
     // Validate response schema if provided

@@ -16,14 +16,14 @@ export const generateAiSummarySchema = z.object({
   /**
    * AI model name for generation
    * - Optional field
-   * - Defaults to 'openai/gpt-4o-mini' (cost-effective model)
+   * - Defaults to 'openai/gpt-5-nano' (cost-effective model)
    * - Must follow OpenRouter model naming convention: 'provider/model-name'
    */
   model_name: z
     .string()
     .regex(/^[\w-]+\/[\w-]+$/, "Model name must follow format: 'provider/model-name'")
     .optional()
-    .default("openai/gpt-4o-mini"),
+    .default("openai/gpt-5-nano"),
 });
 
 /**
