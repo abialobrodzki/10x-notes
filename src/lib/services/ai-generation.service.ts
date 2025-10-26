@@ -24,16 +24,17 @@ const AI_SUMMARY_SCHEMA: JSONSchema & { name: string } = {
   properties: {
     summary_text: {
       type: "string",
-      description: "1-2 sentences, 20-40 words, same language as input",
+      description: "Brief summary (1-2 sentences, 20-40 words) in same language as input",
     },
     goal_status: {
       type: "string",
       enum: ["achieved", "not_achieved", "undefined"],
-      description: "Goal achievement status",
+      description: "Meeting goal achievement status",
     },
     suggested_tag: {
       type: ["string", "null"],
-      description: "1-3 word tag, same language as input",
+      description:
+        "Project or feature name (1-3 words) in input language. NOT status/goal. Examples: 'OAuth API', 'CRM Dashboard'",
     },
   },
   required: ["summary_text", "goal_status", "suggested_tag"],
@@ -99,8 +100,9 @@ export class AiGenerationService {
   /**
    * Build prompt template for AI generation
    *
-   * Note: Output structure and constraints (word limits, language matching, etc.)
-   * are enforced by JSON Schema (AI_SUMMARY_SCHEMA), keeping prompt concise.
+   * Prompt is in English for better model performance (models trained primarily on English).
+   * Output language matching is handled via explicit instructions in the prompt.
+   * JSON Schema (AI_SUMMARY_SCHEMA) enforces structure and constraints.
    *
    * @param content - Raw meeting notes content
    * @returns System and user prompts for AI model
@@ -109,20 +111,36 @@ export class AiGenerationService {
     system: string;
     user: string;
   } {
-    const system = `Summarize meeting notes focusing on BUSINESS OUTCOMES in 1-2 sentences (20-40 words max) in the same language as input.
+    const system = `Summarize meeting notes focusing on BUSINESS OUTCOMES. Output 1-2 sentences (20-40 words max) in the SAME LANGUAGE as input.
 
 Extract ONE key business decision/outcome/blocker.
 
-Goal status (choose one, prefer binary values):
-- "achieved" - meeting goals were clearly met OR progress was made
-- "not_achieved" - goals were missed, blocked, or no clear goals mentioned
-- "undefined" - ONLY if truly unable to determine goal achievement (use rarely)
+Goal status (choose one, prefer binary):
+- "achieved" - goals met OR progress made
+- "not_achieved" - goals missed/blocked OR no clear goals
+- "undefined" - ONLY if unable to determine (use rarely)
 
-Suggest 1-3 word tag in same language.
+Suggested tag - EXTRACT PROJECT/FEATURE NAME (1-3 words in input language):
+- Identify PROJECT or FEATURE name from notes (NOT status, NOT goal)
+- GOOD tags: "Reporting Module", "OAuth API", "CRM Dashboard", "Push Notifications"
+- BAD tags: "Sprint Complete", "Goals Achieved", "Priorities" (statuses, not projects!)
+- If multiple projects: pick MAIN one
 
-Example: "Extended deadline 2 weeks due to resource constraints. Prioritizing revenue-generating features."`;
+Examples:
 
-    const user = `Summarize:
+Input (English): "Team completed reporting module with Excel export. Product Owner accepted deliverables."
+Output:
+- summary_text: "Completed reporting module with Excel export, accepted by PO."
+- goal_status: "achieved"
+- suggested_tag: "Reporting Module" (project name, NOT "Sprint Complete")
+
+Input (Polish): "Zespół ukończył moduł raportowania z eksportem do Excela. PO zaakceptował."
+Output:
+- summary_text: "Ukończono moduł raportowania z eksportem do Excela, zaakceptowany przez PO."
+- goal_status: "achieved"
+- suggested_tag: "Moduł raportowania" (nazwa projektu, NIE "Sprint ukończony")`;
+
+    const user = `Meeting notes:
 
 ${content}`;
 
