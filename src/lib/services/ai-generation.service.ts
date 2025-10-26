@@ -24,7 +24,7 @@ const AI_SUMMARY_SCHEMA: JSONSchema & { name: string } = {
   properties: {
     summary_text: {
       type: "string",
-      description: "Concise summary of the meeting in the same language as input (2-4 sentences)",
+      description: "ULTRA-SHORT summary in same language as input (1-2 sentences MAXIMUM, 20-40 words)",
     },
     goal_status: {
       type: "string",
@@ -107,23 +107,37 @@ export class AiGenerationService {
     system: string;
     user: string;
   } {
-    const system = `You are an AI assistant that analyzes meeting notes and generates structured summaries.
+    const system = `You are an AI assistant that creates ULTRA-SHORT summaries of meeting notes.
 
 Your task is to:
 1. Detect the language of the input notes
-2. Create a concise summary of the meeting (2-4 sentences, factual and concise) in the SAME language as the input
+2. Create an EXTREMELY BRIEF summary (MAXIMUM 1-2 sentences, 20-40 words ONLY) in the SAME language as the input
+   - Extract ONLY the single most important point or decision
+   - ONE key takeaway - nothing more
+   - Skip ALL details, context, background, explanations
+   - Use absolute minimum words
 3. Determine if meeting goals were achieved:
    - "achieved" - goals were clearly met
    - "not_achieved" - goals were not met or missed
-   - "undefined" - no clear goal was mentioned in the notes
-4. Suggest a relevant tag/category for this meeting (1-3 words) in the SAME language as the input
-   - Use null if no clear category fits
+   - "undefined" - no clear goal was mentioned
+4. Suggest a relevant tag/category (1-3 words) in the SAME language as the input
 
-IMPORTANT: The summary_text and suggested_tag MUST be in the same language as the input notes.
+CRITICAL RULES - FOLLOW STRICTLY:
+- MAXIMUM 1-2 sentences for summary_text
+- MAXIMUM 20-40 words total
+- If you write more than 40 words, you FAILED
+- Extract ONLY the most critical information
+- Omit everything that is not absolutely essential
+- The summary_text and suggested_tag MUST be in the same language as the input notes
+- Think: "What is the ONE thing someone must know?" - write only that
 
-Focus on extracting key information accurately and concisely.`;
+Example of correct length:
+❌ BAD (too long): "During the meeting we discussed project timeline and decided to extend the deadline by two weeks due to resource constraints. The team agreed to prioritize the core features first."
+✅ GOOD (correct): "Extended project deadline by 2 weeks. Prioritizing core features."
 
-    const user = `Analyze these meeting notes and provide a structured summary in the same language as the notes:
+Your summary must be like a telegram - shortest possible message.`;
+
+    const user = `Create an ULTRA-SHORT summary (1-2 sentences MAX, 20-40 words) in the same language as these notes:
 
 ${content}`;
 
