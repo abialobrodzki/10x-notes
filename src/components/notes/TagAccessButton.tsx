@@ -45,7 +45,7 @@ export default function TagAccessButton({ tagId, isOwner }: TagAccessButtonProps
         <Button
           onClick={handleOpenModal}
           variant="outline"
-          className="w-full border-input-border bg-glass-bg-from text-glass-text hover:border-glass-border-hover hover:bg-input-bg"
+          className="w-full border-input-border bg-glass-bg-from text-glass-text hover-glass"
         >
           <Users className="mr-2 h-4 w-4" />
           Zarządzaj dostępem

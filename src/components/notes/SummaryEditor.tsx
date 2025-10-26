@@ -71,7 +71,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
             onClick={handleEdit}
             variant="outline"
             size="sm"
-            className="border-input-border bg-glass-bg-from text-glass-text hover:border-glass-border-hover hover:bg-input-bg"
+            className="border-input-border bg-glass-bg-from text-glass-text hover-glass"
           >
             Edytuj
           </Button>
@@ -113,7 +113,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
               onClick={handleCancel}
               disabled={isSaving}
               variant="outline"
-              className="border-input-border bg-glass-bg-from text-glass-text hover:border-glass-border-hover hover:bg-input-bg"
+              className="border-input-border bg-glass-bg-from text-glass-text hover-glass"
             >
               Anuluj
             </Button>

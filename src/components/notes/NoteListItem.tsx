@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { Calendar, Sparkles, Globe, User } from "lucide-react";
+import { GoalStatusBadge } from "@/components/shared/GoalStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { NoteListItemDTO } from "@/types";
@@ -10,21 +11,6 @@ interface NoteListItemProps {
   onClick: (id: string) => void;
   searchTerm?: string;
 }
-
-const GOAL_STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  achieved: {
-    label: "Osiągnięty",
-    className: "bg-green-500/20 text-green-300 border-green-500/30 hover:bg-green-500/30",
-  },
-  not_achieved: {
-    label: "Nieosiągnięty",
-    className: "bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30",
-  },
-  undefined: {
-    label: "Nieokreślony",
-    className: "bg-gray-500/20 text-gray-300 border-gray-500/30 hover:bg-gray-500/30",
-  },
-};
 
 /**
  * NoteListItem - Single note in the list
@@ -38,7 +24,6 @@ const GOAL_STATUS_LABELS: Record<string, { label: string; className: string }> =
  */
 export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
   const meetingDate = new Date(item.meeting_date);
-  const goalStatusInfo = item.goal_status ? GOAL_STATUS_LABELS[item.goal_status] : null;
 
   // Truncate summary for preview (max 200 chars)
   const summaryPreview = item.summary_text
@@ -100,7 +85,7 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
               {item.tag.name}
             </Badge>
 
-            {goalStatusInfo && <Badge className={`text-xs ${goalStatusInfo.className}`}>{goalStatusInfo.label}</Badge>}
+            <GoalStatusBadge status={item.goal_status} className="text-xs" />
           </div>
         </div>
       </CardContent>

@@ -1,0 +1,1 @@
+export { GoalStatusBadge } from "./GoalStatusBadge";

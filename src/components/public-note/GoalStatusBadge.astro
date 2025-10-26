@@ -14,25 +14,29 @@ if (!value) {
 }
 
 // Determine badge styling and content based on status
+// Matches GoalStatusBadge.tsx for consistency across React and Astro
 const getBadgeConfig = (status: GoalStatus) => {
   switch (status) {
     case "achieved":
       return {
-        className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-        label: "Cel osiągnięty",
+        className:
+          "inline-flex items-center gap-1.5 bg-status-success-bg text-status-success-text border-status-success-border",
+        label: "Osiągnięty",
         ariaLabel: "Status celu: osiągnięty",
         icon: "check-circle",
       };
     case "not_achieved":
       return {
-        className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-        label: "Cel nieosiągnięty",
+        className:
+          "inline-flex items-center gap-1.5 bg-status-error-bg text-status-error-text border-status-error-border",
+        label: "Nieosiągnięty",
         ariaLabel: "Status celu: nieosiągnięty",
         icon: "x-circle",
       };
     default:
       return {
-        className: "bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300",
+        className:
+          "inline-flex items-center gap-1.5 bg-status-neutral-bg text-status-neutral-text border-status-neutral-border",
         label: "Nieokreślony",
         ariaLabel: "Status celu: nieokreślony",
         icon: null,
@@ -44,13 +48,13 @@ const config = getBadgeConfig(value);
 ---
 
 <span
-  class={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.className}`}
+  class={`rounded-md border px-2.5 py-0.5 text-xs font-semibold ${config.className}`}
   role="status"
   aria-label={config.ariaLabel}
 >
   {
     config.icon === "check-circle" && (
-      <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
         <path
           fill-rule="evenodd"
           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -61,7 +65,7 @@ const config = getBadgeConfig(value);
   }
   {
     config.icon === "x-circle" && (
-      <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
         <path
           fill-rule="evenodd"
           d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -70,5 +74,16 @@ const config = getBadgeConfig(value);
       </svg>
     )
   }
-  {config.label}
+  {
+    config.icon === "help-circle" && (
+      <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+        <path
+          fill-rule="evenodd"
+          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    )
+  }
+  <span>{config.label}</span>
 </span>

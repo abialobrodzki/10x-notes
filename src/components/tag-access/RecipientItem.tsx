@@ -38,7 +38,7 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
 
   return (
     <div
-      className="flex items-center justify-between rounded-lg border p-3 transition-opacity"
+      className="flex items-center justify-between rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-3 backdrop-blur-xl transition-opacity"
       style={{ opacity: isRemoving ? 0.5 : 1 }}
     >
       <div className="flex-1 space-y-1">
@@ -51,7 +51,7 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
         size="sm"
         disabled={isRemoving}
         onClick={onRemove}
-        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="text-destructive hover-destructive"
         aria-label={`Usuń dostęp dla ${recipient.email}`}
       >
         <Trash2 className="h-4 w-4" />

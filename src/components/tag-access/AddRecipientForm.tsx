@@ -93,7 +93,7 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
               disabled={isAdding}
               aria-invalid={!!validationError}
               aria-describedby={validationError ? `${emailInputId}-error` : undefined}
-              className={validationError ? "border-destructive" : ""}
+              className={validationError ? "border-input-border-error" : ""}
             />
             {validationError && (
               <p id={`${emailInputId}-error`} className="mt-1 text-xs text-destructive" role="alert">

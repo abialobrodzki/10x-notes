@@ -20,7 +20,7 @@ interface MeetingDatePickerProps {
  * - YYYY-MM-DD format for API
  * - Optimistic updates with rollback
  * - Disabled for non-owners
- * - Clear button to remove date
+ * - Meeting date is required (no clear option)
  */
 export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }: MeetingDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,20 +43,6 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
       // Error handled by parent with rollback
       // eslint-disable-next-line no-console
       console.error("Failed to update meeting date:", error);
-    }
-  };
-
-  const handleClear = async () => {
-    if (!isOwner || isSaving) {
-      return;
-    }
-
-    try {
-      await onChange(undefined);
-      setIsOpen(false);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to clear meeting date:", error);
     }
   };
 
@@ -102,19 +88,6 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
             initialFocus
             className="text-glass-text"
           />
-          {value && (
-            <div className="border-t border-glass-border p-3">
-              <Button
-                onClick={handleClear}
-                disabled={!isOwner || isSaving}
-                variant="outline"
-                size="sm"
-                className="w-full border-red-400/30 bg-red-500/20 text-red-100 hover:border-red-400/50 hover:bg-red-500/30"
-              >
-                Wyczyść datę
-              </Button>
-            </div>
-          )}
         </PopoverContent>
       </Popover>
 

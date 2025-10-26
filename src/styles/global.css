@@ -65,6 +65,28 @@
   --input-ring: oklch(0.65 0.24 235 / 40%); /* bright blue/40 for focus ring */
   --input-border-error: oklch(0.62 0.26 20); /* bright red for errors - very visible */
   --input-ring-error: oklch(0.62 0.26 20 / 40%); /* bright red/40 for error ring */
+
+  /* Status colors - matching Tailwind green-500/red-500 palette */
+  --status-success-text: oklch(0.77 0.15 145); /* green-300 */
+  --status-success-bg: oklch(0.557 0.177 141.4 / 20%); /* green-500/20 */
+  --status-success-bg-hover: oklch(0.557 0.177 141.4 / 30%); /* green-500/30 */
+  --status-success-border: oklch(0.557 0.177 141.4 / 30%); /* green-500/30 */
+  --status-success-border-hover: oklch(0.557 0.177 141.4 / 50%); /* green-500/50 */
+  --status-success-border-selected: oklch(0.557 0.177 141.4); /* green-500 */
+
+  --status-error-text: oklch(0.77 0.15 25); /* red-300 */
+  --status-error-bg: oklch(0.637 0.237 25.331 / 20%); /* red-500/20 */
+  --status-error-bg-hover: oklch(0.637 0.237 25.331 / 30%); /* red-500/30 */
+  --status-error-border: oklch(0.637 0.237 25.331 / 30%); /* red-500/30 */
+  --status-error-border-hover: oklch(0.637 0.237 25.331 / 50%); /* red-500/50 */
+  --status-error-border-selected: oklch(0.637 0.237 25.331); /* red-500 */
+
+  --status-neutral-text: oklch(0.77 0.02 264); /* gray-300 */
+  --status-neutral-bg: oklch(0.557 0.015 264.542 / 20%); /* gray-500/20 */
+  --status-neutral-bg-hover: oklch(0.557 0.015 264.542 / 30%); /* gray-500/30 */
+  --status-neutral-border: oklch(0.557 0.015 264.542 / 30%); /* gray-500/30 */
+  --status-neutral-border-hover: oklch(0.557 0.015 264.542 / 50%); /* gray-500/50 */
+  --status-neutral-border-selected: oklch(0.557 0.015 264.542); /* gray-500 */
 }
 
 .dark {
@@ -166,6 +188,28 @@
   --color-input-ring: var(--input-ring);
   --color-input-border-error: var(--input-border-error);
   --color-input-ring-error: var(--input-ring-error);
+
+  /* Status colors */
+  --color-status-success-text: var(--status-success-text);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-bg-hover: var(--status-success-bg-hover);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-success-border-hover: var(--status-success-border-hover);
+  --color-status-success-border-selected: var(--status-success-border-selected);
+
+  --color-status-error-text: var(--status-error-text);
+  --color-status-error-bg: var(--status-error-bg);
+  --color-status-error-bg-hover: var(--status-error-bg-hover);
+  --color-status-error-border: var(--status-error-border);
+  --color-status-error-border-hover: var(--status-error-border-hover);
+  --color-status-error-border-selected: var(--status-error-border-selected);
+
+  --color-status-neutral-text: var(--status-neutral-text);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-bg-hover: var(--status-neutral-bg-hover);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-neutral-border-hover: var(--status-neutral-border-hover);
+  --color-status-neutral-border-selected: var(--status-neutral-border-selected);
 }
 
 @layer base {
