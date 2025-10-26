@@ -91,12 +91,17 @@ src/
 │   └── ui/              # Shadcn/ui components
 ├── lib/                 # Business logic & utilities
 │   ├── services/        # Business logic layer
+│   │   ├── openrouter.service.ts  # OpenRouter API communication (reusable)
 │   │   ├── ai-generation.service.ts
 │   │   ├── notes.service.ts
 │   │   ├── tags.service.ts
 │   │   ├── tag-access.service.ts
 │   │   ├── public-links.service.ts
 │   │   └── user.service.ts
+│   ├── errors/          # Domain error classes
+│   │   └── openrouter.errors.ts  # OpenRouter error hierarchy
+│   ├── types/           # Type definitions
+│   │   └── openrouter.types.ts   # OpenRouter contracts & schemas
 │   ├── validators/      # Zod schemas for input validation
 │   │   ├── ai.schemas.ts
 │   │   ├── notes.schemas.ts
@@ -185,6 +190,36 @@ HTTP Request
 - **JWT Authentication** - Bearer tokens via Supabase Auth (validated in `requireAuth` middleware)
 - **Rate Limiting** - In-memory limits for AI generation (100 req/day per IP); production should use Redis
 - **SECURITY DEFINER Functions** - Elevated privileges with explicit `search_path = ''` to prevent SQL injection
+
+**OpenRouter Service (AI Generation):**
+
+`OpenRouterService` provides secure, type-safe communication with OpenRouter API for LLM generation:
+
+- **Architecture:** Abstraction layer over HTTP with timeout/retry/parsing logic
+- **Default Model:** `openai/gpt-5-nano` (configurable per request)
+- **Multi-Language:** Automatic language detection - summaries generated in the same language as input
+- **Type Safety:** Generic types with JSON Schema validation for structured outputs
+- **Reliability:** Automatic retry with exponential backoff for transient failures
+- **Telemetry:** Fire-and-forget logging to `llm_generations` table (non-blocking)
+- **Error Handling:** Hierarchical error types (`OpenRouterValidationError`, `OpenRouterTimeoutError`, etc.)
+- **Configuration:** Timeout 30s, 2 retry attempts, app identification headers
+
+**Usage Example:**
+
+```typescript
+const service = new OpenRouterService(supabase, {
+  defaultModel: "openai/gpt-5-nano",
+  timeoutMs: 30000,
+  retryAttempts: 2,
+});
+
+const response = await service.generate<MyType>({
+  systemMessage: "You are a helpful assistant",
+  userMessage: "Analyze this data...",
+  responseSchema: MY_JSON_SCHEMA,
+  parameters: { temperature: 0.3 },
+});
+```
 
 **For detailed implementation guidelines, see:** `.cursor/rules/backend.mdc` and `.cursor/rules/db-supabase-migrations.mdc`
 

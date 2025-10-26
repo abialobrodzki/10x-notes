@@ -12,7 +12,7 @@ A lightweight AI-powered meeting notes management application that helps you org
 - 🚀 **No Registration Required**: Test the summarization feature without creating an account
 - 🏷️ **Smart Labeling**: Automatic label suggestions with manual override capability
 - 🔗 **Flexible Sharing**: Generate public read-only links or grant access to specific users by label
-- 🌍 **Multi-Language Support**: Automatic handling of content in any language
+- 🌍 **Multi-Language Support**: Automatic language detection - summaries generated in the same language as your notes
 - 🗂️ **Efficient Organization**: Filter and search notes by labels, date ranges, and goal status
 - 🔒 **GDPR Compliant**: Minimal data collection (email only) with full user control
 
@@ -36,10 +36,13 @@ A lightweight AI-powered meeting notes management application that helps you org
 
 ### 🧠 AI Integration
 
-- **Openrouter.ai** - Access to multiple LLM providers (OpenAI, Anthropic, Google, etc.) with:
-  - Cost-effective model selection
-  - API key financial limits
-  - High-quality summarization
+- **OpenRouter API** - Access to multiple LLM providers (OpenAI, Anthropic, Google, etc.) via custom service layer:
+  - **Default Model**: `openai/gpt-5-nano` (configurable per request)
+  - **OpenRouterService**: Type-safe abstraction with retry logic, telemetry, and JSON Schema validation
+  - **Reliability**: Automatic retry with exponential backoff, timeout management (30s)
+  - **Type Safety**: Generic types for structured outputs with runtime validation
+  - **Telemetry**: Usage tracking to Supabase (`llm_generations` table)
+  - Cost-effective model selection with API key financial limits
 
 ### 🚀 DevOps & Hosting
 
@@ -61,7 +64,7 @@ A lightweight AI-powered meeting notes management application that helps you org
 - Node.js **v24.9.0** (as specified in `.nvmrc`)
 - npm (comes with Node.js)
 - Supabase account (for backend services)
-- Openrouter.ai API key (for AI summarization)
+- OpenRouter API key (for AI summarization - get one at [openrouter.ai](https://openrouter.ai))
 
 ### 📦 Installation
 
@@ -88,9 +91,9 @@ npm install
 
 Create a `.env` file based on `.env.example` and configure:
 
-- Supabase connection details
-- Openrouter.ai API key
-- Other required environment variables
+- `PUBLIC_SUPABASE_URL` - Supabase project URL
+- `PUBLIC_SUPABASE_KEY` - Supabase anon/public key
+- `OPENROUTER_API_KEY` - OpenRouter API key (required for AI generation)
 
 5. **Start the development server:**
 
@@ -157,11 +160,12 @@ npm run preview
 
 **Key Components Status:**
 
-- Core summarization engine: In development
-- User authentication: In development
-- Label management: In development
-- Sharing functionality: In development
-- Frontend UI: In development
+- ✅ OpenRouter Service: Implemented (type-safe AI generation layer)
+- ✅ Core summarization engine: Implemented
+- ✅ User authentication: Implemented
+- ✅ Label management: Implemented
+- ✅ Sharing functionality: Implemented
+- ✅ Frontend UI: Implemented
 
 ## 📄 License
 
