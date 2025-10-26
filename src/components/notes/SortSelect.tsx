@@ -24,20 +24,17 @@ export function SortSelect({ order, onOrderChange }: SortSelectProps) {
   const currentOrder = order || "desc";
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row">
-      {/* Sort Order */}
-      <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
-        <SelectTrigger className="w-full sm:flex-1">
-          <SelectValue placeholder="Kolejność" />
-        </SelectTrigger>
-        <SelectContent className="dropdown-content-glass">
-          {ORDER_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value} className="glass-select dropdown-item-glass">
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
+      <SelectTrigger>
+        <SelectValue placeholder="Kolejność" />
+      </SelectTrigger>
+      <SelectContent className="dropdown-content-glass">
+        {ORDER_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value} className="glass-select dropdown-item-glass">
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
