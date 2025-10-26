@@ -8,15 +8,9 @@ interface SortSelectProps {
   onOrderChange: (order: SortOrder) => void;
 }
 
-const SORT_BY_OPTIONS: { value: NotesSortBy; label: string }[] = [
-  { value: "meeting_date", label: "Data spotkania" },
-  { value: "created_at", label: "Data utworzenia" },
-  { value: "updated_at", label: "Data modyfikacji" },
-];
-
 const ORDER_OPTIONS: { value: SortOrder; label: string }[] = [
-  { value: "desc", label: "Malejąco" },
-  { value: "asc", label: "Rosnąco" },
+  { value: "desc", label: "Od najnowszych" },
+  { value: "asc", label: "Od najstarszych" },
 ];
 
 /**
@@ -26,26 +20,11 @@ const ORDER_OPTIONS: { value: SortOrder; label: string }[] = [
  * - Two selects: sort field and order
  * - Default: meeting_date desc
  */
-export function SortSelect({ sortBy, order, onSortByChange, onOrderChange }: SortSelectProps) {
-  const currentSortBy = sortBy || "meeting_date";
+export function SortSelect({ order, onOrderChange }: SortSelectProps) {
   const currentOrder = order || "desc";
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      {/* Sort By Field */}
-      <Select value={currentSortBy} onValueChange={(value) => onSortByChange(value as NotesSortBy)}>
-        <SelectTrigger className="w-full sm:flex-1">
-          <SelectValue placeholder="Sortuj według" />
-        </SelectTrigger>
-        <SelectContent className="dropdown-content-glass">
-          {SORT_BY_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value} className="glass-select dropdown-item-glass">
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
       {/* Sort Order */}
       <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
         <SelectTrigger className="w-full sm:flex-1">

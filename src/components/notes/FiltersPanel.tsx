@@ -46,27 +46,32 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-2 text-sm font-medium text-glass-text hover-nav"
-        >
+    <div className="space-y-2 rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-2 backdrop-blur-xl">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between gap-2 text-sm font-medium text-glass-text hover-nav py-2 px-2 rounded hover:bg-glass-bg-from/50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
           <span>Filtry i sortowanie</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReset();
+              }}
+              className="h-8 px-2 text-glass-text-muted hover-nav lg:px-3"
+            >
+              <X className="mr-2 h-4 w-4" />
+              Wyczyść
+            </Button>
+          )}
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReset}
-            className="h-8 px-2 text-glass-text-muted hover-nav lg:px-3"
-          >
-            <X className="mr-2 h-4 w-4" />
-            Wyczyść
-          </Button>
-        )}
-      </div>
+        </div>
+      </button>
 
       {isExpanded && (
         <div className="flex flex-wrap items-start gap-4">

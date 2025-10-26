@@ -9,7 +9,6 @@ interface GoalStatusMultiSelectProps {
 const GOAL_STATUS_OPTIONS: { value: GoalStatus; label: string }[] = [
   { value: "achieved", label: "Osiągnięty" },
   { value: "not_achieved", label: "Nieosiągnięty" },
-  { value: "undefined", label: "Nieokreślony" },
 ];
 
 /**
