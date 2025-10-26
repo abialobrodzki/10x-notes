@@ -55,7 +55,7 @@ Generate AI summary from meeting notes content (no authentication required).
 **Error Responses:**
 
 - `400 Bad Request`: Invalid content length or format
-- `408 Request Timeout`: AI generation timeout (>30s)
+- `504 Gateway Timeout`: AI generation timeout (>60s)
 - `429 Too Many Requests`: Rate limit exceeded
 - `503 Service Unavailable`: AI service error
 
@@ -887,7 +887,7 @@ Additional fields require separate queries:
 
 ### Performance Constraints
 
-- **AI Generation Timeout**: Maximum 30 seconds per PRD requirements
+- **AI Generation Timeout**: Maximum 60 seconds per PRD requirements
 
 ### Rate Limiting (Per-Endpoint Breakdown)
 

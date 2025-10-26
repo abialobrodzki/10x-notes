@@ -202,14 +202,14 @@ HTTP Request
 - **Reliability:** Automatic retry with exponential backoff for transient failures
 - **Telemetry:** Fire-and-forget logging to `llm_generations` table (non-blocking)
 - **Error Handling:** Hierarchical error types (`OpenRouterValidationError`, `OpenRouterTimeoutError`, etc.)
-- **Configuration:** Timeout 30s, 2 retry attempts, app identification headers
+- **Configuration:** Timeout 60s, 2 retry attempts, app identification headers
 
 **Usage Example:**
 
 ```typescript
 const service = new OpenRouterService(supabase, {
   defaultModel: "openai/gpt-5-nano",
-  timeoutMs: 30000,
+  timeoutMs: 60000,
   retryAttempts: 2,
 });
 

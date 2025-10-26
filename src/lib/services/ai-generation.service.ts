@@ -50,7 +50,7 @@ export class AiGenerationService {
   constructor(supabase: SupabaseClient<Database>) {
     // Initialize OpenRouter service with Supabase for telemetry
     this.openRouterService = new OpenRouterService(supabase, {
-      timeoutMs: 30000, // 30 seconds
+      timeoutMs: 60000, // 60 seconds (1 minute)
       retryAttempts: 2, // Retry transient failures
       appUrl: "https://10xnotes.app",
       appName: "10xNotes",

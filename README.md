@@ -39,7 +39,7 @@ A lightweight AI-powered meeting notes management application that helps you org
 - **OpenRouter API** - Access to multiple LLM providers (OpenAI, Anthropic, Google, etc.) via custom service layer:
   - **Default Model**: `openai/gpt-5-nano` (configurable per request)
   - **OpenRouterService**: Type-safe abstraction with retry logic, telemetry, and JSON Schema validation
-  - **Reliability**: Automatic retry with exponential backoff, timeout management (30s)
+  - **Reliability**: Automatic retry with exponential backoff, timeout management (60s)
   - **Type Safety**: Generic types for structured outputs with runtime validation
   - **Telemetry**: Usage tracking to Supabase (`llm_generations` table)
   - Cost-effective model selection with API key financial limits
@@ -156,7 +156,7 @@ npm run preview
 **Success Metrics:**
 
 - Average >3 saved notes per day per active user
-- Average summary generation time <30 seconds
+- Average summary generation time <60 seconds
 
 **Key Components Status:**
 

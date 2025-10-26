@@ -112,7 +112,7 @@ Kryteria akceptacji:
 - Użytkownik widzi wskaźnik postępu (loader) podczas generowania; oczekiwany czas 3–10 s.
 - Wynik jest propozycją – wszystkie pola są edytowalne przed zapisem (ale zapis wymaga rejestracji).
 - Po wygenerowaniu system wyświetla wyraźną zachętę "Zaloguj się, aby zapisać notatkę" z łatwym dostępem do rejestracji.
-- W razie problemu z API lub timeoutu (>30 s) system zachowuje wklejoną treść jako szkic i wyświetla komunikat z sugestią ponownej próby.
+- W razie problemu z API lub timeoutu (>60 s) system zachowuje wklejoną treść jako szkic i wyświetla komunikat z sugestią ponownej próby.
 - System automatycznie obsługuje treści w dowolnym języku.
 
 ID: US-004

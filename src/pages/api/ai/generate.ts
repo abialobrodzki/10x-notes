@@ -1,8 +1,3 @@
-import { checkRateLimit, createRateLimitResponse } from "../../../lib/middleware/rate-limit.middleware";
-import { AiGenerationService } from "../../../lib/services/ai-generation.service";
-import { generateAiSummarySchema, type GenerateAiSummaryInput } from "../../../lib/validators/ai.schemas";
-import type { AiSummaryDTO } from "../../../types";
-import type { APIRoute } from "astro";
 import {
   OpenRouterTimeoutError,
   OpenRouterAuthError,
@@ -12,6 +7,11 @@ import {
   OpenRouterValidationError,
   OpenRouterError,
 } from "../../../lib/errors/openrouter.errors";
+import { checkRateLimit, createRateLimitResponse } from "../../../lib/middleware/rate-limit.middleware";
+import { AiGenerationService } from "../../../lib/services/ai-generation.service";
+import { generateAiSummarySchema, type GenerateAiSummaryInput } from "../../../lib/validators/ai.schemas";
+import type { AiSummaryDTO } from "../../../types";
+import type { APIRoute } from "astro";
 
 // Disable prerendering - this is a dynamic API endpoint
 export const prerender = false;
@@ -26,7 +26,7 @@ export const prerender = false;
  * @param request.body - { original_content: string, model_name?: string }
  * @returns 200 - AI summary with generation metrics
  * @returns 400 - Invalid input data
- * @returns 408 - AI generation timeout (>30s)
+ * @returns 504 - AI generation timeout (>60s)
  * @returns 429 - Rate limit exceeded
  * @returns 500 - Internal server error
  * @returns 503 - AI service unavailable
@@ -122,14 +122,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         );
       }
 
-      // Timeout error - request exceeded 30s limit (504 Gateway Timeout)
+      // Timeout error - request exceeded 60s limit (504 Gateway Timeout)
       if (error instanceof OpenRouterTimeoutError) {
         // eslint-disable-next-line no-console
         console.error("AI generation timeout:", errorMessage);
         return new Response(
           JSON.stringify({
             error: "Gateway timeout",
-            message: "AI generation exceeded time limit (30 seconds)",
+            message: "AI generation exceeded time limit (60 seconds)",
             details: "Try again with shorter content or contact support",
           }),
           {

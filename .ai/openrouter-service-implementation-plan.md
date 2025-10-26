@@ -26,7 +26,7 @@ Inputs and responsibilities:
 Validation and defaults:
 
 - Required `OPENROUTER_API_KEY` from env; missing → initialization error
-- Defaults: `timeoutMs≈30000`, `retryAttempts≈2`, `retryDelayMs≈1000`, `defaultModel='openai/gpt-5-nano'`, `appUrl`, `appName`
+- Defaults: `timeoutMs≈60000`, `retryAttempts≈2`, `retryDelayMs≈1000`, `defaultModel='openai/gpt-5-nano'`, `appUrl`, `appName`
 - API endpoint: `https://openrouter.ai/api/v1/chat/completions`
 
 Integration recommendations:

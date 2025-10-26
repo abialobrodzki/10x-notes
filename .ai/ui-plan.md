@@ -8,7 +8,7 @@
   - Dostępność: WCAG AA, ARIA landmarks, focus management, pełna nawigacja klawiaturą.
   - Bezpieczeństwo: Supabase Auth (JWT), role: owner/recipient/anon; public links z noindex/nofollow; renderowanie akcji wg `is_owner`.
   - Zarządzanie danymi: SSR initial data w stronach Astro (SEO, szybkość); client-side SWR (domyślnie) w komponentach React (cache, revalidate, optimistic updates, rollback, invalidacja).
-  - Wzorce UI: master-detail (lista notatek + szczegóły), inline editing, skeleton loading (timeout 30 s + retry), toast (Sonner) dla sukcesów/błędów/rate limit.
+  - Wzorce UI: master-detail (lista notatek + szczegóły), inline editing, skeleton loading (timeout 60 s + retry), toast (Sonner) dla sukcesów/błędów/rate limit.
   - Responsywność: mobile-first. Mobile: pojedyncze ekrany i infinite scroll; Desktop: sidebar + lista + szczegóły, paginacja.
 - Informacja architektoniczna o URL/stanach:
   - URL state (query params) dla filtrów: `tag_id`, `goal_status`, `date_from`, `date_to`, `page`, `limit`, `include_shared`.
@@ -64,7 +64,7 @@
   - **Zalogowani**: Przycisk „Zapisz notatkę" → bezpośredni zapis (POST /api/notes) → redirect do `/notes/{id}`.
 - Kluczowe komponenty widoku:
   - Textarea z licznikiem (CharCountTextarea), przycisk „Generuj podsumowanie".
-  - Skeleton/loader dla statusu generowania (3–10 s, timeout 30 s). Toast/retry przy błędach.
+  - Skeleton/loader dla statusu generowania (3–10 s, timeout 60 s). Toast/retry przy błędach.
   - Podsumowanie (SummaryCard).
   - **Warunkowe renderowanie**:
     - SaveNoteButton (zalogowani): zielony banner z przyciskiem zapisu
@@ -187,7 +187,7 @@ Stany błędów i puste stany (globalnie, stosowane w widokach):
 
 Przepływ 1A: Generuj jako niezalogowany → Rejestracja/Logowanie → Zapis
 
-1. `/` – wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 30 s, retry).
+1. `/` – wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 60 s, retry).
 2. Wynik: streszczenie + status celów + sugerowana etykieta → CTA „Zaloguj się, aby zapisać" (dane → storage TTL 24h).
 3. `/login` lub `/register` → po sukcesie odczyt storage i pre-wypełnienie formularza zapisu.
 4. „Zapisz" → `POST /api/notes` (z `tag_id` lub `tag_name`; walidacja XOR). Toast „Zapisano".
@@ -196,7 +196,7 @@ Przepływ 1A: Generuj jako niezalogowany → Rejestracja/Logowanie → Zapis
 Przepływ 1B: Generuj jako zalogowany → Bezpośredni zapis (NOWY)
 
 1. Kliknij "Generuj notatkę" w navbar → `/`
-2. Wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 30 s, retry).
+2. Wklej tekst (limit 5000) → „Generuj" → `POST /api/ai/generate` (loader/skeleton, timeout 60 s, retry).
 3. Wynik: streszczenie + status celów + sugerowana etykieta → zielony banner „Gotowe! Zapisz notatkę".
 4. Kliknij „Zapisz notatkę" → `POST /api/notes` (z wygenerowanymi danymi). Toast „Notatka zapisana!".
 5. Redirect → `/notes/{id}` (szczegóły nowej notatki).

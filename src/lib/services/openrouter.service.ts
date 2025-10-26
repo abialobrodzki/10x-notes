@@ -54,7 +54,7 @@ export class OpenRouterService {
     this.supabase = supabase;
 
     // Set configuration with defaults
-    this.timeoutMs = options?.timeoutMs ?? 30000; // 30 seconds
+    this.timeoutMs = options?.timeoutMs ?? 60000; // 60 seconds (1 minute)
     this.retryAttempts = options?.retryAttempts ?? 2;
     this.retryDelayMs = options?.retryDelayMs ?? 1000; // 1 second base delay
     this.defaultModel = options?.defaultModel ?? "openai/gpt-5-nano";

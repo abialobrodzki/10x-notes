@@ -18,7 +18,7 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 - LandingPage (kontener, przyjmuje prop `isAuthenticated`)
   - CharCountTextarea (textarea + licznik + walidacja limitu)
   - GenerateButton
-  - GenerationSkeleton (loading 3–10s, timeout 30s)
+  - GenerationSkeleton (loading 3–10s, timeout 60s)
   - SummaryCard (wynik AI: streszczenie, goal status, sugerowana etykieta)
   - **Warunkowe renderowanie:**
     - SaveNoteButton (zalogowani: bezpośredni zapis → POST /api/notes)
@@ -30,7 +30,7 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 ### CharCountTextarea
 
 - Opis: Pole wprowadzania treści z licznikiem i blokadą >5000.
-- Główne elementy: `<label>`, `<textarea>` z `maxlength=5000`, wskaźnik „X/5000”, alert ostrzegawczy >4500.
+- Główne elementy: `<label>`, `<textarea>` z `maxlength=5000`, wskaźnik „X/5000", alert ostrzegawczy >4500.
 - Obsługiwane interakcje: onInput (aktualizacja stanu), walidacja limitu, focus management.
 - Obsługiwana walidacja: długość ≤5000; >4500 ostrzeżenie wizualne.
 - Typy: `original_content: string`.
@@ -40,14 +40,14 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 
 - Opis: Uruchamia generowanie podsumowania.
 - Główne elementy: `<button>` (disabled gdy brak treści lub przekroczony limit).
-- Interakcje: onClick → POST /api/ai/generate z timeoutem 30s; blokada przycisku podczas requestu.
+- Interakcje: onClick → POST /api/ai/generate z timeoutem 60s; blokada przycisku podczas requestu.
 - Walidacja: brak dodatkowej (opiera się o CharCountTextarea).
 - Typy: `GenerateAiSummaryCommand`.
 - Propsy: `{ disabled, onGenerate }`.
 
 ### GenerationSkeleton
 
-- Opis: Skeleton/loader dla stanu oczekiwania 3–10s (timeout 30s + retry CTA).
+- Opis: Skeleton/loader dla stanu oczekiwania 3–10s (timeout 60s + retry CTA).
 - Elementy: placeholdery kart, paski.
 - Interakcje: Retry (onRetry).
 - Walidacja: brak.
@@ -91,7 +91,7 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 ## 6. Zarządzanie stanem
 
 - Lokalny stan React: `input`, `isGenerating`, `result`, `error`.
-- Timeout 30s: `AbortController` + fallback `onRetry`.
+- Timeout 60s: `AbortController` + fallback `onRetry`.
 - Storage: `localStorage` (lub `sessionStorage`) z kluczem `pendingGeneratedNote`, TTL 24h (weryfikowane po timestampie).
 
 ## 7. Integracja API
@@ -99,7 +99,7 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 - POST `/api/ai/generate` (wszyscy użytkownicy)
   - Request: `GenerateAiSummaryCommand` `{ original_content: string, model_name?: string }`
   - Response: `AiSummaryDTO` `{ summary_text, goal_status, suggested_tag, generation_time_ms, tokens_used }`
-  - Statusy błędów: 400 (walidacja), 408 (timeout), 429 (rate limit), 503 (AI service)
+  - Statusy błędów: 400 (walidacja), 504 (timeout), 429 (rate limit), 503 (AI service)
 
 - POST `/api/notes` (tylko zalogowani - SaveNoteButton)
   - Request: `CreateNoteCommand` `{ original_content, summary_text, goal_status, tag_name, is_ai_generated }`
@@ -129,7 +129,7 @@ Widok umożliwia wklejenie treści (do 5000 znaków) i wygenerowanie podsumowani
 
 1. ✅ Utwórz stronę `/src/pages/index.astro` z `optionalAuth` middleware przekazującym `isAuthenticated` do komponentu `LandingPage` (React).
 2. ✅ Zaimplementuj `CharCountTextarea` z licznikami i walidacją.
-3. ✅ Obsłuż `GenerateButton` z POST `/api/ai/generate`, skeleton i timeout 30s.
+3. ✅ Obsłuż `GenerateButton` z POST `/api/ai/generate`, skeleton i timeout 60s.
 4. ✅ Dodaj `SummaryCard` do prezentacji wyniku AI.
 5. ✅ Dodaj `SaveNoteButton` dla zalogowanych użytkowników (POST `/api/notes` → redirect do `/notes/{id}`).
 6. ✅ Dodaj `SavePromptBanner` dla niezalogowanych zapisujący `pendingGeneratedNote` do storage i redirect do `/login`.

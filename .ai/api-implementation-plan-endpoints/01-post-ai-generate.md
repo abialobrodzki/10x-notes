@@ -82,7 +82,7 @@ export const generateAiSummarySchema = z.object({
 **Error Responses**:
 
 - `400 Bad Request`: Invalid content length or format
-- `408 Request Timeout`: AI generation timeout (>30s)
+- `504 Gateway Timeout`: AI generation timeout (>60s)
 - `429 Too Many Requests`: Rate limit exceeded (100 calls/day per IP)
 - `503 Service Unavailable`: AI service error (OpenRouter)
 
@@ -93,7 +93,7 @@ export const generateAiSummarySchema = z.object({
 3. **Fetch user_id**: Optional - if user is logged in, get ID from JWT
 4. **OpenRouter API call**:
    - Build prompt from template
-   - Send request with 30s timeout
+   - Send request with 60s timeout
    - Wait for JSON response
 5. **Parse response**: Extract `summary_text`, `goal_status`, `suggested_tag`
 6. **Log generation**: Asynchronously save metric to `llm_generations` (service role); on error, log and continue (response is unaffected)
@@ -109,7 +109,7 @@ export const generateAiSummarySchema = z.object({
 - **Rate Limiting**: Limit 100 calls/day per IP address (abuse prevention)
 - **Input Validation**: Validate content length before sending to AI
 - **Service Role Key**: Used only server-side for logging, never exposed to client
-- **Timeout Protection**: Maximum 30s for generation, then abort
+- **Timeout Protection**: Maximum 60s for generation, then abort
 - **No sensitive data**: Endpoint doesn't save content to DB without user consent
 - **CORS**: Appropriate headers for secure cross-origin requests
 
@@ -120,7 +120,7 @@ export const generateAiSummarySchema = z.object({
 || Content > 5000 chars | 400 | "Content exceeds 5000 character limit" | User must shorten text |
 || Invalid model name | 400 | "Invalid model name" | Use default model |
 || Rate limit exceeded | 429 | "Rate limit exceeded. Try again in X seconds" | Wait X seconds |
-|| OpenRouter timeout (>30s) | 408 | "AI generation timeout" | Retry or use shorter content |
+|| OpenRouter timeout (>60s) | 504 | "AI generation timeout" | Retry or use shorter content |
 || OpenRouter API error | 503 | "AI service temporarily unavailable" | Retry later |
 || DB logging error (llm_generations) | 200 | "Logged error; summary returned" | Return summary despite logging error |
 
@@ -137,7 +137,7 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 **Expected times**:
 
 - AI generation: 1-3 seconds (P50)
-- Maximum timeout: 30 seconds
+- Maximum timeout: 60 seconds
 - Target P95: <5 seconds
 
 **Optimizations**:
