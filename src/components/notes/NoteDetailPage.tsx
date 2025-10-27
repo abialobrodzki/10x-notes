@@ -91,13 +91,18 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
         // Optimistic update - immediately update local data
         await mutate(
           async () => {
+            // Filter out undefined values - only send defined fields
+            const cleanedUpdates = Object.fromEntries(
+              Object.entries(updates).filter(([, value]) => value !== undefined)
+            );
+
             const response = await fetch(`/api/notes/${noteId}`, {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
               },
               credentials: "include",
-              body: JSON.stringify(updates),
+              body: JSON.stringify(cleanedUpdates),
             });
 
             if (response.status === 401 || response.status === 403) {

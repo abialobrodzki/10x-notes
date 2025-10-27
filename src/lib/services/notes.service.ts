@@ -641,10 +641,15 @@ export class NotesService {
     }
 
     // Step 3: Update note with provided fields
+    // Filter out null values to avoid type conflicts with Supabase schema
+    const updateData = Object.fromEntries(
+      Object.entries(patch).filter(([, value]) => value !== null && value !== undefined)
+    );
+
     const { data: updatedNote, error: updateError } = await this.supabase
       .from("notes")
       .update({
-        ...patch,
+        ...updateData,
         updated_at: new Date().toISOString(),
       })
       .eq("id", noteId)

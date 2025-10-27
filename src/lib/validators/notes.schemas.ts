@@ -176,9 +176,9 @@ export const updateNoteSchema = z
 
     /**
      * Meeting date
-     * Optional - Format: YYYY-MM-DD
+     * Optional - Format: YYYY-MM-DD, can be null
      */
-    meeting_date: dateISOSchema.optional(),
+    meeting_date: dateISOSchema.nullable().optional(),
 
     /**
      * Tag ID to reassign note
@@ -186,10 +186,7 @@ export const updateNoteSchema = z
      */
     tag_id: uuidSchema.optional(),
   })
-  .strict()
-  .refine((data) => Object.keys(data).length > 0, {
-    message: "At least one field must be provided for update",
-  });
+  .strict();
 
 /**
  * TypeScript type inferred from Zod schema

@@ -19,9 +19,10 @@ export const dateISOSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format")
   .refine(
-    (date) => {
-      const parsed = new Date(date);
-      return !isNaN(parsed.getTime());
+    (dateStr) => {
+      // Validate date is realistic (day 1-31, month 1-12)
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31;
     },
     { message: "Invalid date" }
   );

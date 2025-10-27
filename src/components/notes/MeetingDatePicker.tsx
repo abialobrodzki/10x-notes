@@ -33,8 +33,12 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
       return;
     }
 
-    // Convert Date to YYYY-MM-DD format (undefined maps to undefined for API)
-    const formattedDate: DateISO | undefined = date ? format(date, "yyyy-MM-dd") : undefined;
+    if (!date) {
+      return; // Don't allow clearing the date
+    }
+
+    // Convert Date to YYYY-MM-DD format
+    const formattedDate: DateISO = format(date, "yyyy-MM-dd");
 
     try {
       await onChange(formattedDate);
