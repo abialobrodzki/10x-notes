@@ -47,13 +47,25 @@ export class PublicLinksService {
       .eq("note_id", noteId)
       .single();
 
-    // If link exists, return it with is_new: false (idempotent behavior)
+    // If link exists, enable it if disabled and return it (idempotent behavior)
     if (existingLink && !checkError) {
+      // If link was disabled, enable it
+      if (!existingLink.is_enabled) {
+        const { error: updateError } = await this.supabase
+          .from("public_links")
+          .update({ is_enabled: true })
+          .eq("note_id", noteId);
+
+        if (updateError) {
+          throw new Error(`Failed to enable existing public link: ${updateError.message}`);
+        }
+      }
+
       return {
         link: {
           token: existingLink.token,
           url: `/public/${existingLink.token}`,
-          is_enabled: existingLink.is_enabled,
+          is_enabled: true, // Always return true since we just enabled it
           is_new: false,
           created_at: existingLink.created_at,
         },
