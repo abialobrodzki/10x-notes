@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
 import type { TagAccessRecipientDTO } from "@/types";
@@ -13,6 +14,25 @@ interface RecipientItemProps {
 }
 
 /**
+ * Format date string to Polish locale
+ * Pure function - extracted outside component to avoid recreation
+ */
+const formatDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("pl-PL", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
+  } catch {
+    return dateString;
+  }
+};
+
+/**
  * RecipientItem - Single recipient display with remove action
  *
  * Features:
@@ -20,22 +40,15 @@ interface RecipientItemProps {
  * - Shows grant date in readable format
  * - Remove button with loading state
  * - Optimistic UI update
+ *
+ * Performance optimizations:
+ * - React.memo to prevent unnecessary re-renders
+ * - formatDate extracted as pure function
+ * - useMemo for formatted date
  */
-export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItemProps) {
-  const formatDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat("pl-PL", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      }).format(date);
-    } catch {
-      return dateString;
-    }
-  };
+export const RecipientItem = memo(function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItemProps) {
+  // Memoize formatted date to avoid recalculation on every render
+  const formattedDate = useMemo(() => formatDate(recipient.granted_at), [recipient.granted_at]);
 
   return (
     <GlassCard
@@ -45,7 +58,7 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
     >
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium">{recipient.email}</p>
-        <p className="text-xs text-muted-foreground">Dostęp nadany: {formatDate(recipient.granted_at)}</p>
+        <p className="text-xs text-muted-foreground">Dostęp nadany: {formattedDate}</p>
       </div>
 
       <Button
@@ -61,4 +74,4 @@ export function RecipientItem({ recipient, isRemoving, onRemove }: RecipientItem
       </Button>
     </GlassCard>
   );
-}
+});

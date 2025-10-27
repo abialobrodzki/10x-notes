@@ -1,4 +1,5 @@
 ---
+import { ViewTransitions } from "astro:transitions";
 import "../styles/global.css";
 import { Navbar } from "../components/layout/Navbar";
 import { ToasterProvider } from "../components/ToasterProvider";
@@ -24,11 +25,12 @@ const isAuthenticated = !!userId;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body>
-    {showNavbar && <Navbar client:load isAuthenticated={isAuthenticated} />}
+    {showNavbar && <Navbar transition:persist client:load isAuthenticated={isAuthenticated} />}
     <slot />
-    <ToasterProvider client:load />
+    <ToasterProvider transition:persist client:load />
   </body>
 </html>
 

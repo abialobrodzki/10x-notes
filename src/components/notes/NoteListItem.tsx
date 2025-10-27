@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { Calendar, Sparkles, Globe, User } from "lucide-react";
+import { memo, useMemo, useCallback } from "react";
 import { GoalStatusBadge } from "@/components/shared/GoalStatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { GlassCard } from "@/components/ui/composed";
@@ -21,37 +22,50 @@ interface NoteListItemProps {
  * - AI/public/owner indicators
  * - Click to navigate to detail page
  * - Optional search term highlighting
+ *
+ * Performance optimizations:
+ * - React.memo to prevent unnecessary re-renders
+ * - useMemo for expensive calculations (date formatting, text truncation)
+ * - useCallback for event handlers
  */
-export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
-  const meetingDate = new Date(item.meeting_date);
+export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
+  // Memoize meeting date parsing and formatting
+  const meetingDate = useMemo(() => new Date(item.meeting_date), [item.meeting_date]);
 
-  // Truncate summary for preview (max 200 chars)
-  const summaryPreview = item.summary_text
-    ? item.summary_text.length > 200
-      ? `${item.summary_text.substring(0, 200)}...`
-      : item.summary_text
-    : "Brak podsumowania";
+  // Memoize summary preview truncation
+  const summaryPreview = useMemo(() => {
+    if (!item.summary_text) return "Brak podsumowania";
+    return item.summary_text.length > 200 ? `${item.summary_text.substring(0, 200)}...` : item.summary_text;
+  }, [item.summary_text]);
 
-  // Simple highlight logic (case-insensitive)
-  const highlightText = (text: string) => {
-    if (!searchTerm || searchTerm.trim() === "") return text;
+  // Memoize highlight logic to avoid recreation on every render
+  const highlightText = useCallback(
+    (text: string) => {
+      if (!searchTerm || searchTerm.trim() === "") return text;
 
-    const regex = new RegExp(`(${searchTerm})`, "gi");
-    const parts = text.split(regex);
+      const regex = new RegExp(`(${searchTerm})`, "gi");
+      const parts = text.split(regex);
 
-    return parts.map((part, index) =>
-      regex.test(part) ? (
-        <mark key={index} className="bg-yellow-200 dark:bg-yellow-800">
-          {part}
-        </mark>
-      ) : (
-        part
-      )
-    );
-  };
+      return parts.map((part, index) =>
+        regex.test(part) ? (
+          <mark key={index} className="bg-yellow-200 dark:bg-yellow-800">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      );
+    },
+    [searchTerm]
+  );
+
+  // Memoize click handler to prevent creating new function on every render
+  const handleClick = useCallback(() => {
+    onClick(item.id);
+  }, [onClick, item.id]);
 
   return (
-    <GlassCard hover padding="sm" className="cursor-pointer" onClick={() => onClick(item.id)}>
+    <GlassCard hover padding="sm" className="cursor-pointer" onClick={handleClick}>
       <div className="space-y-3">
         {/* Header: Date + Indicators */}
         <div className="flex items-center justify-between gap-2">
@@ -86,4 +100,4 @@ export function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
       </div>
     </GlassCard>
   );
-}
+});

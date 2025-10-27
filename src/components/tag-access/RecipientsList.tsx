@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecipientItem } from "./RecipientItem";
 import type { TagAccessRecipientDTO } from "@/types";
@@ -21,8 +22,18 @@ interface RecipientsListProps {
  * - Allows removing recipient access
  * - Loading state with skeletons
  * - Empty state message
+ *
+ * Performance optimizations:
+ * - useCallback to avoid creating new onRemove functions for each item
  */
 export function RecipientsList({ recipients, loading, removing, onRemove }: RecipientsListProps) {
+  // Create stable callback function that returns a handler for specific recipient
+  const createRemoveHandler = useCallback(
+    (recipientId: string) => () => {
+      onRemove(recipientId);
+    },
+    [onRemove]
+  );
   if (loading) {
     return (
       <div className="space-y-3">
@@ -57,7 +68,7 @@ export function RecipientsList({ recipients, loading, removing, onRemove }: Reci
               key={recipient.recipient_id}
               recipient={recipient}
               isRemoving={removing[recipient.recipient_id] || false}
-              onRemove={() => onRemove(recipient.recipient_id)}
+              onRemove={createRemoveHandler(recipient.recipient_id)}
             />
           ))}
         </div>

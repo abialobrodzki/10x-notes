@@ -1,4 +1,5 @@
 import { Tag, Users } from "lucide-react";
+import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,8 +25,17 @@ interface TagSidebarProps {
  * - Create new tags (CreateTagDialog)
  * - Delete tags (DeleteTagDialog - only owners, protected when tag has notes)
  * - Future: rename, manage access
+ *
+ * Performance optimizations:
+ * - useMemo for expensive calculations (note counts, tag filtering)
  */
 export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps) {
+  // Memoize total note count to avoid recalculation on every render
+  const totalNoteCount = useMemo(() => tags.reduce((sum, tag) => sum + tag.note_count, 0), [tags]);
+
+  // Memoize own and shared tag counts for footer
+  const ownTagsCount = useMemo(() => tags.filter((t) => t.is_owner).length, [tags]);
+  const sharedTagsCount = useMemo(() => tags.filter((t) => !t.is_owner).length, [tags]);
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -53,7 +63,7 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
             <Tag className="h-4 w-4" />
             <span className="flex-1 text-left">Wszystkie notatki</span>
             <Badge variant="outline" className="ml-auto border-glass-border text-glass-text">
-              {tags.reduce((sum, tag) => sum + tag.note_count, 0)}
+              {totalNoteCount}
             </Badge>
           </Button>
 
@@ -109,8 +119,8 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
       {/* Footer - Future: "Manage Access" button */}
       <div className="p-4">
         <p className="text-xs text-glass-text-muted">
-          {tags.filter((t) => t.is_owner).length} moich etykiet
-          {tags.filter((t) => !t.is_owner).length > 0 && ` • ${tags.filter((t) => !t.is_owner).length} współdzielonych`}
+          {ownTagsCount} moich etykiet
+          {sharedTagsCount > 0 && ` • ${sharedTagsCount} współdzielonych`}
         </p>
       </div>
     </div>
