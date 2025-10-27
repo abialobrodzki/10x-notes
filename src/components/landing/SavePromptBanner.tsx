@@ -1,32 +1,23 @@
 import { LogIn, UserPlus, Save, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { AiSummaryDTO, GoalStatus } from "@/types";
-
-/**
- * PendingGeneratedNoteVM - Data structure for localStorage persistence
- * TTL: 24h from created_at timestamp
- */
-interface PendingGeneratedNoteVM {
-  original_content: string;
-  summary_text: string;
-  goal_status: GoalStatus;
-  suggested_tag: string | null;
-  created_at: number; // epoch ms
-}
+import {
+  savePendingNote,
+  getPendingNote,
+  PENDING_NOTE_EXPIRATION_MS,
+  type PendingNote,
+} from "@/lib/utils/pending-note.utils";
+import type { AiSummaryDTO } from "@/types";
 
 interface SavePromptBannerProps {
   originalContent: string;
   aiResult: AiSummaryDTO;
 }
 
-const STORAGE_KEY = "pendingGeneratedNote";
-const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
 /**
  * SavePromptBanner - CTA to save generated note after login
  * Features:
- * - Saves to localStorage with 24h TTL
+ * - Saves to sessionStorage with 30min TTL
  * - Redirect buttons to /login and /register
  * - Visual feedback after saving
  * - Auto-cleanup of expired data
@@ -35,18 +26,19 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSaveAndRedirect = (redirectPath: "/login" | "/register") => {
-    // Prepare data for localStorage
-    const pendingNote: PendingGeneratedNoteVM = {
+    // Prepare data for sessionStorage
+    const pendingNote: PendingNote = {
       original_content: originalContent,
       summary_text: aiResult.summary_text,
       goal_status: aiResult.goal_status,
       suggested_tag: aiResult.suggested_tag,
-      created_at: Date.now(),
+      meeting_date: null, // Will be set to today's date on save
+      generated_at: Date.now(),
     };
 
     try {
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(pendingNote));
+      // Save to sessionStorage using utility
+      savePendingNote(pendingNote);
       setIsSaved(true);
 
       // Redirect after brief delay to show feedback
@@ -54,7 +46,7 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
         window.location.href = redirectPath;
       }, 500);
     } catch {
-      // Handle localStorage quota exceeded or other errors
+      // Handle storage errors
       // Proceed with redirect anyway (data will not be saved, but user can still login)
       window.location.href = redirectPath;
     }
@@ -62,24 +54,8 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
 
   // Check if data is already saved (memoized to avoid impure function during render)
   const [hasExistingData] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) return false;
-
-      const data: PendingGeneratedNoteVM = JSON.parse(stored);
-      const now = Date.now();
-      const age = now - data.created_at;
-
-      // Auto-cleanup expired data
-      if (age > TTL_MS) {
-        localStorage.removeItem(STORAGE_KEY);
-        return false;
-      }
-
-      return true;
-    } catch {
-      return false;
-    }
+    const existing = getPendingNote();
+    return existing !== null;
   });
 
   if (isSaved) {
@@ -137,7 +113,9 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
       </div>
 
       {/* TTL Notice */}
-      <p className="text-xs text-blue-300/60">Dane będą przechowywane lokalnie przez 24 godziny</p>
+      <p className="text-xs text-blue-300/60">
+        Dane będą przechowywane w sesji przez {PENDING_NOTE_EXPIRATION_MS / (60 * 1000)} minut
+      </p>
     </div>
   );
 }

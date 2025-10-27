@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabaseClient } from "@/db/supabase.client";
+import { getPendingNote } from "@/lib/utils/pending-note.utils";
 import { validateEmail, validatePasswordRegister, validatePasswordConfirm } from "@/lib/validators/auth.validators";
 
 interface RegisterFormProps {
@@ -12,7 +13,9 @@ interface RegisterFormProps {
 
 /**
  * RegisterForm component - email/password registration
- * Integrates with Supabase Auth and handles pendingGeneratedNote flow
+ * Integrates with Supabase Auth and handles pending note auto-save flow
+ * - Checks sessionStorage for pending notes after successful registration
+ * - Redirects to /notes?autoSave=true if pending note exists
  */
 export default function RegisterForm({ onError }: RegisterFormProps) {
   const [email, setEmail] = useState("");
@@ -106,30 +109,13 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         }
 
         // Registration successful with immediate session
-        // Check for pending generated note in localStorage
-        const pendingNote = localStorage.getItem("pendingGeneratedNote");
+        // Check for pending generated note in sessionStorage
+        const pendingNote = getPendingNote();
 
         if (pendingNote) {
-          try {
-            const noteData = JSON.parse(pendingNote);
-            const timestamp = noteData.timestamp;
-
-            // Check if note is still valid (24h TTL)
-            const now = Date.now();
-            const ttl = 24 * 60 * 60 * 1000; // 24 hours
-
-            if (now - timestamp < ttl) {
-              // Redirect to notes view with flag to show save dialog
-              window.location.href = "/notes?showPendingNote=true";
-              return;
-            } else {
-              // Remove expired note
-              localStorage.removeItem("pendingGeneratedNote");
-            }
-          } catch {
-            // Invalid data format, remove it
-            localStorage.removeItem("pendingGeneratedNote");
-          }
+          // Redirect to notes view with autoSave flag
+          window.location.href = "/notes?autoSave=true";
+          return;
         }
 
         // No pending note or expired - redirect to notes
