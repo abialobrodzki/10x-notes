@@ -79,7 +79,7 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
               <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
             )}
             {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
-            {item.is_owner && item.tag.shared_recipients && item.tag.shared_recipients > 0 && (
+            {item.is_owner && (item.tag.shared_recipients ?? 0) > 0 && (
               <Users
                 className="h-4 w-4 text-amber-400"
                 aria-label={`Udostępniono ${item.tag.shared_recipients} użytkownikom`}

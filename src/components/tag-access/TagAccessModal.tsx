@@ -27,7 +27,7 @@ interface TagAccessModalProps {
  */
 export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessModalProps) {
   const [recipients, setRecipients] = useState<TagAccessListDTO["recipients"]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +38,11 @@ export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessMod
       return;
     }
 
-    const fetchRecipients = async () => {
-      setLoading(true);
-      setError(null);
+    // Reset state when modal opens
+    setLoading(true);
+    setError(null);
 
+    const fetchRecipients = async () => {
       try {
         const response = await fetch(`/api/tags/${tagId}/access`, {
           method: "GET",
@@ -190,15 +191,15 @@ export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]" aria-describedby="tag-access-description">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Zarządzanie dostępem do etykiety</DialogTitle>
-          <DialogDescription id="tag-access-description">
+          <DialogDescription>
             Dodawaj i usuwaj użytkowników, którzy mają dostęp tylko do odczytu wszystkich notatek z tą etykietą.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="min-h-[300px] space-y-6">
           {error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive" role="alert" aria-live="polite">
               {error}

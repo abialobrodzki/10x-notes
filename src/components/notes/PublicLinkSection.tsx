@@ -1,5 +1,5 @@
 import { Copy, Check, RotateCw, Link } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -38,14 +38,22 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
   const [showRotateDialog, setShowRotateDialog] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const isEnabled = publicLink?.is_enabled || false;
+  // Optimistic state for switch - syncs with publicLink but updates immediately on toggle
+  const [optimisticEnabled, setOptimisticEnabled] = useState(publicLink?.is_enabled || false);
+
+  const isEnabled = optimisticEnabled;
   const fullUrl = publicLink?.url ? `${window.location.origin}${publicLink.url}` : "";
+
+  // Sync optimistic state with actual publicLink prop
+  useEffect(() => {
+    setOptimisticEnabled(publicLink?.is_enabled || false);
+  }, [publicLink?.is_enabled]);
 
   /**
    * Enable public link (POST)
    */
   const handleEnable = useCallback(async () => {
-    if (!isOwner || isSaving) return;
+    if (!isOwner) return;
 
     setIsSaving(true);
     try {
@@ -63,19 +71,21 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
       onUpdate(newLink);
       toast.success("Link publiczny został włączony");
     } catch (error) {
+      // Rollback optimistic update on error
+      setOptimisticEnabled(false);
       // eslint-disable-next-line no-console
       console.error("Failed to enable public link:", error);
       toast.error(error instanceof Error ? error.message : "Nie udało się włączyć linku");
     } finally {
       setIsSaving(false);
     }
-  }, [isOwner, isSaving, noteId, onUpdate]);
+  }, [isOwner, noteId, onUpdate]);
 
   /**
    * Disable public link (PATCH)
    */
   const handleDisable = useCallback(async () => {
-    if (!isOwner || isSaving) return;
+    if (!isOwner) return;
 
     setIsSaving(true);
     try {
@@ -97,19 +107,24 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
       onUpdate(updatedLink);
       toast.success("Link publiczny został wyłączony");
     } catch (error) {
+      // Rollback optimistic update on error
+      setOptimisticEnabled(true);
       // eslint-disable-next-line no-console
       console.error("Failed to disable public link:", error);
       toast.error(error instanceof Error ? error.message : "Nie udało się wyłączyć linku");
     } finally {
       setIsSaving(false);
     }
-  }, [isOwner, isSaving, noteId, onUpdate]);
+  }, [isOwner, noteId, onUpdate]);
 
   /**
    * Toggle public link on/off
    */
   const handleToggle = useCallback(
     async (checked: boolean) => {
+      // Optimistically update UI immediately
+      setOptimisticEnabled(checked);
+
       if (checked) {
         await handleEnable();
       } else {
@@ -193,7 +208,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             checked={isEnabled}
             onCheckedChange={handleToggle}
             disabled={isSaving}
-            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to"
+            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
           />
         </div>
       </div>
