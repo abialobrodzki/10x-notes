@@ -36,3 +36,9 @@ if (!supabaseAnonKey) {
  * ```
  */
 export const supabaseClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Type for Supabase client instance
+ * Use this type instead of importing from @supabase/supabase-js
+ */
+export type SupabaseClient = typeof supabaseClient;
