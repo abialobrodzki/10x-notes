@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
-import { Calendar, Sparkles, Globe, User } from "lucide-react";
+import { Calendar, Sparkles, Globe, User, Users } from "lucide-react";
 import { memo, useMemo, useCallback } from "react";
 import { GoalStatusBadge } from "@/components/shared/GoalStatusBadge";
 import { Badge } from "@/components/ui/badge";
@@ -79,14 +79,19 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
               <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
             )}
             {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
-            {!item.is_owner && <User className="h-4 w-4 text-amber-400" aria-label="Współdzielona notatka" />}
+            {item.is_owner && item.tag.shared_recipients && item.tag.shared_recipients > 0 && (
+              <Users
+                className="h-4 w-4 text-amber-400"
+                aria-label={`Udostępniono ${item.tag.shared_recipients} użytkownikom`}
+              />
+            )}
           </div>
         </div>
 
         {/* Summary Preview */}
         <p className="line-clamp-3 text-sm leading-relaxed text-glass-text">{highlightText(summaryPreview)}</p>
 
-        {/* Footer: Tag + Goal Status */}
+        {/* Footer: Tag + Goal Status + Shared Indicator */}
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="secondary"
@@ -96,6 +101,13 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
           </Badge>
 
           <GoalStatusBadge status={item.goal_status} className="text-xs" />
+
+          {!item.is_owner && (
+            <Badge variant="outline" className="border-amber-400/50 bg-amber-500/10 text-xs text-amber-300">
+              <User className="mr-1 h-3 w-3" />
+              Udostępniona
+            </Badge>
+          )}
         </div>
       </div>
     </GlassCard>

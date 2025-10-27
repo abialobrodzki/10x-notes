@@ -123,18 +123,22 @@ export class NotesService {
     const offset = calculateOffset(query.page, query.limit);
     const paginatedNotes = allNotes.slice(offset, offset + query.limit);
 
-    // Step 6: Get note IDs for public link check
+    // Step 6: Get note IDs for batch fetching
     const noteIds = paginatedNotes.map((note) => note.id);
 
     // Step 7: Fetch public links in batch
     const publicLinksMap = await this.getPublicLinksMap(noteIds);
 
-    // Step 8: Transform to DTOs
+    // Step 8: Fetch shared recipients counts for tags (only for owned tags)
+    const ownedTagIds = paginatedNotes.filter((note) => note.user_id === userId).map((note) => note.tags.id);
+    const sharedRecipientsMap = await this.getSharedRecipientsMap(ownedTagIds);
+
+    // Step 9: Transform to DTOs
     const noteListItems: NoteListItemDTO[] = paginatedNotes.map((note) =>
-      this.transformToListItemDTO(note, userId, publicLinksMap)
+      this.transformToListItemDTO(note, userId, publicLinksMap, sharedRecipientsMap)
     );
 
-    // Step 9: Build response with pagination metadata
+    // Step 10: Build response with pagination metadata
     return {
       notes: noteListItems,
       pagination: createPaginationDTO(query.page, query.limit, total),
@@ -275,22 +279,65 @@ export class NotesService {
   }
 
   /**
+   * Get shared recipients counts for given tag IDs
+   * Returns a Map of tag_id -> count of recipients
+   *
+   * @param tagIds - Array of tag IDs (should be owned tags only)
+   * @returns Map of tag_id to shared recipients count
+   */
+  private async getSharedRecipientsMap(tagIds: string[]): Promise<Map<string, number>> {
+    if (tagIds.length === 0) {
+      return new Map();
+    }
+
+    const { data: tagAccess, error } = await this.supabase.from("tag_access").select("tag_id").in("tag_id", tagIds);
+
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.error("Failed to fetch shared recipients counts:", error);
+      // Don't throw - return empty map, all tags will have shared_recipients: 0
+      return new Map();
+    }
+
+    // Count recipients per tag_id
+    const countsMap = new Map<string, number>();
+    tagAccess?.forEach((access) => {
+      const currentCount = countsMap.get(access.tag_id) || 0;
+      countsMap.set(access.tag_id, currentCount + 1);
+    });
+
+    return countsMap;
+  }
+
+  /**
    * Transform raw note data to NoteListItemDTO
    *
    * @param note - Raw note with joined tag
    * @param currentUserId - Current user ID (to determine is_owner)
    * @param publicLinksMap - Map of note_id to has_public_link
+   * @param sharedRecipientsMap - Map of tag_id to shared recipients count
    * @returns Formatted DTO
    */
   private transformToListItemDTO(
     note: NoteWithTag,
     currentUserId: string,
-    publicLinksMap: Map<string, boolean>
+    publicLinksMap: Map<string, boolean>,
+    sharedRecipientsMap: Map<string, number>
   ): NoteListItemDTO {
-    const tag: TagEmbeddedDTO = {
+    const isOwner = note.user_id === currentUserId;
+
+    const tag: TagEmbeddedDTO & { shared_recipients?: number } = {
       id: note.tags.id,
       name: note.tags.name,
     };
+
+    // Only include shared_recipients for owned notes
+    if (isOwner) {
+      const sharedCount = sharedRecipientsMap.get(note.tags.id);
+      if (sharedCount !== undefined) {
+        tag.shared_recipients = sharedCount;
+      }
+    }
 
     return {
       id: note.id,
@@ -301,7 +348,7 @@ export class NotesService {
       created_at: note.created_at,
       updated_at: note.updated_at,
       tag,
-      is_owner: note.user_id === currentUserId,
+      is_owner: isOwner,
       has_public_link: publicLinksMap.get(note.id) ?? false,
     };
   }
@@ -557,10 +604,12 @@ export class NotesService {
       return null;
     }
 
-    // Step 3: If owner, fetch public link (if exists)
+    // Step 3: If owner, fetch public link and shared recipients count
     let publicLink: PublicLinkEmbeddedDTO | null = null;
+    let sharedRecipientsCount: number | undefined = undefined;
 
     if (isOwner) {
+      // Fetch public link
       const { data: linkData, error: linkError } = await this.supabase
         .from("public_links")
         .select("token, is_enabled")
@@ -574,13 +623,28 @@ export class NotesService {
           url: `/public/${linkData.token}`,
         };
       }
+
+      // Fetch shared recipients count for this tag
+      const { data: tagAccessData, error: tagAccessError } = await this.supabase
+        .from("tag_access")
+        .select("recipient_id")
+        .eq("tag_id", note.tag_id);
+
+      if (!tagAccessError && tagAccessData) {
+        sharedRecipientsCount = tagAccessData.length;
+      }
     }
 
     // Step 4: Transform to NoteDetailDTO
-    const tag: TagEmbeddedDTO = {
+    const tag: TagEmbeddedDTO & { shared_recipients?: number } = {
       id: note.tags.id,
       name: note.tags.name,
     };
+
+    // Only include shared_recipients for owned notes
+    if (isOwner && sharedRecipientsCount !== undefined) {
+      tag.shared_recipients = sharedRecipientsCount;
+    }
 
     return {
       id: note.id,

@@ -1,3 +1,4 @@
+import { Users } from "lucide-react";
 import type { NoteDetailDTO } from "@/types";
 
 interface NoteHeaderProps {
@@ -86,6 +87,16 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
               />
             </svg>
             <span>Link publiczny aktywny</span>
+          </span>
+        )}
+
+        {/* Tag shared with users badge (only for owners with shared tags) */}
+        {isOwner && tag.shared_recipients && tag.shared_recipients > 0 && (
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/20 px-3 py-1 text-sm font-medium text-amber-100">
+            <Users className="h-4 w-4" aria-hidden="true" />
+            <span>
+              Udostępniono {tag.shared_recipients} użytkownik{tag.shared_recipients === 1 ? "owi" : "om"}
+            </span>
           </span>
         )}
       </div>

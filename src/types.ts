@@ -115,8 +115,11 @@ export type TagEmbeddedDTO = Pick<TagEntity, "id" | "name">;
  * Excludes original_content and suggested_tag for performance; includes computed fields
  */
 export type NoteListItemDTO = Omit<NoteEntity, "original_content" | "suggested_tag" | "tag_id" | "user_id"> & {
-  /** Tag information */
-  tag: TagEmbeddedDTO;
+  /** Tag information with shared recipients count */
+  tag: TagEmbeddedDTO & {
+    /** Number of users with shared access (only for owned notes) */
+    shared_recipients?: number;
+  };
   /** Whether current user owns this note */
   is_owner: boolean;
   /** Whether note has an active public link */
@@ -199,6 +202,11 @@ export type NoteDetailDTO = NoteDTO & {
   is_owner: boolean;
   /** Public link details (null for non-owners or if no link exists) */
   public_link: PublicLinkEmbeddedDTO | null;
+  /** Tag information with shared recipients count (only for owned notes) */
+  tag: TagEmbeddedDTO & {
+    /** Number of users with shared access (only for owned notes) */
+    shared_recipients?: number;
+  };
 };
 
 /**
