@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
@@ -52,6 +52,8 @@ const fetcher = async (url: string): Promise<NoteDetailDTO> => {
  * Fetches note data with SWR and manages display states
  */
 export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const {
     data: note,
     error,
@@ -69,6 +71,21 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
     date: false,
     tag: false,
   });
+
+  // Force scroll initialization on mount (Safari fix)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Force reflow and wake up Safari scroll
+    requestAnimationFrame(() => {
+      void container.offsetHeight; // Force reflow
+      container.scrollTop = 1;
+      requestAnimationFrame(() => {
+        container.scrollTop = 0;
+      });
+    });
+  }, [note, error, isLoading]); // Re-run when content changes
 
   // Redirect on authentication error
   useEffect(() => {
@@ -299,7 +316,10 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
   // Error state - 404
   if (error?.message === "Note not found") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      >
         <div className="mx-auto max-w-4xl">
           <GlassCard padding="lg" className="text-center">
             <h1 className="mb-4 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-4xl font-bold text-transparent">
@@ -318,7 +338,10 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
   // Error state - other errors
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      >
         <div className="mx-auto max-w-4xl">
           <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-8 text-center backdrop-blur-xl">
             <h1 className="mb-4 text-2xl font-bold text-red-200">Wystąpił błąd</h1>
@@ -342,7 +365,10 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
 
   // Success - render note details
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      ref={scrollContainerRef}
+      className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+    >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header with meta information */}
         <NoteHeader tag={note.tag} isOwner={note.is_owner} publicLink={note.public_link} />

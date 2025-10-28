@@ -29,16 +29,65 @@ const isAuthenticated = !!userId;
   </head>
   <body>
     {showNavbar && <Navbar transition:persist client:load isAuthenticated={isAuthenticated} />}
-    <slot />
+    <main
+      id="main-content"
+      data-scroll="content"
+      class:list={["main-content", "overflow-hidden", { "with-navbar": showNavbar }]}
+    >
+      <slot />
+    </main>
     <ToasterProvider transition:persist client:load />
+
+    <script is:inline>
+      /* eslint-disable */
+      (function () {
+        function initializeScroll() {
+          const mainContent = document.getElementById("main-content");
+          if (!mainContent) return false;
+          const scrollable = mainContent.querySelector(".overflow-auto");
+          if (!scrollable) return false;
+          scrollable.offsetHeight; // Force reflow
+          scrollable.scrollTop = 1;
+          requestAnimationFrame(function () {
+            scrollable.scrollTop = 0;
+          });
+          return true;
+        }
+        const observer = new MutationObserver(function () {
+          if (initializeScroll()) observer.disconnect();
+        });
+        const mainContent = document.getElementById("main-content");
+        if (mainContent) observer.observe(mainContent, { childList: true, subtree: true });
+        setTimeout(function () {
+          initializeScroll();
+          observer.disconnect();
+        }, 1000);
+        document.addEventListener("astro:page-load", initializeScroll);
+      })();
+      /* eslint-enable */
+    </script>
   </body>
 </html>
 
-<style>
+<style is:global>
+  /* Layout structure - simplified approach */
   html,
   body {
     margin: 0;
-    width: 100%;
+    padding: 0;
     height: 100%;
+    width: 100%;
   }
+
+  /* Main content wrapper - container for scrolling content */
+  #main-content {
+    height: 100vh;
+    width: 100%;
+  }
+
+  #main-content.with-navbar {
+    height: calc(100vh - 57px); /* 57px = navbar height (56px) + border (1px) */
+  }
+
+  /* Scrollbar styles moved to global.css for better specificity */
 </style>

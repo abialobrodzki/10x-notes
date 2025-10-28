@@ -13,8 +13,8 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<string[]>([]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
-      <div className="mx-auto flex min-h-screen max-w-md items-center">
+    <div className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+      <div className="mx-auto flex h-full max-w-md items-center">
         <GlassCard padding="lg" className="w-full">
           {/* Header */}
           <div className="mb-8 text-center">

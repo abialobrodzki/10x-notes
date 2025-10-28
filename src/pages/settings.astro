@@ -45,5 +45,5 @@ try {
 ---
 
 <Layout title="10xNotes - Ustawienia">
-  <SettingsPage client:load initialProfile={profileData} initialStats={statsData} initialError={error} />
+  <SettingsPage client:only="react" initialProfile={profileData} initialStats={statsData} initialError={error} />
 </Layout>

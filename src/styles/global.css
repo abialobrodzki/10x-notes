@@ -590,3 +590,48 @@
     @apply bg-red-700 shadow-lg;
   }
 }
+
+/* ============================================================================
+   CUSTOM SCROLLBAR - Global model
+   Applied to ALL scrollable elements (body, divs, etc)
+   ============================================================================ */
+
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #a855f7; /* Solid purple - Safari compatible */
+  border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #c084fc; /* Lighter purple on hover */
+}
+
+/* Firefox and modern browsers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a855f7 transparent;
+}
+
+/* Fix Safari scroll performance */
+.overflow-auto {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+/* ============================================================================
+   FIX: min-h-screen inside .main-content should be min-h-full
+   ============================================================================ */
+.main-content .min-h-screen {
+  min-height: 100% !important;
+}
+
+/* #main-content no longer scrolls - removed scrollbar styling */

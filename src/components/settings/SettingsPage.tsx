@@ -1,5 +1,5 @@
 import { User, BarChart3, Shield, AlertTriangle, ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import AlertArea from "@/components/AlertArea";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,11 +21,30 @@ interface SettingsPageProps {
  */
 export function SettingsPage({ initialProfile, initialStats, initialError }: SettingsPageProps) {
   const [errors] = useState<string[]>(initialError ? [initialError] : []);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Force scroll initialization on mount (Safari fix)
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Force reflow and wake up Safari scroll
+    requestAnimationFrame(() => {
+      void container.offsetHeight; // Force reflow
+      container.scrollTop = 1;
+      requestAnimationFrame(() => {
+        container.scrollTop = 0;
+      });
+    });
+  }, []);
 
   // Don't render content if there's an error or missing data
   if (errors.length > 0 || !initialProfile || !initialStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+      <div
+        ref={scrollContainerRef}
+        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      >
         <div className="mx-auto max-w-4xl">
           <GlassCard padding="lg">
             <h1 className="mb-6 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
@@ -39,7 +58,10 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      ref={scrollContainerRef}
+      className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+    >
       <div className="mx-auto max-w-6xl">
         <GlassCard padding="lg">
           {/* Breadcrumb */}

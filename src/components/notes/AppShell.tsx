@@ -137,7 +137,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
   const hasMore = notes.pagination.page < notes.pagination.total_pages;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to">
+    <div className="flex h-full w-full overflow-hidden bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to">
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 border-r border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block">
         <TagSidebar tags={tags.tags} selectedTagId={selectedTagId} onTagSelect={handleTagSelect} />
