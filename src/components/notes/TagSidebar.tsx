@@ -53,9 +53,9 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
           <Button
             variant="ghost"
             className={cn(
-              "w-full justify-start gap-2 hover:!bg-white/5 hover:!text-glass-text",
+              "w-full justify-start gap-2 hover:bg-white/5! hover:text-glass-text!",
               selectedTagId === null
-                ? "bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:!from-glass-bg-to hover:!to-glass-bg-from"
+                ? "bg-linear-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:from-glass-bg-to! hover:to-glass-bg-from!"
                 : "text-glass-text-muted"
             )}
             onClick={() => onTagSelect(null)}
@@ -78,9 +78,9 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
                 <Button
                   variant="ghost"
                   className={cn(
-                    "flex-1 justify-start gap-2 hover:!bg-white/5 hover:!text-glass-text",
+                    "flex-1 justify-start gap-2 hover:bg-white/5! hover:text-glass-text!",
                     selectedTagId === tag.id
-                      ? "bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:!from-glass-bg-to hover:!to-glass-bg-from"
+                      ? "bg-linear-to-br from-glass-bg-from to-glass-bg-to text-glass-text hover:from-glass-bg-to! hover:to-glass-bg-from!"
                       : "text-glass-text-muted"
                   )}
                   onClick={() => onTagSelect(tag.id)}

@@ -310,16 +310,16 @@
   /* Glass select component styles (for consistent icon colors and hover) */
   [data-slot="select-trigger"].glass-select,
   button.glass-select {
-    @apply hover:!bg-white/5;
+    @apply hover:bg-white/5!;
   }
 
   [data-slot="select-trigger"].glass-select svg,
   button.glass-select svg {
-    @apply !text-glass-text !opacity-100;
+    @apply text-glass-text! opacity-100!;
   }
 
   [data-slot="select-item"].glass-select svg {
-    @apply !text-glass-text;
+    @apply text-glass-text!;
   }
 
   /* Smooth transitions for interactive elements */
@@ -338,7 +338,7 @@
 
   /* Base glass background for dropdowns/selects - use on triggers */
   .dropdown-glass-base {
-    @apply border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to;
+    @apply border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to;
     @apply backdrop-blur-xl text-glass-text;
   }
 
@@ -505,7 +505,7 @@
     @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
     @apply hover:border-glass-border-hover hover:from-glass-bg-to hover:to-glass-bg-from;
-    @apply bg-gradient-to-b from-glass-bg-from to-glass-bg-to;
+    @apply bg-linear-to-b from-glass-bg-from to-glass-bg-to;
     @apply border-glass-border text-glass-text;
   }
 
@@ -514,7 +514,7 @@
     @apply outline-none transition-all;
     @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
-    @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
+    @apply bg-linear-to-r from-gradient-button-from to-gradient-button-to;
     @apply text-white font-semibold shadow-lg;
   }
 
@@ -534,7 +534,7 @@
     @apply outline-none transition-all;
     @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
-    @apply bg-gradient-to-r from-gradient-button-from to-gradient-button-to;
+    @apply bg-linear-to-r from-gradient-button-from to-gradient-button-to;
     @apply text-white font-semibold shadow-lg;
   }
 
@@ -554,7 +554,7 @@
     @apply outline-none transition-all duration-300;
     @apply focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring;
     @apply disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none;
-    @apply bg-gradient-to-r from-blue-600 to-purple-600;
+    @apply bg-linear-to-r from-blue-600 to-purple-600;
     @apply text-white font-semibold shadow-lg;
   }
 

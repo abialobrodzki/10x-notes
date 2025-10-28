@@ -13,7 +13,7 @@ interface NoteHeaderProps {
  */
 export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps) {
   return (
-    <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-6 backdrop-blur-xl">
+    <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-6 backdrop-blur-xl">
       {/* Breadcrumbs */}
       <nav className="mb-4 text-sm text-glass-text-muted" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">

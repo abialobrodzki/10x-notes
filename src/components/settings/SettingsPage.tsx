@@ -43,11 +43,11 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
     return (
       <div
         ref={scrollContainerRef}
-        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+        className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
       >
         <div className="mx-auto max-w-4xl">
           <GlassCard padding="lg">
-            <h1 className="mb-6 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
+            <h1 className="mb-6 bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
               Ustawienia
             </h1>
             <AlertArea messages={errors} />
@@ -60,7 +60,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
   return (
     <div
       ref={scrollContainerRef}
-      className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
     >
       <div className="mx-auto max-w-6xl">
         <GlassCard padding="lg">
@@ -74,7 +74,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="mb-2 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
+            <h1 className="mb-2 bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
               Ustawienia
             </h1>
             <p className="text-glass-text-muted drop-shadow-md">
@@ -84,24 +84,24 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
 
           {/* Tabs Navigation */}
           <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-gradient-to-b from-glass-bg-from to-glass-bg-to border border-glass-border backdrop-blur-lg p-1 h-auto">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-linear-to-b from-glass-bg-from to-glass-bg-to border border-glass-border backdrop-blur-lg p-1 h-auto">
               <TabsTrigger
                 value="profile"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-gradient-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
               >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profil</span>
               </TabsTrigger>
               <TabsTrigger
                 value="stats"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-gradient-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Statystyki</span>
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="flex items-center gap-2 text-glass-text-muted data-[state=active]:text-glass-text data-[state=active]:bg-gradient-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all opacity-50"
+                className="flex items-center gap-2 text-glass-text-muted data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all opacity-50"
                 disabled
               >
                 <Shield className="h-4 w-4" />
@@ -109,7 +109,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               </TabsTrigger>
               <TabsTrigger
                 value="danger"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-gradient-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
               >
                 <AlertTriangle className="h-4 w-4" />
                 <span className="hidden sm:inline">Strefa zagrożeń</span>

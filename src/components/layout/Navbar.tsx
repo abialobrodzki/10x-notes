@@ -96,14 +96,14 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-glass-border bg-gradient-to-r from-gradient-from/90 via-gradient-via/90 to-gradient-to/90 shadow-lg backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-glass-border bg-linear-to-r from-gradient-from/90 via-gradient-via/90 to-gradient-to/90 shadow-lg backdrop-blur-xl">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo/Brand */}
         <a
           href={isAuthenticated ? "/notes" : "/"}
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <span className="bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-xl font-bold text-transparent drop-shadow-lg">
+          <span className="bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-xl font-bold text-transparent drop-shadow-lg">
             10xNotes
           </span>
         </a>
@@ -136,7 +136,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                   <DropdownMenuItem asChild>
                     <a
                       href="/settings"
-                      className="flex cursor-pointer items-center gap-2 text-glass-text hover:!bg-white/5 hover:!text-glass-text-hover focus:!bg-white/5 focus:!text-glass-text-hover"
+                      className="flex cursor-pointer items-center gap-2 text-glass-text hover:bg-white/5! hover:text-glass-text-hover! focus:bg-white/5! focus:text-glass-text-hover!"
                     >
                       <Settings className="h-4 w-4" />
                       <span>Ustawienia</span>
@@ -146,7 +146,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                   <DropdownMenuItem
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="flex cursor-pointer items-center gap-2 text-destructive hover:!bg-destructive/10 hover:!text-destructive focus:!bg-destructive/10 focus:!text-destructive"
+                    className="flex cursor-pointer items-center gap-2 text-destructive hover:bg-destructive/10! hover:text-destructive! focus:bg-destructive/10! focus:text-destructive!"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>{isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}</span>

@@ -137,16 +137,16 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
   const hasMore = notes.pagination.page < notes.pagination.total_pages;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to">
+    <div className="flex h-full w-full overflow-hidden bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block">
+      <aside className="hidden w-64 border-r border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block">
         <TagSidebar tags={tags.tags} selectedTagId={selectedTagId} onTagSelect={handleTagSelect} />
       </aside>
 
       {/* Mobile Header + Content */}
       <div className="flex flex-1 flex-col">
         {/* Mobile Header */}
-        <header className="flex h-14 items-center gap-4 border-b border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to px-4 backdrop-blur-xl md:hidden">
+        <header className="flex h-14 items-center gap-4 border-b border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to px-4 backdrop-blur-xl md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-glass-text hover:text-glass-text-hover">
@@ -156,7 +156,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-64 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+              className="w-64 border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
             >
               <TagSidebar
                 tags={tags.tags}
@@ -168,7 +168,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
               />
             </SheetContent>
           </Sheet>
-          <h1 className="bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-lg font-semibold text-transparent drop-shadow-lg">
+          <h1 className="bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-lg font-semibold text-transparent drop-shadow-lg">
             Moje notatki
           </h1>
         </header>
@@ -176,7 +176,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto p-4 md:p-6">
           {error && (
-            <div className="mb-4 rounded-md border border-destructive/50 bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
+            <div className="mb-4 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
               <p className="text-sm font-medium text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 Błąd ładowania danych
               </p>
@@ -187,7 +187,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
           <div className="mx-auto max-w-5xl space-y-6">
             {/* Desktop Title */}
             <div className="hidden md:block">
-              <h1 className="bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
+              <h1 className="bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-3xl font-bold text-transparent drop-shadow-lg">
                 Moje notatki
               </h1>
               <p className="mt-2 text-sm text-glass-text-muted drop-shadow-md">

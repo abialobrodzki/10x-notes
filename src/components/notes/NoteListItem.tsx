@@ -95,7 +95,7 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="secondary"
-            className="border-glass-border bg-gradient-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
+            className="border-glass-border bg-linear-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
           >
             {item.tag.name}
           </Badge>

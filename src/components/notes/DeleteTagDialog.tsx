@@ -114,7 +114,7 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
           <Trash2 className="h-3 w-3" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-lg border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+      <AlertDialogContent className="max-w-lg border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <AlertTriangle className="h-5 w-5" />

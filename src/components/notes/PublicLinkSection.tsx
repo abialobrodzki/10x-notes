@@ -194,7 +194,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
     <div className="space-y-6">
       {/* Section header */}
       <div className="flex items-center justify-between">
-        <h2 className="bg-gradient-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
+        <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
           Link publiczny
         </h2>
 
@@ -208,7 +208,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             checked={isEnabled}
             onCheckedChange={handleToggle}
             disabled={isSaving}
-            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
+            className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
           />
         </div>
       </div>
@@ -267,7 +267,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
 
       {/* Rotate confirmation dialog */}
       <AlertDialog open={showRotateDialog} onOpenChange={setShowRotateDialog}>
-        <AlertDialogContent className="border-input-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+        <AlertDialogContent className="border-input-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-glass-text">Czy na pewno chcesz zmienić token?</AlertDialogTitle>
             <AlertDialogDescription className="text-glass-text-muted">

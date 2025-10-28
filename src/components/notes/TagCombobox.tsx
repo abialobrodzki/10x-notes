@@ -99,7 +99,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
   return (
     <div className="space-y-4">
       {/* Section header */}
-      <h3 className="bg-gradient-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
+      <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
         Etykieta
       </h3>
 

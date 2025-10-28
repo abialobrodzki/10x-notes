@@ -21,7 +21,7 @@ interface StatCardProps {
 function StatCard({ icon, label, value, description }: StatCardProps) {
   return (
     <GlassCard padding="sm" className="flex items-start gap-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gradient-button-from to-gradient-button-to text-white shadow-lg">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-gradient-button-from to-gradient-button-to text-white shadow-lg">
         {icon}
       </div>
       <div className="flex-1 space-y-1">
@@ -52,7 +52,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
+    <Card className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-glass-text">
           <Zap className="h-5 w-5" />

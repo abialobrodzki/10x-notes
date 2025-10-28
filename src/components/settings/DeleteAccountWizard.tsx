@@ -173,7 +173,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
           Usuń konto
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-lg bg-gradient-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl">
+      <AlertDialogContent className="max-w-lg bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <AlertTriangle className="h-5 w-5" />
@@ -223,7 +223,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
           </div>
 
           {/* Confirmation checkbox */}
-          <div className="flex items-start space-x-3 rounded-md border border-destructive/50 bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-3">
+          <div className="flex items-start space-x-3 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-3">
             <Checkbox
               id={confirmCheckboxId}
               checked={isConfirmed}

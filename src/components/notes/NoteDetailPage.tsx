@@ -318,11 +318,11 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
     return (
       <div
         ref={scrollContainerRef}
-        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+        className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
       >
         <div className="mx-auto max-w-4xl">
           <GlassCard padding="lg" className="text-center">
-            <h1 className="mb-4 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-4xl font-bold text-transparent">
+            <h1 className="mb-4 bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-4xl font-bold text-transparent">
               Nie znaleziono notatki
             </h1>
             <p className="mb-6 text-glass-text-muted">Notatka o podanym ID nie istnieje lub została usunięta.</p>
@@ -340,7 +340,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
     return (
       <div
         ref={scrollContainerRef}
-        className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+        className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
       >
         <div className="mx-auto max-w-4xl">
           <div className="rounded-2xl border border-red-500/50 bg-red-500/10 p-8 text-center backdrop-blur-xl">
@@ -367,7 +367,7 @@ export default function NoteDetailPage({ noteId }: NoteDetailPageProps) {
   return (
     <div
       ref={scrollContainerRef}
-      className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
     >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header with meta information */}

@@ -63,7 +63,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-center justify-between">
-        <h2 className="bg-gradient-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
+        <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
           Podsumowanie
         </h2>
         {!isEditing && isOwner && (

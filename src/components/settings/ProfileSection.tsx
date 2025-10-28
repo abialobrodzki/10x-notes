@@ -24,7 +24,7 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
   });
 
   return (
-    <Card className="bg-gradient-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
+    <Card className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-glass-text">
           <User className="h-5 w-5" />

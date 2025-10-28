@@ -84,7 +84,7 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
           <span className="sr-only">Utwórz nową etykietę</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+      <DialogContent className="border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-glass-text">Utwórz nową etykietę</DialogTitle>
@@ -105,7 +105,7 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
                 setError(null);
               }}
               placeholder="np. Projekty, Spotkania, Pomysły"
-              className="mt-2 border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
+              className="mt-2 border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
               disabled={isLoading}
             />
             {error && (

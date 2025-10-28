@@ -13,7 +13,7 @@ interface DangerZoneProps {
  */
 export function DangerZone({ userEmail }: DangerZoneProps) {
   return (
-    <Card className="border-destructive/50 bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl shadow-lg">
+    <Card className="border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
           <AlertTriangle className="h-5 w-5" />
@@ -33,7 +33,7 @@ export function DangerZone({ userEmail }: DangerZoneProps) {
             </p>
           </div>
 
-          <div className="rounded-lg border border-destructive/30 bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-4 space-y-3">
+          <div className="rounded-lg border border-destructive/30 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-4 space-y-3">
             <p className="text-sm font-medium text-glass-text">Co zostanie usunięte:</p>
             <ul className="list-inside list-disc space-y-1 text-sm text-glass-text-muted">
               <li>Wszystkie notatki i ich zawartość</li>

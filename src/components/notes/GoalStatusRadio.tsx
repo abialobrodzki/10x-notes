@@ -46,9 +46,9 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
       Icon: CheckCircle2,
       iconColor: "text-status-success-text",
       colorClasses:
-        "border-status-success-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-success-text hover-glass",
+        "border-status-success-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-success-text hover-glass",
       selectedClasses:
-        "border-status-success-border-selected bg-gradient-to-b from-status-success-bg to-status-success-bg/50 backdrop-blur-xl text-status-success-text",
+        "border-status-success-border-selected bg-linear-to-b from-status-success-bg to-status-success-bg/50 backdrop-blur-xl text-status-success-text",
     },
     {
       id: notAchievedId,
@@ -57,16 +57,16 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
       Icon: XCircle,
       iconColor: "text-status-error-text",
       colorClasses:
-        "border-status-error-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-error-text hover-glass",
+        "border-status-error-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl text-status-error-text hover-glass",
       selectedClasses:
-        "border-status-error-border-selected bg-gradient-to-b from-status-error-bg to-status-error-bg/50 backdrop-blur-xl text-status-error-text",
+        "border-status-error-border-selected bg-linear-to-b from-status-error-bg to-status-error-bg/50 backdrop-blur-xl text-status-error-text",
     },
   ];
 
   return (
     <div className="space-y-4">
       {/* Section header */}
-      <h3 className="bg-gradient-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
+      <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
         Status celów
       </h3>
 

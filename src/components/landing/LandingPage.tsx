@@ -174,12 +174,12 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
   };
 
   return (
-    <div className="h-full overflow-auto bg-gradient-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+        <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <h1 className="mb-4 bg-gradient-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-5xl font-bold text-transparent drop-shadow-lg sm:text-6xl">
+            <h1 className="mb-4 bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-5xl font-bold text-transparent drop-shadow-lg sm:text-6xl">
               10xNotes
             </h1>
             <p className="text-xl text-glass-text-muted drop-shadow-md">

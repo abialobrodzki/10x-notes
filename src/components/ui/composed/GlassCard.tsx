@@ -24,7 +24,7 @@ export function GlassCard({ hover = false, padding = "md", className, children, 
   return (
     <div
       className={cn(
-        "rounded-lg border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
+        "rounded-lg border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl",
         hover && "hover-glass",
         paddingClasses[padding],
         className

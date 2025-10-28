@@ -19,10 +19,10 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
   const displayedLines = isExpanded || !shouldTruncate ? lines : lines.slice(0, 8);
 
   return (
-    <div className="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+    <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
       {/* Section header */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="bg-gradient-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
+        <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
           Oryginalna treść
         </h2>
 
