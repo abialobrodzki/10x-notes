@@ -39,13 +39,15 @@ const config = getErrorConfig(code);
 ---
 
 <div class="container mx-auto px-4 py-16 max-w-2xl">
-  <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-lg p-8 text-center">
+  <div
+    class="rounded-2xl border border-glass-border bg-gradient-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl text-center"
+  >
     <!-- Error icon -->
     <div class="mb-6 flex justify-center">
       {
         config.icon === "not-found" && (
           <svg
-            class="w-16 h-16 text-neutral-400 dark:text-neutral-600"
+            class="w-16 h-16 text-glass-text-muted"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -63,7 +65,7 @@ const config = getErrorConfig(code);
       {
         config.icon === "rate-limit" && (
           <svg
-            class="w-16 h-16 text-amber-500 dark:text-amber-400"
+            class="w-16 h-16 text-yellow-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -80,13 +82,7 @@ const config = getErrorConfig(code);
       }
       {
         config.icon === "server-error" && (
-          <svg
-            class="w-16 h-16 text-red-500 dark:text-red-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
+          <svg class="w-16 h-16 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -99,12 +95,12 @@ const config = getErrorConfig(code);
     </div>
 
     <!-- Error title -->
-    <h1 class="text-2xl font-bold mb-4 text-neutral-900 dark:text-neutral-100">
+    <h1 class="text-2xl font-bold mb-4 text-glass-text">
       {config.title}
     </h1>
 
     <!-- Error description -->
-    <p class="text-neutral-600 dark:text-neutral-400 mb-6">
+    <p class="text-glass-text-muted mb-6">
       {config.description}
     </p>
 
