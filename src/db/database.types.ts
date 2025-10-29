@@ -240,6 +240,10 @@ export interface Database {
           recipient_id: string;
         }[];
       };
+      revoke_tag_access: {
+        Args: { p_recipient_id: string; p_tag_id: string };
+        Returns: Json;
+      };
     };
     Enums: {
       goal_status_enum: "achieved" | "not_achieved" | "undefined";

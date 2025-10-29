@@ -127,43 +127,53 @@ export class TagAccessService {
    * Revoke access to a tag from a user
    *
    * Only tag owner can revoke access.
-   * Removes the tag_access record for specified recipient.
+   * Uses RPC function revoke_tag_access() which:
+   * - Verifies tag ownership
+   * - Deletes tag_access record with SECURITY DEFINER (bypasses RLS)
+   * - Returns success status with deleted count
    *
-   * @param userId - Current user ID (from JWT)
+   * @param userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
    * @param tagId - Tag ID to revoke access from
    * @param recipientId - User ID whose access should be revoked
-   * @throws Error if tag not found, user not owner, or access grant not found
+   * @throws Error if tag not found, user not owner, or RPC fails
    */
   async revokeTagAccess(userId: string, tagId: string, recipientId: string): Promise<void> {
-    // Step 1: Check tag ownership - verify tag exists and current user is the owner
-    const { data: tag, error: tagError } = await this.supabase
-      .from("tags")
-      .select("id, user_id")
-      .eq("id", tagId)
-      .single();
+    // Call RPC function that handles ownership check and deletion
+    // Function signature: revoke_tag_access(p_tag_id uuid, p_recipient_id uuid) -> jsonb
+    // The function uses auth.uid() internally to verify ownership
+    const { data, error } = await this.supabase.rpc("revoke_tag_access", {
+      p_tag_id: tagId,
+      p_recipient_id: recipientId,
+    });
 
-    if (tagError || !tag) {
-      throw new Error("TAG_NOT_FOUND");
+    if (error) {
+      throw new Error(`Failed to revoke tag access: ${error.message}`);
     }
 
-    if (tag.user_id !== userId) {
-      throw new Error("TAG_NOT_OWNED");
+    // Check if RPC returned error in response
+    if (!data || typeof data !== "object") {
+      throw new Error("Failed to revoke tag access: invalid response from server");
     }
 
-    // Step 2: Delete the access grant
-    const { error: deleteError, count } = await this.supabase
-      .from("tag_access")
-      .delete({ count: "exact" })
-      .eq("tag_id", tagId)
-      .eq("recipient_id", recipientId);
+    const result = data as { success: boolean; error?: string; deleted_count?: number };
 
-    if (deleteError) {
-      throw new Error(`Failed to revoke tag access: ${deleteError.message}`);
+    if (!result.success) {
+      const errorMsg = result.error || "Unknown error";
+
+      // Parse specific error messages from the RPC function
+      if (errorMsg.includes("Tag not found")) {
+        throw new Error("TAG_NOT_FOUND");
+      }
+      if (errorMsg.includes("not owner") || errorMsg.includes("Forbidden")) {
+        throw new Error("TAG_NOT_OWNED");
+      }
+      if (errorMsg.includes("Unauthorized")) {
+        throw new Error("UNAUTHORIZED");
+      }
+
+      throw new Error(`Failed to revoke tag access: ${errorMsg}`);
     }
 
-    // Step 3: Check if any rows were deleted (0 means access grant didn't exist)
-    if (count === 0) {
-      throw new Error("ACCESS_NOT_FOUND");
-    }
+    // Success - RPC executed and deleted the record
   }
 }
