@@ -8,6 +8,7 @@ interface NoteListProps {
   items: NoteListItemDTO[];
   isLoading?: boolean;
   searchTerm?: string;
+  hasActiveFilters?: boolean;
   onItemClick: (id: string) => void;
 }
 
@@ -20,7 +21,7 @@ interface NoteListProps {
  * - Empty state when no notes
  * - TODO: Virtualization for >100 items (optimization)
  */
-export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteListProps) {
+export function NoteList({ items, isLoading, searchTerm, hasActiveFilters = false, onItemClick }: NoteListProps) {
   // Loading state
   if (isLoading) {
     return (
@@ -43,16 +44,28 @@ export function NoteList({ items, isLoading, searchTerm, onItemClick }: NoteList
 
   // Empty state
   if (items.length === 0) {
+    // Determine empty state message and CTA based on context
+    let emptyMessage: string;
+    let showCTA = false;
+
+    if (searchTerm) {
+      // User searched but found nothing
+      emptyMessage = "Nie znaleziono notatek pasujących do Twojego wyszukiwania.";
+    } else if (hasActiveFilters) {
+      // User has filters active but no results
+      emptyMessage = "Brak notatek dla wybranych filtrów. Spróbuj zmienić kryteria wyszukiwania.";
+    } else {
+      // User has no notes at all
+      emptyMessage = "Nie masz jeszcze żadnych notatek. Utwórz pierwszą notatkę.";
+      showCTA = true;
+    }
+
     return (
       <GlassCard padding="lg" className="flex flex-col items-center justify-center text-center border-dashed">
         <FileText className="mb-4 h-12 w-12 text-glass-text-muted" />
         <h3 className="mb-2 text-lg font-semibold text-glass-text">Brak notatek</h3>
-        <p className="mb-6 text-sm text-glass-text-muted">
-          {searchTerm
-            ? "Nie znaleziono notatek pasujących do Twojego wyszukiwania."
-            : "Nie masz jeszcze żadnych notatek. Utwórz pierwszą notatkę."}
-        </p>
-        {!searchTerm && (
+        <p className="mb-6 text-sm text-glass-text-muted">{emptyMessage}</p>
+        {showCTA && (
           <a href="/" className="rounded-lg btn-gradient-primary px-6 py-2.5 text-sm font-medium hover-gradient">
             Generuj pierwszą notatkę
           </a>

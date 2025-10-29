@@ -77,6 +77,11 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
     window.location.href = url.toString();
   };
 
+  // Check if user has any active filters (excluding pagination/sorting)
+  const hasActiveFilters = useMemo(() => {
+    return Boolean(query.tag_id || query.goal_status || query.date_from || query.date_to);
+  }, [query.tag_id, query.goal_status, query.date_from, query.date_to]);
+
   const handlePageChange = (page: number) => {
     const url = new URL(window.location.href);
     url.searchParams.set("page", String(page));
@@ -202,7 +207,13 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
             <FiltersPanel filters={query} onChange={handleFiltersChange} />
 
             {/* Notes List */}
-            <NoteList items={filteredNotes} isLoading={false} searchTerm={searchTerm} onItemClick={handleNoteClick} />
+            <NoteList
+              items={filteredNotes}
+              isLoading={false}
+              searchTerm={searchTerm}
+              hasActiveFilters={hasActiveFilters}
+              onItemClick={handleNoteClick}
+            />
 
             {/* Pagination (Desktop) / Infinite Loader (Mobile) */}
             {!searchTerm && (
