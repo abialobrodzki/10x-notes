@@ -282,6 +282,11 @@ export class NotesService {
    * Get shared recipients counts for given tag IDs
    * Returns a Map of tag_id -> count of recipients
    *
+   * Uses RPC function get_tags_shared_counts() which:
+   * - Verifies tag ownership (only returns counts for owned tags)
+   * - Uses SECURITY DEFINER to bypass RLS on tag_access table
+   * - Returns aggregated counts per tag_id
+   *
    * @param tagIds - Array of tag IDs (should be owned tags only)
    * @returns Map of tag_id to shared recipients count
    */
@@ -290,7 +295,11 @@ export class NotesService {
       return new Map();
     }
 
-    const { data: tagAccess, error } = await this.supabase.from("tag_access").select("tag_id").in("tag_id", tagIds);
+    // Call RPC function that handles ownership check and aggregation
+    // Function signature: get_tags_shared_counts(p_tag_ids uuid[]) -> TABLE(tag_id uuid, recipients_count bigint)
+    const { data: counts, error } = await this.supabase.rpc("get_tags_shared_counts", {
+      p_tag_ids: tagIds,
+    });
 
     if (error) {
       // eslint-disable-next-line no-console
@@ -299,11 +308,10 @@ export class NotesService {
       return new Map();
     }
 
-    // Count recipients per tag_id
+    // Transform array to Map
     const countsMap = new Map<string, number>();
-    tagAccess?.forEach((access) => {
-      const currentCount = countsMap.get(access.tag_id) || 0;
-      countsMap.set(access.tag_id, currentCount + 1);
+    counts?.forEach((row: { tag_id: string; recipients_count: number }) => {
+      countsMap.set(row.tag_id, row.recipients_count);
     });
 
     return countsMap;

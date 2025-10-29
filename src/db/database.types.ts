@@ -232,6 +232,13 @@ export interface Database {
           recipient_id: string;
         }[];
       };
+      get_tags_shared_counts: {
+        Args: { p_tag_ids: string[] };
+        Returns: {
+          recipients_count: number;
+          tag_id: string;
+        }[];
+      };
       grant_tag_access: {
         Args: { p_recipient_email: string; p_tag_id: string };
         Returns: {
