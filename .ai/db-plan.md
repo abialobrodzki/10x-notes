@@ -521,9 +521,67 @@ auth.users (Supabase Auth)
 
 ---
 
-## 8. Design Decisions & Rationale
+## 8. SECURITY DEFINER Functions
 
-### 8.1 Data Integrity
+For operations where RLS policies would create circular dependencies or performance issues, the schema uses PostgreSQL functions with `SECURITY DEFINER` privilege. These functions bypass RLS while maintaining security through explicit ownership checks.
+
+### 8.1 get_tag_access_list(p_tag_id uuid)
+
+Returns list of users with access to a tag (with emails from auth.users).
+
+**Purpose**: Tag owners need to see recipients, but RLS prevents direct SELECT on tag_access (would create circular dependency with tags table).
+
+**Security**: Verifies tag ownership via `auth.uid()` before returning data.
+
+**Returns**: TABLE(recipient_id uuid, email text, granted_at timestamptz)
+
+### 8.2 grant_tag_access(p_tag_id uuid, p_recipient_email text)
+
+Grants tag access to a user by email.
+
+**Purpose**: Resolves email to user_id from auth.users (requires elevated privileges) and prevents duplicate grants.
+
+**Security**: Verifies tag ownership, validates email confirmation, prevents self-sharing.
+
+**Returns**: TABLE(recipient_id uuid, email text, granted_at timestamptz)
+
+### 8.3 revoke_tag_access(p_tag_id uuid, p_recipient_id uuid)
+
+Revokes tag access from a user.
+
+**Purpose**: Owners cannot SELECT tag_access records through RLS (recipient-only policy), but need to DELETE them.
+
+**Security**: Verifies tag ownership before deletion.
+
+**Returns**: jsonb with success status and deleted_count
+
+### 8.4 get_tags_shared_counts(p_tag_ids uuid[])
+
+Returns shared recipients count per tag.
+
+**Purpose**: Owners need recipient counts for UI indicators, but RLS blocks SELECT on tag_access.
+
+**Security**: Returns counts only for tags owned by current user.
+
+**Returns**: TABLE(tag_id uuid, recipients_count bigint)
+
+### 8.5 delete_user_account()
+
+Deletes user account and all associated data.
+
+**Purpose**: GDPR compliance - complete data removal on user request.
+
+**Security**: Operates on current user only (auth.uid()).
+
+**Returns**: boolean (success/failure)
+
+**Implementation Note**: All SECURITY DEFINER functions explicitly set `search_path = ''` to prevent SQL injection attacks via search_path manipulation.
+
+---
+
+## 9. Design Decisions & Rationale
+
+### 9.1 Data Integrity
 
 - **Case-insensitive tag uniqueness**: Prevents confusion from duplicate tags with different casing
 - **RESTRICT on tag deletion**: Requires user to reassign notes before deleting tag (prevents data loss)
@@ -533,14 +591,15 @@ auth.users (Supabase Auth)
 - **NULL vs 'undefined' for goal_status**: `goal_status` is NULLABLE without DEFAULT. NULL represents "no value yet" (before AI processing or on error), while 'undefined' represents AI's assessment that goal status cannot be determined from notes. This distinction aids debugging and provides clearer UX states. Applications can use COALESCE or views to default NULL to 'undefined' for display purposes if needed.
 - **COALESCE for nullable aggregations**: In `user_generation_stats` view, `SUM(COALESCE(tokens_used, 0))` ensures `total_tokens` returns a number even when some generations have NULL tokens (e.g., models that don't report token usage). Without COALESCE, SQL's `SUM(NULL)` would return NULL for the entire aggregate.
 
-### 8.2 Security
+### 9.2 Security
 
 - **Multi-layered RLS policies**: Owner, recipient, and public access patterns
 - **UUID tokens for public links**: More secure than auto-incrementing IDs
 - **Separate access control table**: Clean separation of ownership vs. permissions
 - **Service role for public access**: Unauthenticated users access public notes via API endpoint
+- **SECURITY DEFINER functions**: Used where RLS would create circular dependencies, with explicit ownership validation
 
-### 8.3 Performance
+### 9.3 Performance
 
 - **Strategic indexing**: Composite indexes cover single-column queries, eliminating redundant indexes
   - `notes(user_id, meeting_date DESC)` covers both combined and single `user_id` queries
@@ -552,20 +611,20 @@ auth.users (Supabase Auth)
 - **No premature optimization**: No partitioning or full-text search on MVP (can be added later)
 - **⚠️ Global date filtering**: After removing `idx_notes_meeting_date`, queries filtering globally by `meeting_date` without user context will perform full table scans. All MVP queries are scoped to user context, but this is important for post-MVP features. See section 11.6 for details.
 
-### 8.4 Scalability
+### 9.4 Scalability
 
 - **Separation of concerns**: Links, access, and logs in dedicated tables
 - **UUID primary keys**: Better for distributed systems and sharding
 - **Normalized structure**: 3NF normalized, ready for growth
 - **Extensible design**: Easy to add features like versioning, full-text search, or archiving
 
-### 8.5 User Experience
+### 9.5 User Experience
 
 - **Soft deletable public links**: `is_enabled` flag allows disabling without deletion
 - **Editable meeting dates**: Flexibility for users to correct date after creation
 - **AI metadata tracking**: `is_ai_generated` flag for transparency
 
-### 8.6 Compliance & Privacy
+### 9.6 Compliance & Privacy
 
 - **Minimal personal data**: Only email stored (via Supabase Auth)
 - **Complete data deletion**: CASCADE + optional trigger ensures GDPR compliance
@@ -573,7 +632,7 @@ auth.users (Supabase Auth)
 
 ---
 
-## 9. Future Enhancements (Post-MVP)
+## 10. Future Enhancements (Post-MVP)
 
 The schema is designed to accommodate these potential features without major restructuring:
 
@@ -590,7 +649,7 @@ The schema is designed to accommodate these potential features without major res
 
 ---
 
-## 10. Migration Checklist
+## 11. Migration Checklist
 
 When implementing this schema, follow this order:
 
@@ -630,9 +689,9 @@ DROP INDEX IF EXISTS idx_tags_user_id;            -- Covered by composite unique
 
 ---
 
-## 11. Sample Queries
+## 12. Sample Queries
 
-### 11.1 Get all notes for a user with tag names
+### 12.1 Get all notes for a user with tag names
 
 ```sql
 SELECT n.*, t.name as tag_name
@@ -642,7 +701,7 @@ WHERE n.user_id = auth.uid()
 ORDER BY n.meeting_date DESC;
 ```
 
-### 11.2 Get shared notes (notes from tags user has access to)
+### 12.2 Get shared notes (notes from tags user has access to)
 
 ```sql
 SELECT n.*, t.name as tag_name, t.user_id as owner_id
@@ -653,14 +712,14 @@ WHERE ta.recipient_id = auth.uid()
 ORDER BY n.meeting_date DESC;
 ```
 
-### 11.3 Get user's AI usage statistics
+### 12.3 Get user's AI usage statistics
 
 ```sql
 SELECT * FROM user_generation_stats
 WHERE user_id = auth.uid();
 ```
 
-### 11.4 Get public note by token (server-side only)
+### 12.4 Get public note by token (server-side only)
 
 ```sql
 SELECT n.summary_text, n.meeting_date, n.goal_status
@@ -669,7 +728,7 @@ JOIN public_links pl ON pl.note_id = n.id
 WHERE pl.token = $1 AND pl.is_enabled = TRUE;
 ```
 
-### 11.5 Get all tags with note count
+### 12.5 Get all tags with note count
 
 ```sql
 SELECT t.*, COUNT(n.id) as note_count
@@ -680,7 +739,7 @@ GROUP BY t.id
 ORDER BY t.name;
 ```
 
-### 11.6 Performance Note: Date Filtering
+### 12.6 Performance Note: Date Filtering
 
 ⚠️ **Important**: After removing `idx_notes_meeting_date`, queries filtering globally by `meeting_date` without user context are not optimized and will result in full table scans. Always scope date queries to user context:
 
@@ -713,15 +772,15 @@ This approach optimizes for:
 
 ---
 
-## 12. Security Considerations
+## 13. Security Considerations
 
-### 12.1 Environment Variables (Never in Database)
+### 13.1 Environment Variables (Never in Database)
 
 - OpenRouter API Key
 - Supabase Service Role Key
 - JWT Secrets
 
-### 12.2 Rate Limiting
+### 13.2 Rate Limiting
 
 Implement application-level rate limiting for:
 
@@ -729,14 +788,14 @@ Implement application-level rate limiting for:
 - Public link access (e.g., 1000 views per link per day)
 - API endpoints (e.g., 1000 requests per hour per IP)
 
-### 12.3 Input Validation
+### 13.3 Input Validation
 
 - Sanitize user input before database insertion
 - Validate email format at application level
 - Enforce content length limits in both UI and database
 - Validate date ranges for `meeting_date`
 
-### 12.4 Access Control Testing
+### 13.4 Access Control Testing
 
 Test RLS policies for:
 
@@ -749,7 +808,7 @@ Test RLS policies for:
 
 ---
 
-## 13. Performance Benchmarks (Expected)
+## 14. Performance Benchmarks (Expected)
 
 Based on MVP requirements and indexed queries:
 

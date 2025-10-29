@@ -126,13 +126,23 @@ src/
 supabase/
 └── migrations/          # SQL migration files
     ├── 20251015211900_create_10xnotes_schema.sql
+    ├── 20251015212000_seed_sample_data.sql
     ├── 20251015234737_optimize_rls_policies_performance.sql
+    ├── 20251015235116_drop_legacy_owner_policies.sql
+    ├── 20251015235340_add_fk_indexes.sql
     ├── 20251021000000_add_get_tag_access_list_function.sql
     ├── 20251021000001_add_grant_tag_access_function.sql
     ├── 20251021120000_allow_anon_insert_llm_generations.sql
     ├── 20251021120100_allow_anon_read_public_notes.sql
     ├── 20251021120200_create_delete_user_account_function.sql
-    └── 20251021120300_fix_function_search_path_security.sql
+    ├── 20251021120300_fix_function_search_path_security.sql
+    ├── 20251023170600_split_tags_select_policy.sql
+    ├── 20251023171000_final_fix_tags_recursion.sql
+    ├── 20251026000000_fix_llm_generations_authenticated_insert.sql
+    ├── 20251029000002_complete_rls_rebuild.sql
+    ├── 20251029000003_fix_tag_access_delete_policy.sql
+    ├── 20251029000004_create_revoke_tag_access_function.sql
+    └── 20251029000005_create_get_tags_shared_counts_function.sql
 ```
 
 ### Configuration Files
@@ -169,7 +179,7 @@ supabase/
 
 - Tables: `tags`, `notes`, `tag_access`, `public_links`, `llm_generations`
 - Views: `user_generation_stats` (aggregated AI usage)
-- Functions (SECURITY DEFINER): `get_tag_access_list()`, `grant_tag_access()`, `delete_user_account()`
+- Functions (SECURITY DEFINER): `get_tag_access_list()`, `grant_tag_access()`, `revoke_tag_access()`, `get_tags_shared_counts()`, `delete_user_account()`
 
 **API Request Flow:**
 
