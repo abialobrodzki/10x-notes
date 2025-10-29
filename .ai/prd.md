@@ -85,7 +85,7 @@ Poza zakresem MVP:
 
 ID: US-001
 Tytuł: Dostęp do aplikacji i rejestracja
-Opis: Jako nowy użytkownik chcę móc przetestować generowanie podsumowań bez rejestracji, a następnie założyć konto, aby zapisać notatki i mieć do nich dostęp.
+Opis: Jako nowy użytkownik chcę móc przetestować generowanie podsumowań bez rejestracji, a następnie założyć konto, aby zapisać notatki i mieć do nich dostęp. Jako zarejestrowany użytkownik chcę móc odzyskać dostęp do konta w przypadku zapomnienia hasła.
 Kryteria akceptacji:
 
 - Każdy użytkownik może korzystać z generowania podsumowań bez rejestracji.
@@ -93,6 +93,10 @@ Kryteria akceptacji:
 - Po rejestracji/logowaniu użytkownik uzyskuje dostęp do zapisu, edycji i kolekcji notatek.
 - Bez logowania dostępne są: generowanie podsumowań + publiczne podsumowania zapisanych notatek (tylko do odczytu).
 - Po zalogowaniu odbiorcy mają dostęp tylko do odczytu, a właściciel może edytować.
+- W przypadku zapomnienia hasła użytkownik może zainicjować proces resetowania poprzez link "Nie pamiętasz hasła?" na stronie logowania.
+- System wysyła email z linkiem resetującym hasło (link ważny przez 1 godzinę).
+- Po kliknięciu linku użytkownik może ustawić nowe hasło (minimum 8 znaków, ze wskaźnikiem siły hasła).
+- Po pomyślnej zmianie hasła użytkownik może zalogować się nowym hasłem.
 
 ID: US-002
 Tytuł: Wklejanie notatek i limit treści
