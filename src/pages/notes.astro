@@ -30,7 +30,7 @@ const notesQueryResult = notesListQuerySchema.safeParse(searchParams);
 const notesQuery = notesQueryResult.success
   ? notesQueryResult.data
   : {
-      include_shared: false,
+      include_shared: true,
       sort_by: "meeting_date" as const,
       order: "desc" as const,
       page: 1,
@@ -41,7 +41,7 @@ const notesQuery = notesQueryResult.success
 const tagsQueryResult = tagsListQuerySchema.safeParse({
   include_shared: searchParams.include_shared,
 });
-const tagsQuery = tagsQueryResult.success ? tagsQueryResult.data : { include_shared: false };
+const tagsQuery = tagsQueryResult.success ? tagsQueryResult.data : { include_shared: true };
 
 // Step 3: Fetch data from services (SSR)
 const notesService = new NotesService(Astro.locals.supabase);

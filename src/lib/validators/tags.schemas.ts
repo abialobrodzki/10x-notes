@@ -23,10 +23,10 @@ export type TagIdParamInput = z.infer<typeof tagIdParamSchema>;
  */
 export const tagsListQuerySchema = z.object({
   /**
-   * Include tags shared with user (default: false)
+   * Include tags shared with user (default: true)
    * When true, includes tags from tag_access table where recipient_id = current_user
    */
-  include_shared: z.coerce.boolean().default(false),
+  include_shared: z.coerce.boolean().default(true),
 });
 
 /**

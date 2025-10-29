@@ -36,34 +36,44 @@ export class TagsService {
     let allTags: TagEntity[] = ownedTags || [];
     const ownedTagIds = new Set(allTags.map((tag) => tag.id));
 
-    // Step 2: If include_shared, fetch shared tags
+    // Step 2: If include_shared, fetch shared tags via notes (not direct tags query)
+    // IMPORTANT: Recipients cannot query tags table directly (would cause circular dependency)
+    // Instead, we get shared tags through notes they have access to
     if (query.include_shared) {
-      // Get tag IDs shared with this user
-      const { data: sharedAccess, error: sharedAccessError } = await this.supabase
-        .from("tag_access")
-        .select("tag_id")
-        .eq("recipient_id", userId);
+      // Get shared tags by querying notes the user has access to (via tag_access)
+      const { data: notesWithSharedTags, error: notesError } = await this.supabase
+        .from("notes")
+        .select(
+          `
+          tags!inner (
+            id,
+            name,
+            user_id,
+            created_at,
+            updated_at
+          )
+        `
+        )
+        .neq("user_id", userId); // Exclude own notes (we already have own tags)
 
-      if (sharedAccessError) {
-        throw new Error(`Failed to fetch shared tag access: ${sharedAccessError.message}`);
+      if (notesError) {
+        throw new Error(`Failed to fetch shared tags: ${notesError.message}`);
       }
 
-      const sharedTagIds = sharedAccess?.map((access) => access.tag_id) || [];
+      // Extract unique shared tags from notes
+      if (notesWithSharedTags && notesWithSharedTags.length > 0) {
+        const sharedTagsMap = new Map<string, TagEntity>();
+        notesWithSharedTags.forEach((note: { tags: TagEntity }) => {
+          const tag = note.tags;
+          if (tag && !ownedTagIds.has(tag.id)) {
+            sharedTagsMap.set(tag.id, tag);
+          }
+        });
 
-      // Fetch shared tags if any exist
-      if (sharedTagIds.length > 0) {
-        const { data: sharedTags, error: sharedTagsError } = await this.supabase
-          .from("tags")
-          .select("*")
-          .in("id", sharedTagIds)
-          .order("name", { ascending: true });
-
-        if (sharedTagsError) {
-          throw new Error(`Failed to fetch shared tags: ${sharedTagsError.message}`);
-        }
+        const sharedTags = Array.from(sharedTagsMap.values());
 
         // Merge owned and shared tags
-        allTags = [...allTags, ...(sharedTags || [])];
+        allTags = [...allTags, ...sharedTags];
       }
     }
 

@@ -33,9 +33,9 @@ export const notesListQuerySchema = z
 
     /**
      * Include notes from tags shared by other users
-     * Default: false (only own notes)
+     * Default: true (show both own and shared notes)
      */
-    include_shared: z.coerce.boolean().default(false),
+    include_shared: z.coerce.boolean().default(true),
 
     /**
      * Sort field
