@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import AlertArea from "@/components/AlertArea";
 import LoginForm from "@/components/LoginForm";
 import RedirectHint from "@/components/RedirectHint";
@@ -11,6 +11,18 @@ import { GlassCard } from "@/components/ui/composed/GlassCard";
  */
 export default function LoginPage() {
   const [errors, setErrors] = useState<string[]>([]);
+
+  // Check for reset success parameter in URL (client-side only)
+  const successMessage = useMemo(() => {
+    // Guard clause for SSR - window is not available on server
+    if (typeof window === "undefined") return null;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("reset") === "success") {
+      return "Hasło zostało zmienione pomyślnie! Możesz się teraz zalogować.";
+    }
+    return null;
+  }, []);
 
   return (
     <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
@@ -26,8 +38,15 @@ export default function LoginPage() {
 
           {/* Content */}
           <div className="space-y-6">
+            {successMessage && <AlertArea messages={[successMessage]} variant="success" />}
             <AlertArea messages={errors} />
             <LoginForm onError={setErrors} />
+            {/* Forgot password link */}
+            <div className="text-center">
+              <a href="/forgot-password" className="text-sm text-glass-text hover-link">
+                Nie pamiętasz hasła?
+              </a>
+            </div>
             <RedirectHint />
           </div>
         </GlassCard>
