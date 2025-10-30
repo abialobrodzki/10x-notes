@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from "../lib/supabase-server";
  * Includes auth pages, public access endpoints, and public API routes
  */
 const PUBLIC_PATHS = [
+  // Landing page (public AI generation)
+  "/",
   // Auth pages
   "/login",
   "/register",
