@@ -64,7 +64,7 @@ export class PublicLinksService {
       return {
         link: {
           token: existingLink.token,
-          url: `/public/${existingLink.token}`,
+          url: `/share/${existingLink.token}`,
           is_enabled: true, // Always return true since we just enabled it
           is_new: false,
           created_at: existingLink.created_at,
@@ -109,7 +109,7 @@ export class PublicLinksService {
     return {
       link: {
         token: newLink.token,
-        url: `/public/${newLink.token}`,
+        url: `/share/${newLink.token}`,
         is_enabled: newLink.is_enabled,
         is_new: true,
         created_at: newLink.created_at,
@@ -179,7 +179,7 @@ export class PublicLinksService {
     // Step 4: Return updated DTO without id field, with updated_at
     return {
       token: updatedLink.token,
-      url: `/public/${updatedLink.token}`,
+      url: `/share/${updatedLink.token}`,
       is_enabled: updatedLink.is_enabled,
       updated_at: updatedLink.updated_at,
     };
@@ -257,7 +257,7 @@ export class PublicLinksService {
     // Step 5: Return updated DTO without id field, with new token, relative URL, and updated_at
     return {
       token: rotatedLink.token,
-      url: `/public/${rotatedLink.token}`,
+      url: `/share/${rotatedLink.token}`,
       is_enabled: rotatedLink.is_enabled,
       updated_at: rotatedLink.updated_at,
     };

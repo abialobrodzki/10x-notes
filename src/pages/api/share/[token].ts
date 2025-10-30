@@ -7,7 +7,7 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 /**
- * GET /api/public/{token}
+ * GET /api/share/{token}
  *
  * Get public note summary via public link token
  * Anonymous access - no authentication required
@@ -122,7 +122,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     // Catch-all for unexpected errors
     // eslint-disable-next-line no-console
-    console.error("Unexpected error in GET /api/public/[token]:", error);
+    console.error("Unexpected error in GET /api/share/[token]:", error);
 
     return new Response(
       JSON.stringify({

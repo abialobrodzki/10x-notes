@@ -1,23 +1,19 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { SettingsPage } from "../components/settings/SettingsPage";
-import { requireAuth } from "../lib/middleware/auth.middleware";
 import { UserService } from "../lib/services/user.service";
 import type { UserProfileDTO, UserStatsDTO } from "../types";
 
 // Disable prerendering - this is a dynamic page
 export const prerender = false;
 
-// Step 1: Check authentication
-let userId: string;
-try {
-  const authResult = await requireAuth(Astro.locals.supabase);
-  userId = authResult.userId;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-} catch (_error) {
-  // Redirect to login if not authenticated
+// Step 1: Get authenticated user from middleware
+// Middleware ensures user is authenticated, redirect to login if not
+const user = Astro.locals.user;
+if (!user) {
   return Astro.redirect("/login");
 }
+const userId = user.id;
 
 // Step 2: Fetch data from service (SSR)
 const userService = new UserService(Astro.locals.supabase);

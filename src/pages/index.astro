@@ -1,13 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { LandingPage } from "../components/landing/LandingPage";
-import { optionalAuth } from "../lib/middleware/auth.middleware";
 
-// Check if user is authenticated
-const userId = await optionalAuth(Astro.locals.supabase);
-const isAuthenticated = !!userId;
+// Disable prerendering - middleware uses request.headers for auth
+export const prerender = false;
+
+// User is guaranteed to be authenticated by middleware
+// If not authenticated, user is redirected to /login
+const user = Astro.locals.user;
+
+if (!user) {
+  // This should never happen due to middleware, but handle it for safety
+  return Astro.redirect("/login");
+}
 ---
 
 <Layout title="10xNotes - Wygeneruj podsumowanie spotkania">
-  <LandingPage client:load isAuthenticated={isAuthenticated} />
+  <LandingPage client:load isAuthenticated={true} />
 </Layout>

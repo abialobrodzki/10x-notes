@@ -18,7 +18,7 @@ let errorCode: number | null = null;
 
 try {
   // Make server-side API call
-  const apiUrl = new URL(`/api/public/${token}`, Astro.url.origin);
+  const apiUrl = new URL(`/api/share/${token}`, Astro.url.origin);
   const response = await fetch(apiUrl.toString());
 
   if (response.ok) {

@@ -1,6 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import LoginPage from "@/components/LoginPage";
+
+// Disable prerendering - middleware uses request.headers for auth
+export const prerender = false;
 ---
 
 <Layout title="Logowanie - 10xNotes">

@@ -628,7 +628,7 @@ export class NotesService {
         publicLink = {
           token: linkData.token,
           is_enabled: linkData.is_enabled,
-          url: `/public/${linkData.token}`,
+          url: `/share/${linkData.token}`,
         };
       }
 

@@ -344,7 +344,7 @@ export type PublicLinkDTO = Pick<PublicLinkEntity, "token" | "is_enabled"> & {
 export type UpdatePublicLinkCommand = Partial<Pick<PublicLinkEntity, "is_enabled">>;
 
 /**
- * DTO: Public note summary (GET /api/public/{token})
+ * DTO: Public note summary (GET /api/share/{token})
  * Anonymous access - excludes original_content and owner info
  */
 export type PublicNoteDTO = Pick<NoteEntity, "summary_text" | "meeting_date" | "goal_status"> & {

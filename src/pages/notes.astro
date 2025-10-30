@@ -1,7 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { NotesListPage } from "../components/notes/NotesListPage";
-import { requireAuth } from "../lib/middleware/auth.middleware";
 import { NotesService } from "../lib/services/notes.service";
 import { TagsService } from "../lib/services/tags.service";
 import { notesListQuerySchema } from "../lib/validators/notes.schemas";
@@ -11,16 +10,13 @@ import type { NotesListDTO, TagsListDTO } from "../types";
 // Disable prerendering - this is a dynamic page
 export const prerender = false;
 
-// Step 1: Check authentication
-let userId: string;
-try {
-  const authResult = await requireAuth(Astro.locals.supabase);
-  userId = authResult.userId;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-} catch (_error) {
-  // Redirect to login if not authenticated
+// Step 1: Get authenticated user from middleware
+// Middleware ensures user is authenticated, redirect to login if not
+const user = Astro.locals.user;
+if (!user) {
   return Astro.redirect("/login");
 }
+const userId = user.id;
 
 // Step 2: Parse and validate query parameters
 const searchParams = Object.fromEntries(Astro.url.searchParams);
