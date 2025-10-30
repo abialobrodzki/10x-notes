@@ -2,7 +2,6 @@ import { useState, useCallback, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
 import { validateEmail } from "@/lib/validators/auth.validators";
 
 interface ForgotPasswordFormProps {
@@ -64,16 +63,26 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
       setIsSubmitting(true);
 
       try {
-        // Request password reset email from Supabase
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/reset-password`,
+        // Call server-side forgot password endpoint
+        const response = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+          }),
         });
 
-        if (error) {
-          throw error;
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Handle API errors
+          throw new Error(data.message || "Password reset request failed");
         }
 
         // Success - show confirmation message
+        // Note: For security, we don't reveal if email exists
         onSuccess(true);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -83,7 +92,6 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
         setHasSubmitError(true);
 
         if (error instanceof Error) {
-          // Handle specific Supabase errors
           onError([error.message]);
         } else {
           onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);

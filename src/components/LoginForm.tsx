@@ -2,7 +2,6 @@ import { useState, useCallback, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
 import { getPendingNote } from "@/lib/utils/pending-note.utils";
 import { validateEmail, validatePasswordLogin } from "@/lib/validators/auth.validators";
 
@@ -73,21 +72,26 @@ export default function LoginForm({ onError }: LoginFormProps) {
       setIsSubmitting(true);
 
       try {
-        // Authenticate with Supabase
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: email.trim(),
-          password,
+        // Call server-side login endpoint
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
         });
 
-        if (error) {
-          throw error;
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Handle API errors
+          throw new Error(data.message || "Authentication failed");
         }
 
-        if (!data.session) {
-          throw new Error("Nie udało się utworzyć sesji");
-        }
-
-        // Check for pending generated note in sessionStorage
+        // Login successful - check for pending note
         const pendingNote = getPendingNote();
 
         if (pendingNote) {
@@ -106,14 +110,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
         setHasSubmitError(true);
 
         if (error instanceof Error) {
-          // Handle specific Supabase errors
-          if (error.message.includes("Invalid login credentials")) {
-            onError(["Nieprawidłowy email lub hasło"]);
-          } else if (error.message.includes("Email not confirmed")) {
-            onError(["Potwierdź swój adres email przed zalogowaniem"]);
-          } else {
-            onError([error.message]);
-          }
+          onError([error.message]);
         } else {
           onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
         }

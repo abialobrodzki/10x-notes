@@ -14,8 +14,9 @@ const PUBLIC_PATHS = [
   // Public access pages (shared notes via public links)
   "/share",
   // Public API endpoints
-  "/api/share",
-  "/api/ai",
+  "/api/auth", // Auth endpoints (login, register, logout)
+  "/api/share", // Shared notes
+  "/api/ai", // AI generation
 ];
 
 /**

@@ -3,7 +3,6 @@ import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
 import { getPendingNote } from "@/lib/utils/pending-note.utils";
 import { validateEmail, validatePasswordRegister, validatePasswordConfirm } from "@/lib/validators/auth.validators";
 
@@ -83,29 +82,34 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
       setIsSubmitting(true);
 
       try {
-        // Register with Supabase
-        const { data, error } = await supabaseClient.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/login`,
+        // Call server-side registration endpoint
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            email: email.trim(),
+            password,
+          }),
         });
 
-        if (error) {
-          throw error;
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Handle API errors
+          throw new Error(data.message || "Registration failed");
         }
 
         // Check if email confirmation is required
-        if (data.user && !data.session) {
+        if (data.requiresConfirmation || !data.session) {
           // Email confirmation required
-          onError(["Rejestracja udana! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować."]);
+          onError([
+            data.message ||
+              "Rejestracja udana! Sprawdź swoją skrzynkę email i kliknij link potwierdzający, aby aktywować konto.",
+          ]);
           setIsSubmitting(false);
           return;
-        }
-
-        if (!data.session) {
-          throw new Error("Nie udało się utworzyć sesji");
         }
 
         // Registration successful with immediate session
@@ -128,16 +132,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         setHasSubmitError(true);
 
         if (error instanceof Error) {
-          // Handle specific Supabase errors
-          if (error.message.includes("User already registered")) {
-            onError(["Ten adres email jest już zarejestrowany"]);
-          } else if (error.message.includes("Password should be at least")) {
-            onError(["Hasło musi mieć co najmniej 8 znaków"]);
-          } else if (error.message.includes("Unable to validate email")) {
-            onError(["Nieprawidłowy format adresu email"]);
-          } else {
-            onError([error.message]);
-          }
+          onError([error.message]);
         } else {
           onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
         }
