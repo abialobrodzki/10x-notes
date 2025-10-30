@@ -109,14 +109,14 @@ Junction table for N:M relationship between tags and recipients (users who can v
 
 Public sharing links for individual notes (only summary is visible via public link).
 
-| Column       | Type        | Constraints                                              | Description                                       |
-| ------------ | ----------- | -------------------------------------------------------- | ------------------------------------------------- |
-| `id`         | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                   | Unique link identifier                            |
-| `note_id`    | UUID        | NOT NULL, UNIQUE, REFERENCES notes(id) ON DELETE CASCADE | Note being shared                                 |
-| `token`      | UUID        | NOT NULL, UNIQUE, DEFAULT gen_random_uuid()              | Public access token (URL format: /public/{token}) |
-| `is_enabled` | BOOLEAN     | NOT NULL, DEFAULT TRUE                                   | Whether link is active                            |
-| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                  | Link creation timestamp                           |
-| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                  | Last update timestamp                             |
+| Column       | Type        | Constraints                                              | Description                                      |
+| ------------ | ----------- | -------------------------------------------------------- | ------------------------------------------------ |
+| `id`         | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                   | Unique link identifier                           |
+| `note_id`    | UUID        | NOT NULL, UNIQUE, REFERENCES notes(id) ON DELETE CASCADE | Note being shared                                |
+| `token`      | UUID        | NOT NULL, UNIQUE, DEFAULT gen_random_uuid()              | Public access token (URL format: /share/{token}) |
+| `is_enabled` | BOOLEAN     | NOT NULL, DEFAULT TRUE                                   | Whether link is active                           |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                  | Link creation timestamp                          |
+| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now()                                  | Last update timestamp                            |
 
 **Constraints**:
 
@@ -279,7 +279,7 @@ CREATE POLICY notes_shared_tag_policy ON notes
   );
 ```
 
-**Note on Public Access**: Public link access is **NOT handled by RLS policies**. Instead, public notes must be accessed through a dedicated API endpoint (e.g., `/api/public/[token]`) that:
+**Note on Public Access**: Public link access is **NOT handled by RLS policies**. Instead, public notes must be accessed through a dedicated API endpoint (e.g., `/api/share/[token]`) that:
 
 - Uses Supabase service role key to bypass RLS
 - Validates the `token` from `public_links` table

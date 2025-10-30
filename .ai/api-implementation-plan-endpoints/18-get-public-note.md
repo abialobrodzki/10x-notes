@@ -1,4 +1,4 @@
-# API Endpoint Implementation Plan: GET /api/public/{token}
+# API Endpoint Implementation Plan: GET /api/share/{token}
 
 ## 1. Endpoint Overview
 
@@ -7,7 +7,7 @@ Returns note via public link (token). **No authentication** - available to every
 ## 2. Request Details
 
 - **Method**: GET
-- **URL**: `/api/public/{token}`
+- **URL**: `/api/share/{token}`
 - **Authentication**: **None** (public endpoint)
 - **Rate Limiting**: 1000/day per token
 - **Path Parameters**: `token` (string, UUID v4 format) - Public link token
@@ -138,7 +138,7 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
 
 ### Step 2: API Endpoint
 
-- Create `src/pages/api/public/[token].ts`
+- Create `src/pages/api/share/[token].ts`
 - Add `export const prerender = false`
 - Export GET handler:
   - No auth

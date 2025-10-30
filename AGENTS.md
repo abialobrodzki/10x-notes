@@ -85,7 +85,7 @@ src/
 │       │   ├── profile.ts
 │       │   ├── stats.ts
 │       │   └── account.ts
-│       └── public/      # Public access endpoints (anonymous)
+│       └── share/       # Public shared notes endpoints (anonymous)
 │           └── [token].ts
 ├── components/           # UI components
 │   └── ui/              # Shadcn/ui components

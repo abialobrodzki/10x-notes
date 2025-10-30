@@ -21,7 +21,7 @@ Use this index to quickly navigate to the appropriate plan when working on a spe
 ├── register-view-implementation-plan.md       # /register  – Formularz rejestracji (Supabase Auth)
 ├── notes-list-view-implementation-plan.md     # /notes  – Lista notatek, filtry, wyszukiwanie, sidebar etykiet
 ├── note-detail-view-implementation-plan.md    # /notes/{id}  – Szczegóły notatki, edycja, public link
-├── public-note-view-implementation-plan.md    # /public/{token}  – Publiczne podsumowanie (read‑only)
+├── public-note-view-implementation-plan.md    # /share/{token}  – Publiczne podsumowanie (read‑only)
 ├── settings-view-implementation-plan.md       # /settings  – Profil, statystyki, usunięcie konta
 └── tag-access-modal-view-implementation-plan.md  # Modal: zarządzanie dostępem do etykiety (owner)
 ```
@@ -40,7 +40,7 @@ Use this index to quickly navigate to the appropriate plan when working on a spe
 - Register: `/register`
 - Notes list: `/notes` (+ query params for filtry/paginacja)
 - Note detail: `/notes/{id}`
-- Public summary: `/public/{token}`
+- Public summary: `/share/{token}`
 - Settings: `/settings`
 - Tag access management: Modal dostępny z `/notes` i `/notes/{id}`
 
@@ -50,7 +50,7 @@ Use this index to quickly navigate to the appropriate plan when working on a spe
 - Styling: Tailwind 4 + shadcn/ui (New York)
 - State/data: SSR initial data + SWR (client) z optimistic updates i rollbackiem
 - A11y: ARIA landmarks, keyboard nav, role="dialog" dla modalów, focus management
-- Security/roles: `is_owner` steruje edycją; public links tylko dla ownerów; `/public/{token}` bez oryginału treści
+- Security/roles: `is_owner` steruje edycją; public links tylko dla ownerów; `/share/{token}` bez oryginału treści
 
 ## ✅ Status
 

@@ -252,7 +252,7 @@ Get specific note details.
     // object | null
     "token": "550e8400-e29b-41d4-a716-446655440004",
     "is_enabled": true,
-    "url": "/public/550e8400-e29b-41d4-a716-446655440004"
+    "url": "/share/550e8400-e29b-41d4-a716-446655440004"
   }
 }
 ```
@@ -615,7 +615,7 @@ This endpoint NEVER rotates tokens for security. To rotate token, use POST /api/
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440020",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440020",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440020",
   "is_enabled": true,
   "created_at": "2025-10-19T10:00:00Z",
   "is_new": true
@@ -651,7 +651,7 @@ Toggle public link enabled/disabled status (partial update).
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440020",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440020",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440020",
   "is_enabled": false,
   "updated_at": "2025-10-19T10:05:00Z"
 }
@@ -687,7 +687,7 @@ Rotate public link token (invalidates old token, creates new one).
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440021", // new token
-  "url": "/public/550e8400-e29b-41d4-a716-446655440021",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440021",
   "is_enabled": true,
   "created_at": "2025-10-19T10:00:00Z", // original creation time
   "updated_at": "2025-10-19T10:10:00Z" // rotation time
@@ -727,7 +727,7 @@ Empty response body
 
 ### 2.6 Public Access (Anonymous)
 
-#### GET /api/public/{token}
+#### GET /api/share/{token}
 
 Get public note summary by token (no authentication required).
 
@@ -894,7 +894,7 @@ Additional fields require separate queries:
 #### Anonymous Endpoints
 
 - `POST /api/ai/generate`: 100 requests/day per IP
-- `GET /api/public/{token}`: 1,000 views/day per token
+- `GET /api/share/{token}`: 1,000 views/day per token
   - After limit: Return 429 with `Retry-After` header
 
 #### Authenticated Endpoints (Per User)
@@ -987,7 +987,7 @@ GET /api/tags/{id}/access
 
 Public Links
 
-GET /api/public/{token}
+GET /api/share/{token}
 
 - Token lookup: Uses UNIQUE constraint index (automatic)
   - Query: WHERE token = ? AND is_enabled = TRUE
@@ -1088,7 +1088,7 @@ Endpoints suitable for caching:
 
 - GET /api/tags: User's tag list (cache for 5 min)
 - GET /api/user/stats: Stats view (cache for 15 min)
-- GET /api/public/{token}: Public summaries (cache for 1 hour)
+- GET /api/share/{token}: Public summaries (cache for 1 hour)
 
 Not suitable for caching:
 

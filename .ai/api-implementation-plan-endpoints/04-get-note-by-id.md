@@ -36,7 +36,7 @@ Endpoint returns details of a single note, including full `original_content`. Ac
   "public_link": {
     "token": "uuid-v4-token",
     "is_enabled": true,
-    "url": "/public/uuid-v4-token"
+    "url": "/share/uuid-v4-token"
   }
 }
 ```

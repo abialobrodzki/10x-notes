@@ -39,7 +39,7 @@ export const patchPublicLinkSchema = z
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440099",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440099",
   "is_enabled": false,
   "updated_at": "2025-10-19T14:30:00Z"
 }

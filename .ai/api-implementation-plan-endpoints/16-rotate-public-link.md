@@ -23,7 +23,7 @@ Endpoint rotates (changes) public link token. Permissions: owner only. Old token
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440199",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440199",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440199",
   "is_enabled": true,
   "updated_at": "2025-10-19T15:30:00Z"
 }
@@ -45,7 +45,7 @@ Endpoint rotates (changes) public link token. Permissions: owner only. Old token
 5. **Check link exists**: SELECT FROM public_links WHERE note_id = $id
 6. **Generate new token**: UUID v4 using crypto.randomUUID()
 7. **UPDATE**: UPDATE public_links SET token = $new_token, updated_at = NOW() WHERE note_id = $id
-8. **Return**: 200 with new DTO without id field, with relative URL (/public/{token}), including updated_at timestamp
+8. **Return**: 200 with new DTO without id field, with relative URL (/share/{token}), including updated_at timestamp
 
 ## 6. Security Considerations
 
@@ -87,7 +87,7 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Check link exists
   - Generate new secure token
   - UPDATE public_links SET token = $newToken, updated_at = NOW() WHERE note_id = $noteId
-  - Return updated DTO without id field, with new token, relative URL (/public/{token}), and updated_at timestamp
+  - Return updated DTO without id field, with new token, relative URL (/share/{token}), and updated_at timestamp
 
 ### Step 3: API Endpoint
 

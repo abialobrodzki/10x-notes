@@ -31,7 +31,7 @@
 ├── 15-patch-public-link.md         # PATCH /api/notes/{id}/public-link
 ├── 16-rotate-public-link.md        # POST /api/notes/{id}/public-link/rotate
 ├── 17-delete-public-link.md        # DELETE /api/notes/{id}/public-link
-├── 18-get-public-note.md           # GET /api/public/{token}
+├── 18-get-public-note.md           # GET /api/share/{token}
 ├── 19-get-user-profile.md          # GET /api/user/profile
 ├── 20-delete-user-account.md       # DELETE /api/user/account
 └── 21-get-user-stats.md            # GET /api/user/stats

@@ -6,7 +6,7 @@ Widok prezentuje publiczny podgląd podsumowania notatki (read-only) na podstawi
 
 ## 2. Routing widoku
 
-- Ścieżka: `/public/{token}` (publiczny)
+- Ścieżka: `/share/{token}` (publiczny)
 - SEO: `noindex, nofollow`; brak OG preview
 - SSR: zalecany (szybkie wyświetlenie minimalnego layoutu), później ewentualne odświeżenie
 
@@ -63,12 +63,12 @@ Widok prezentuje publiczny podgląd podsumowania notatki (read-only) na podstawi
 
 ## 6. Zarządzanie stanem
 
-- SSR: spróbuj pobrać `/api/public/{token}`; przy błędzie 404/429/5xx renderuj `ErrorState`.
+- SSR: spróbuj pobrać `/api/share/{token}`; przy błędzie 404/429/5xx renderuj `ErrorState`.
 - CSR: brak konieczności SWR; prosta logika stanu błędów.
 
 ## 7. Integracja API
 
-- GET `/api/public/{token}` → `PublicNoteDTO` `{ summary_text, meeting_date, goal_status, created_at }`.
+- GET `/api/share/{token}` → `PublicNoteDTO` `{ summary_text, meeting_date, goal_status, created_at }`.
 - Nagłówki: `X-Robots-Tag: noindex, nofollow`; `Cache-Control: private, no-cache`.
 - Błędy: 404 (invalid/disabled), 429 (limit wyświetleń z `Retry-After`).
 
@@ -89,7 +89,7 @@ Widok prezentuje publiczny podgląd podsumowania notatki (read-only) na podstawi
 
 ## 11. Kroki implementacji
 
-1. Utwórz `/src/pages/public/[token].astro` z SSR pobierając `/api/public/{token}` i ustawiając meta `noindex,nofollow`.
+1. Utwórz `/src/pages/share/[token].astro` z SSR pobierając `/api/share/{token}` i ustawiając meta `noindex,nofollow`.
 2. Zaimplementuj `PublicNotePage` i podkomponenty wyświetlające dane.
 3. Dodaj `ErrorState` dla 404/429/5xx z odpowiednimi komunikatami i CTA.
 4. Testy: poprawne tokeny, wyłączony link (404), limit wyświetleń (429).

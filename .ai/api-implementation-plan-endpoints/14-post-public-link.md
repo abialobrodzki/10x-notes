@@ -36,7 +36,7 @@ export const createPublicLinkSchema = z.object({});
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440099",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440099",
   "is_enabled": true,
   "is_new": true,
   "created_at": "2025-10-19T10:00:00Z"
@@ -48,7 +48,7 @@ export const createPublicLinkSchema = z.object({});
 ```json
 {
   "token": "550e8400-e29b-41d4-a716-446655440099",
-  "url": "/public/550e8400-e29b-41d4-a716-446655440099",
+  "url": "/share/550e8400-e29b-41d4-a716-446655440099",
   "is_enabled": true,
   "is_new": false,
   "created_at": "2025-10-19T10:00:00Z"
@@ -72,7 +72,7 @@ export const createPublicLinkSchema = z.object({});
 6. **If exists**: Return 200 OK with existing link and is_new: false (idempotent behavior)
 7. **If not exists**: Generate UUID v4 token using crypto.randomUUID()
 8. **Insert**: INSERT INTO public_links (note_id, token, is_enabled=true)
-9. **Return**: 201 Created with relative URL (/public/{token}) and is_new: true
+9. **Return**: 201 Created with relative URL (/share/{token}) and is_new: true
 
 ## 6. Security Considerations
 
@@ -120,7 +120,7 @@ NOTE: This endpoint uses extended HTTP status codes (403, 408, 409, 429, 503) fo
   - Check if link exists (SELECT FROM public_links WHERE note_id = $noteId)
   - If exists: Return existing link with is_new: false
   - If not exists: Generate secure UUID v4 token, INSERT INTO public_links (note_id, token, is_enabled=true)
-  - Build relative public URL (/public/{token})
+  - Build relative public URL (/share/{token})
   - Return DTO without id field, with is_new flag
 
 ### Step 4: API Endpoint

@@ -131,14 +131,14 @@
 
 6. Widok: Publiczne podsumowanie (anon)
 
-- Ścieżka: `/public/{token}`
+- Ścieżka: `/share/{token}`
 - Główny cel: wyświetlenie podsumowania (read-only) po tokenie.
 - Kluczowe informacje: streszczenie, data spotkania, status celu.
 - Kluczowe komponenty: minimalny layout bez nawigacji; komunikat 404 przy nieprawidłowym/wyłączonym tokenie.
 - UX/a11y/security:
   - Meta: `noindex, nofollow`; brak OG preview.
   - Brak nawigacji i akcji edycji; prywatność – nigdy nie pokazuj oryginału.
-- Endpointy: `GET /api/public/{token}`.
+- Endpointy: `GET /api/share/{token}`.
 
 7. Widok: Zarządzanie dostępem do etykiety (modal – owner)
 
@@ -237,7 +237,7 @@ Przepływ 4: Usunięcie konta (RODO)
 - Nawigacja między widokami
   - Główna: sidebar (etykiety) → filtruje `/notes?tag_id={id}`.
   - Routing:
-    - Anon: `/`, `/login`, `/register`, `/public/{token}`.
+    - Anon: `/`, `/login`, `/register`, `/share/{token}`.
     - Chronione: `/notes`, `/notes/{id}`, `/settings`.
   - Skróty: „/” otwiera wyszukiwarkę; `Esc` zamyka modale.
 - URL i stan
