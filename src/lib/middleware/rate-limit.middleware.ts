@@ -33,8 +33,9 @@ const RATE_LIMIT_CONFIG = {
 /**
  * Clean up expired entries from rate limit store
  * Runs periodically to prevent memory leaks
+ * Exported for testing purposes
  */
-function cleanupExpiredEntries(): void {
+export function cleanupExpiredEntries(): void {
   const now = Date.now();
   const expiredKeys: string[] = [];
 
