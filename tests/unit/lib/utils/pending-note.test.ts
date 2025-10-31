@@ -271,8 +271,11 @@ describe("pending-note.utils", () => {
       });
 
       it("should handle expiration boundary (exactly 30 minutes)", () => {
-        // Arrange - Note generated exactly 30 minutes ago
-        const exactlyThirtyMinutes = Date.now() - PENDING_NOTE_EXPIRATION_MS;
+        // Arrange - Mock Date.now() to ensure stable timestamp
+        const mockNow = 1234567890000;
+        const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(mockNow);
+
+        const exactlyThirtyMinutes = mockNow - PENDING_NOTE_EXPIRATION_MS;
         const note = createValidNote({ generated_at: exactlyThirtyMinutes });
         savePendingNote(note);
 
@@ -281,12 +284,18 @@ describe("pending-note.utils", () => {
 
         // Assert - should NOT be expired (condition is > not >=)
         expect(retrieved).toEqual(note);
+
+        // Cleanup
+        dateNowSpy.mockRestore();
       });
 
       it("should return null just after expiration (30:01)", () => {
-        // Arrange - Just over 30 minutes (1 ms more)
+        // Arrange - Mock Date.now() to ensure stable timestamp
+        const mockNow = 1234567890000;
+        const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(mockNow);
+
         const note = createValidNote({
-          generated_at: Date.now() - PENDING_NOTE_EXPIRATION_MS - 1,
+          generated_at: mockNow - PENDING_NOTE_EXPIRATION_MS - 1,
         });
         savePendingNote(note);
 
@@ -295,11 +304,17 @@ describe("pending-note.utils", () => {
 
         // Assert
         expect(retrieved).toBeNull();
+
+        // Cleanup
+        dateNowSpy.mockRestore();
       });
 
       it("should handle expiration boundary (29:59)", () => {
-        // Arrange - Just under 30 minutes (1 ms less)
-        const almostThirtyMinutes = Date.now() - PENDING_NOTE_EXPIRATION_MS + 1;
+        // Arrange - Mock Date.now() to ensure stable timestamp
+        const mockNow = 1234567890000;
+        const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(mockNow);
+
+        const almostThirtyMinutes = mockNow - PENDING_NOTE_EXPIRATION_MS + 1;
         const note = createValidNote({ generated_at: almostThirtyMinutes });
         savePendingNote(note);
 
@@ -308,6 +323,9 @@ describe("pending-note.utils", () => {
 
         // Assert - should NOT be expired
         expect(retrieved).toEqual(note);
+
+        // Cleanup
+        dateNowSpy.mockRestore();
       });
     });
 
