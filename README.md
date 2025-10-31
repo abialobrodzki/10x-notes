@@ -112,16 +112,35 @@ npm run preview
 
 ## 📜 Available Scripts
 
-| Command                | Description                                   |
-| ---------------------- | --------------------------------------------- |
-| `npm run dev`          | Start development server on port 3000         |
-| `npm run build`        | Build for production                          |
-| `npm run preview`      | Preview production build                      |
-| `npm run lint`         | Run ESLint (max warnings: 0)                  |
-| `npm run lint:fix`     | Fix ESLint issues automatically               |
-| `npm run format`       | Format code with Prettier                     |
-| `npm run format:check` | Check code formatting without modifying files |
-| `npm run tsc:check`    | Run TypeScript type checking                  |
+| Command                 | Description                                   |
+| ----------------------- | --------------------------------------------- |
+| `npm run dev`           | Start development server on port 3000         |
+| `npm run build`         | Build for production                          |
+| `npm run preview`       | Preview production build                      |
+| `npm run lint`          | Run ESLint (max warnings: 0)                  |
+| `npm run lint:fix`      | Fix ESLint issues automatically               |
+| `npm run format`        | Format code with Prettier                     |
+| `npm run format:check`  | Check code formatting without modifying files |
+| `npm run tsc:check`     | Run TypeScript type checking                  |
+| `npm run test:unit`     | Run unit tests (Vitest)                       |
+| `npm run test:watch`    | Run tests in watch mode                       |
+| `npm run test:ui`       | Open Vitest UI for debugging                  |
+| `npm run test:coverage` | Generate coverage report                      |
+
+## 🧪 Testing
+
+The project uses **Vitest** for unit testing with a focus on high-ROI test coverage:
+
+**Coverage Targets:**
+
+- Utils: 100% (pagination, tokens, sessionStorage)
+- Validators: 95% (Zod schemas, auth validators)
+- Middleware: 90% (auth, rate limiting)
+- Global: ≥80%
+
+**Pre-commit Hook:** Tests run automatically before each commit to ensure code quality.
+
+For detailed test strategy and implementation plan, see [Test Plan](.ai/test-plan.md)
 
 ## 🎯 Project Scope
 

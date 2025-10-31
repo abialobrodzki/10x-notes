@@ -19,6 +19,9 @@ npm run lint
 # TypeScript type checking with strict mode
 npm run tsc:check
 
+# Run unit tests
+npm run test:unit
+
 # Tailwind CSS validation (deprecated classes check)
 npm run tailwind:check
 

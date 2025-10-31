@@ -34,3 +34,6 @@ WARP.md
 .cursor/
 .clinerules/
 .roorules/
+
+# unit tests
+coverage/
