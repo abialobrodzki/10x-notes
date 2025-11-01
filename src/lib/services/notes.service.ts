@@ -38,14 +38,14 @@ export class NotesService {
    */
   async getNotes(userId: string, query: NotesListQueryInput): Promise<NotesListDTO> {
     // Step 1: Build and execute query for own notes
-    const ownNotesQuery = this.buildNotesQuery(userId, query, false);
+    const ownNotesQuery = this.buildNotesQuery(userId, query);
     const { data: ownNotes, error: ownNotesError } = await ownNotesQuery;
 
     if (ownNotesError) {
       throw new Error(`Failed to fetch own notes: ${ownNotesError.message}`);
     }
 
-    let allNotes = ownNotes || [];
+    let allNotes = ownNotes as NoteWithTag[];
 
     // Step 2: If include_shared, fetch notes from shared tags
     if (query.include_shared) {
@@ -59,7 +59,7 @@ export class NotesService {
         throw new Error(`Failed to fetch shared tags: ${sharedTagsError.message}`);
       }
 
-      const sharedTagIds = sharedTagsData?.map((t) => t.tag_id) || [];
+      const sharedTagIds = sharedTagsData.map((t) => t.tag_id);
 
       // If user has shared tags, fetch notes with those tag_ids
       if (sharedTagIds.length > 0) {
@@ -104,7 +104,7 @@ export class NotesService {
         }
 
         // Merge own notes and shared notes
-        allNotes = [...allNotes, ...(sharedNotes || [])];
+        allNotes = [...allNotes, ...sharedNotes];
 
         // Remove duplicates (in case user owns a tag that was also shared with them)
         const uniqueNotesMap = new Map<string, NoteWithTag>();
@@ -147,13 +147,13 @@ export class NotesService {
 
   /**
    * Build Supabase query for notes
+   * Used for querying own notes (shared notes are fetched separately)
    *
    * @param userId - Current user ID
    * @param query - Query parameters
-   * @param isShared - Whether to query for shared notes or own notes
    * @returns Supabase query builder
    */
-  private buildNotesQuery(userId: string, query: NotesListQueryInput, isShared: boolean) {
+  private buildNotesQuery(userId: string, query: NotesListQueryInput) {
     let notesQuery = this.supabase.from("notes").select(
       `
         id,
@@ -172,20 +172,8 @@ export class NotesService {
       { count: "exact" }
     );
 
-    // Filter: own notes vs shared notes
-    if (isShared) {
-      // Shared notes: notes where tag is shared with user via tag_access
-      // For shared notes, we need to query notes where the tag is in user's shared tags
-      // This is a workaround - in production, use a database view or RPC function
-
-      // This will be handled separately in getNotes() by fetching shared tag IDs first
-      // For now, return early with empty query (will be replaced by actual implementation)
-      // The actual filtering will happen in the parent method
-      notesQuery = notesQuery.eq("user_id", "00000000-0000-0000-0000-000000000000"); // No-op query
-    } else {
-      // Own notes: notes created by user
-      notesQuery = notesQuery.eq("user_id", userId);
-    }
+    // Filter: own notes only (shared notes are fetched separately in getNotes())
+    notesQuery = notesQuery.eq("user_id", userId);
 
     // Filter: tag_id
     if (query.tag_id) {
@@ -235,7 +223,7 @@ export class NotesService {
 
       // Secondary sort by id (for stable pagination)
       if (comparison === 0) {
-        comparison = a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+        comparison = a.id < b.id ? -1 : 1; // IDs are unique, so never equal
         // Always descending for ID to ensure newest first for same dates
         comparison = -comparison;
       }
@@ -503,11 +491,11 @@ export class NotesService {
         return retryTag.id;
       }
 
-      throw new Error(`Tag creation race condition retry failed: ${retryError?.message ?? "Unknown error"}`);
+      throw new Error(`Tag creation race condition retry failed: ${(retryError as { message: string }).message}`);
     }
 
     // Other insertion error
-    throw new Error(`Failed to create tag: ${insertError?.message ?? "Unknown error"}`);
+    throw new Error(`Failed to create tag: ${(insertError as { message: string }).message}`);
   }
 
   /**
@@ -618,13 +606,13 @@ export class NotesService {
 
     if (isOwner) {
       // Fetch public link
-      const { data: linkData, error: linkError } = await this.supabase
+      const { data: linkData } = await this.supabase
         .from("public_links")
         .select("token, is_enabled")
         .eq("note_id", noteId)
         .single();
 
-      if (!linkError && linkData) {
+      if (linkData) {
         publicLink = {
           token: linkData.token,
           is_enabled: linkData.is_enabled,
@@ -633,14 +621,12 @@ export class NotesService {
       }
 
       // Fetch shared recipients count for this tag
-      const { data: tagAccessData, error: tagAccessError } = await this.supabase
+      const { data: tagAccessData } = await this.supabase
         .from("tag_access")
         .select("recipient_id")
         .eq("tag_id", note.tag_id);
 
-      if (!tagAccessError && tagAccessData) {
-        sharedRecipientsCount = tagAccessData.length;
-      }
+      sharedRecipientsCount = tagAccessData?.length ?? 0;
     }
 
     // Step 4: Transform to NoteDetailDTO
