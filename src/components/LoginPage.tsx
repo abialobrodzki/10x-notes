@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AlertArea from "@/components/AlertArea";
 import LoginForm from "@/components/LoginForm";
 import RedirectHint from "@/components/RedirectHint";
@@ -11,6 +11,42 @@ import { GlassCard } from "@/components/ui/composed/GlassCard";
  */
 export default function LoginPage() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Redirect authenticated users to home page
+  // This prevents showing login page after browser back button when user was already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (response.ok) {
+          // User is authenticated, redirect to home
+          setIsRedirecting(true);
+          window.location.href = "/";
+        }
+      } catch {
+        // User is not authenticated, stay on login page
+      }
+    };
+
+    // Check auth on mount
+    checkAuth();
+
+    // Handle bfcache (back-forward cache) - when user presses back button
+    // pageshow event fires when page is loaded from bfcache
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Page was loaded from bfcache, check auth again
+        checkAuth();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
 
   // Check for reset success parameter in URL (client-side only)
   const successMessage = useMemo(() => {
@@ -23,6 +59,12 @@ export default function LoginPage() {
     }
     return null;
   }, []);
+
+  // Show nothing while checking authentication
+  // This prevents FOUC (Flash Of Unstyled Content) when redirecting authenticated users
+  if (isRedirecting) {
+    return <div />;
+  }
 
   return (
     <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">

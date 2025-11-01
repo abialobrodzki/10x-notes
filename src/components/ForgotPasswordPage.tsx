@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import AlertArea from "@/components/AlertArea";
 import ForgotPasswordForm from "@/components/ForgotPasswordForm";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
@@ -23,6 +23,46 @@ export default function ForgotPasswordPage() {
 
   const [errors, setErrors] = useState<string[]>(initialErrors);
   const [success, setSuccess] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Redirect authenticated users to home page
+  // This prevents showing forgot password page after browser back button when user was already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (response.ok) {
+          // User is authenticated, redirect to home
+          setIsRedirecting(true);
+          window.location.href = "/";
+        }
+      } catch {
+        // User is not authenticated, stay on forgot password page
+      }
+    };
+
+    // Check auth on mount
+    checkAuth();
+
+    // Handle bfcache (back-forward cache) - when user presses back button
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
+  // Show nothing while checking authentication
+  // This prevents FOUC (Flash Of Unstyled Content) when redirecting authenticated users
+  if (isRedirecting) {
+    return <div />;
+  }
 
   return (
     <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
