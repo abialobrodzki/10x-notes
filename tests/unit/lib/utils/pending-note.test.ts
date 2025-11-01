@@ -331,6 +331,10 @@ describe("pending-note.utils", () => {
 
     describe("corrupted data handling", () => {
       it("should return null for invalid JSON", () => {
+        // Suppress expected error logs in this test
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
         // Arrange - Store invalid JSON
         sessionStorage.setItem(PENDING_NOTE_KEY, '{"invalid":"json');
 
@@ -339,9 +343,16 @@ describe("pending-note.utils", () => {
 
         // Assert
         expect(result).toBeNull();
+
+        // Cleanup
+        consoleErrorSpy.mockRestore();
       });
 
       it("should clear corrupted data from storage", () => {
+        // Suppress expected error logs in this test
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
         // Arrange
         sessionStorage.setItem(PENDING_NOTE_KEY, "not json at all");
 
@@ -351,6 +362,9 @@ describe("pending-note.utils", () => {
         // Assert - corrupted data should be cleared
         const stored = sessionStorage.getItem(PENDING_NOTE_KEY);
         expect(stored).toBeNull();
+
+        // Cleanup
+        consoleErrorSpy.mockRestore();
       });
 
       it("should handle null stored value", () => {

@@ -1716,6 +1716,10 @@ describe("OpenRouterService", () => {
     });
 
     it("should not throw when telemetry logging fails", async () => {
+      // Suppress expected error logs in this test
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const mockSupabaseError = {
         from: vi.fn().mockReturnValue({
           insert: vi.fn().mockResolvedValue({
@@ -1744,9 +1748,16 @@ describe("OpenRouterService", () => {
       });
 
       expect(result.data).toBe("Response");
+
+      // Cleanup
+      consoleErrorSpy.mockRestore();
     });
 
     it("should handle telemetry logging exception gracefully", async () => {
+      // Suppress expected error logs in this test
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const mockSupabaseThrow = {
         from: vi.fn().mockReturnValue({
           insert: vi.fn().mockRejectedValue(new Error("Telemetry exception")),
@@ -1772,6 +1783,9 @@ describe("OpenRouterService", () => {
       });
 
       expect(result.data).toBe("Response");
+
+      // Cleanup
+      consoleErrorSpy.mockRestore();
     });
 
     it("should log non-Error failures to telemetry with String(error)", async () => {

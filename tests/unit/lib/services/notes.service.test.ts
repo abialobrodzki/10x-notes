@@ -484,6 +484,10 @@ describe("NotesService", () => {
     });
 
     it("should handle public_links query error gracefully", async () => {
+      // Suppress expected error logs in this test
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const mockOwnNotes = [
         {
           id: "note-1",
@@ -530,9 +534,16 @@ describe("NotesService", () => {
 
       expect(result.notes).toHaveLength(1);
       expect(result.notes[0].has_public_link).toBe(false); // Default when error
+
+      // Cleanup
+      consoleErrorSpy.mockRestore();
     });
 
     it("should handle shared_recipients RPC error gracefully", async () => {
+      // Suppress expected error logs in this test
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
       const mockOwnNotes = [
         {
           id: "note-1",
@@ -579,6 +590,9 @@ describe("NotesService", () => {
 
       expect(result.notes).toHaveLength(1);
       // shared_recipients should not be included when RPC fails
+
+      // Cleanup
+      consoleErrorSpy.mockRestore();
     });
 
     it("should filter by tag_id and goal_status", async () => {
