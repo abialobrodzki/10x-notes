@@ -2,12 +2,28 @@
  * Global test setup for Vitest
  *
  * This file runs before all tests and sets up:
+ * - MSW for API mocking (integration tests)
  * - Global mocks (sessionStorage, crypto)
  * - Custom matchers (if needed)
  * - Test utilities
  */
 
-import { beforeEach, vi } from "vitest";
+import { beforeAll, afterEach, afterAll, beforeEach, vi } from "vitest";
+import { server } from "./mocks/server";
+
+// ============================================================================
+// MSW API Mocking Setup (for integration tests)
+// ============================================================================
+
+// Establish API mocking before all tests.
+beforeAll(() => server.listen());
+
+// Reset any request handlers that we may add during the tests,
+// so they don't affect other tests.
+afterEach(() => server.resetHandlers());
+
+// Clean up after the tests are finished.
+afterAll(() => server.close());
 
 // ============================================================================
 // sessionStorage Mock

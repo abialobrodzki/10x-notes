@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     // Use happy-dom for faster DOM emulation (lighter than jsdom)
-    environment: "happy-dom",
+    environment: "node",
 
     // Global test setup
     setupFiles: ["./tests/setup.ts"],

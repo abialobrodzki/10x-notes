@@ -36,10 +36,14 @@ describe("OpenRouterService", () => {
 
   describe("Constructor", () => {
     it("should throw OpenRouterAuthError when API key is missing", () => {
-      vi.unstubAllEnvs();
+      // Temporarily unset the env variable for this specific test
+      vi.stubEnv("OPENROUTER_API_KEY", undefined);
 
       expect(() => new OpenRouterService()).toThrow(OpenRouterAuthError);
       expect(() => new OpenRouterService()).toThrow("OPENROUTER_API_KEY environment variable is required");
+
+      // Restore env for subsequent tests
+      vi.unstubAllEnvs();
     });
 
     it("should throw OpenRouterAuthError when API key is empty string", () => {
