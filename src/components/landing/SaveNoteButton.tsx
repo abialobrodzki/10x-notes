@@ -77,9 +77,9 @@ export function SaveNoteButton({ originalContent, aiResult }: SaveNoteButtonProp
         description: "Przekierowywanie do szczegółów...",
       });
 
-      // Redirect to note details
+      // Replace current history entry to prevent going back to landing page with saved note
       setTimeout(() => {
-        window.location.href = `/notes/${savedNote.id}`;
+        window.location.replace(`/notes/${savedNote.id}`);
       }, 500);
     } catch (error) {
       // eslint-disable-next-line no-console

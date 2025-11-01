@@ -117,13 +117,13 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         const pendingNote = getPendingNote();
 
         if (pendingNote) {
-          // Redirect to notes view with autoSave flag
-          window.location.href = "/notes?autoSave=true";
+          // Replace current history entry to prevent going back to register page
+          window.location.replace("/notes?autoSave=true");
           return;
         }
 
-        // No pending note or expired - redirect to notes
-        window.location.href = "/notes";
+        // No pending note or expired - replace current history entry
+        window.location.replace("/notes");
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Registration error:", error);

@@ -106,9 +106,9 @@ export function NotesListPage({ initialNotes, initialTags, initialQuery, initial
           description: "Przekierowywanie do szczegółów...",
         });
 
-        // Redirect to the saved note after a brief delay
+        // Replace current history entry to clean up auto-save URL
         setTimeout(() => {
-          window.location.href = `/notes/${savedNote.id}`;
+          window.location.replace(`/notes/${savedNote.id}`);
         }, 1000);
       } catch (error) {
         // eslint-disable-next-line no-console
