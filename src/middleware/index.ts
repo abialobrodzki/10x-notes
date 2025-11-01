@@ -14,7 +14,6 @@ const PUBLIC_PATHS = [
   "/api/auth", // Auth endpoints (login, register, logout)
   "/api/share", // Shared notes
   "/api/ai", // AI generation
-  "/api/user", // User endpoints (profile, stats, account) - endpoints handle auth individually
 ];
 
 /**

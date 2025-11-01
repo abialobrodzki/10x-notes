@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import AlertArea from "@/components/AlertArea";
 import RegisterForm from "@/components/RegisterForm";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
+import { supabaseClient } from "@/db/supabase.client";
 
 /**
  * RegisterPage component - main container for registration view
@@ -16,15 +17,15 @@ export default function RegisterPage() {
   // This prevents showing register page after browser back button when user was already logged in
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/user/profile");
-        if (response.ok) {
-          // User is authenticated, redirect to home
-          setIsRedirecting(true);
-          window.location.href = "/";
-        }
-      } catch {
-        // User is not authenticated, stay on register page
+      // Use Supabase client-side session check (fast, no HTTP request)
+      const {
+        data: { session },
+      } = await supabaseClient.auth.getSession();
+
+      if (session) {
+        // User is authenticated, redirect to home
+        setIsRedirecting(true);
+        window.location.href = "/";
       }
     };
 

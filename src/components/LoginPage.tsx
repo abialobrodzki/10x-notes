@@ -3,6 +3,7 @@ import AlertArea from "@/components/AlertArea";
 import LoginForm from "@/components/LoginForm";
 import RedirectHint from "@/components/RedirectHint";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
+import { supabaseClient } from "@/db/supabase.client";
 
 /**
  * LoginPage component - main container for login view
@@ -17,15 +18,15 @@ export default function LoginPage() {
   // This prevents showing login page after browser back button when user was already logged in
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/user/profile");
-        if (response.ok) {
-          // User is authenticated, redirect to home
-          setIsRedirecting(true);
-          window.location.href = "/";
-        }
-      } catch {
-        // User is not authenticated, stay on login page
+      // Use Supabase client-side session check (fast, no HTTP request)
+      const {
+        data: { session },
+      } = await supabaseClient.auth.getSession();
+
+      if (session) {
+        // User is authenticated, redirect to home
+        setIsRedirecting(true);
+        window.location.href = "/";
       }
     };
 

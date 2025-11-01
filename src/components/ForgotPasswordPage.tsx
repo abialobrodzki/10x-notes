@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import AlertArea from "@/components/AlertArea";
 import ForgotPasswordForm from "@/components/ForgotPasswordForm";
 import { GlassCard } from "@/components/ui/composed/GlassCard";
+import { supabaseClient } from "@/db/supabase.client";
 
 /**
  * ForgotPasswordPage component - main container for password reset request view
@@ -29,15 +30,15 @@ export default function ForgotPasswordPage() {
   // This prevents showing forgot password page after browser back button when user was already logged in
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/user/profile");
-        if (response.ok) {
-          // User is authenticated, redirect to home
-          setIsRedirecting(true);
-          window.location.href = "/";
-        }
-      } catch {
-        // User is not authenticated, stay on forgot password page
+      // Use Supabase client-side session check (fast, no HTTP request)
+      const {
+        data: { session },
+      } = await supabaseClient.auth.getSession();
+
+      if (session) {
+        // User is authenticated, redirect to home
+        setIsRedirecting(true);
+        window.location.href = "/";
       }
     };
 
