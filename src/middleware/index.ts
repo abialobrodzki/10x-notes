@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServerClient } from "../lib/supabase-server";
+import type { APIContext, MiddlewareNext } from "astro";
 
 /**
  * Public paths that don't require authentication
@@ -24,19 +25,25 @@ const AUTH_ONLY_PATHS = ["/login", "/register", "/forgot-password", "/reset-pass
 
 /**
  * Check if the given path is public (doesn't require auth)
+ * Exported for testing purposes
  */
-function isPublicPath(pathname: string): boolean {
+export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 /**
  * Check if the given path is auth-only (for unauthenticated users only)
+ * Exported for testing purposes
  */
-function isAuthOnlyPath(pathname: string): boolean {
+export function isAuthOnlyPath(pathname: string): boolean {
   return AUTH_ONLY_PATHS.some((path) => pathname === path);
 }
 
-export const onRequest = defineMiddleware(async (context, next) => {
+/**
+ * Core middleware logic (Astro-agnostic for testability)
+ * Exported for testing purposes
+ */
+export async function middlewareHandler(context: APIContext, next: MiddlewareNext): Promise<Response> {
   // Create server-side Supabase client with cookies support
   context.locals.supabase = createSupabaseServerClient(context.request, context.cookies);
 
@@ -80,4 +87,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Redirect to login for protected routes
   return context.redirect("/login");
-});
+}
+
+// Astro middleware wrapper
+export const onRequest = defineMiddleware(middlewareHandler);
