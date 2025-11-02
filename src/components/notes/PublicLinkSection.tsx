@@ -229,7 +229,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
           {/* URL display */}
           <GlassCard padding="sm">
             <div className="flex items-center gap-2">
-              <Link className="h-4 w-4 flex-shrink-0 text-glass-text-muted" />
+              <Link className="h-4 w-4 shrink-0 text-glass-text-muted" />
               <input
                 type="text"
                 value={fullUrl}

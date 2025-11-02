@@ -106,7 +106,7 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
               </div>
 
               {/* Icon */}
-              <option.Icon className={`h-5 w-5 flex-shrink-0 ${option.iconColor}`} aria-hidden="true" />
+              <option.Icon className={`h-5 w-5 shrink-0 ${option.iconColor}`} aria-hidden="true" />
 
               {/* Label */}
               <Label

@@ -48,7 +48,7 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
         className="rounded-lg border border-glass-border bg-glass-bg-to p-4 font-mono text-sm text-glass-text-muted"
         data-testid="original-content-section-content"
       >
-        <pre className="whitespace-pre-wrap break-words" data-testid="original-content-section-text">
+        <pre className="whitespace-pre-wrap wrap-break-words" data-testid="original-content-section-text">
           {displayedLines.join("\n")}
         </pre>
 
