@@ -63,6 +63,55 @@ describe("GET /api/notes - Fetch User Notes", () => {
       expect(getNotesMock).toHaveBeenCalledWith("user-123", expect.any(Object));
     });
 
+    it("should pass through pagination parameters to service", async () => {
+      // Arrange
+      const mockNotesResponse: NotesListDTO = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        notes: [{ id: "note-2", title: "Test Note 2" } as any],
+        pagination: { page: 2, limit: 5, total: 10, total_pages: 2 },
+      };
+      getNotesMock.mockResolvedValue(mockNotesResponse);
+
+      mockContext.url = new URL("http://localhost/api/notes?page=2&limit=5");
+
+      // Act
+      const response = await GET(mockContext);
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(getNotesMock).toHaveBeenCalledWith(
+        "user-123",
+        expect.objectContaining({
+          page: 2,
+          limit: 5,
+        })
+      );
+    });
+
+    it("should handle tag_id filter parameter", async () => {
+      // Arrange
+      const mockNotesResponse: NotesListDTO = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        notes: [{ id: "note-3", title: "Tagged Note" } as any],
+        pagination: { page: 1, limit: 10, total: 1, total_pages: 1 },
+      };
+      getNotesMock.mockResolvedValue(mockNotesResponse);
+
+      mockContext.url = new URL("http://localhost/api/notes?tag_id=550e8400-e29b-41d4-a716-446655440001");
+
+      // Act
+      const response = await GET(mockContext);
+
+      // Assert
+      expect(response.status).toBe(200);
+      expect(getNotesMock).toHaveBeenCalledWith(
+        "user-123",
+        expect.objectContaining({
+          tag_id: "550e8400-e29b-41d4-a716-446655440001",
+        })
+      );
+    });
+
     it("should return 500 if the notes service throws an unexpected error", async () => {
       // Arrange
       getNotesMock.mockRejectedValue(new Error("Database connection failed"));
@@ -240,6 +289,43 @@ describe("POST /api/notes - Create New Note", () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe("Invalid JSON");
       expect(data.message).toBe("Request body must be valid JSON");
+    });
+
+    it("should return 400 Bad Request when original_content is missing", async () => {
+      // Arrange
+      const invalidInput = {
+        summary_text: "Some summary",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(invalidInput);
+
+      // Act
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+      expect(createNoteMock).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 Bad Request for empty original_content", async () => {
+      // Arrange
+      const invalidInput = {
+        original_content: "",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(invalidInput);
+
+      // Act
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
     });
 
     it("should return 500 if the service throws an unexpected error", async () => {

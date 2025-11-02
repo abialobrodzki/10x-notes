@@ -355,6 +355,26 @@ describe("PATCH /api/notes/[id] - Update Note", () => {
       expect(data.error).toBe("Invalid JSON");
       expect(data.message).toBe("Request body must be valid JSON");
     });
+
+    it("should return 500 for unexpected errors during update", async () => {
+      // Arrange
+      const mockUpdatePayload = {
+        summary_text: "Updated summary",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(mockUpdatePayload);
+      updateNoteMock.mockRejectedValue(new Error("Query execution failed"));
+
+      // Act
+      const response = await PATCH(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("Failed to update note");
+      expect(data.details).toContain("Query execution failed");
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -483,6 +503,20 @@ describe("DELETE /api/notes/[id] - Delete Note", () => {
       expect(data.error).toBe("Internal server error");
       expect(data.message).toBe("Failed to delete note");
       expect(data.details).toContain("Database connection failed");
+    });
+
+    it("should handle unexpected errors during note deletion", async () => {
+      // Arrange
+      deleteNoteMock.mockRejectedValue(new Error("Constraint violation: linked public_links"));
+
+      // Act
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.details).toContain("Constraint violation");
     });
   });
 

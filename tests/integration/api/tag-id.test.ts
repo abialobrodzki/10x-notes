@@ -192,6 +192,26 @@ describe("PATCH /api/tags/[id] - Update Tag", () => {
       expect(data.error).toBe("Invalid JSON");
       expect(data.message).toBe("Request body must be valid JSON");
     });
+
+    it("should return 500 for unexpected errors during tag update", async () => {
+      // Arrange
+      const mockUpdatePayload = {
+        name: "Updated Tag Name",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(mockUpdatePayload);
+      updateTagMock.mockRejectedValue(new Error("Database transaction failed"));
+
+      // Act
+      const response = await PATCH(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("Failed to update tag");
+      expect(data.details).toContain("Database transaction failed");
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -341,6 +361,20 @@ describe("DELETE /api/tags/[id] - Delete Tag", () => {
       expect(data.error).toBe("Internal server error");
       expect(data.message).toBe("Failed to delete tag");
       expect(data.details).toContain("Database connection failed");
+    });
+
+    it("should handle unexpected errors with proper error response", async () => {
+      // Arrange
+      deleteTagMock.mockRejectedValue(new Error("Cascade delete constraint violation"));
+
+      // Act
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.details).toContain("Cascade delete constraint violation");
     });
   });
 

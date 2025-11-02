@@ -173,6 +173,27 @@ describe("POST /api/notes/[id]/public-link - Create Public Link", () => {
       expect(data.message).toBe("Note ID is required");
     });
   });
+
+  describe("Error handling", () => {
+    beforeEach(() => {
+      mockRequireAuth.mockResolvedValue({ userId: "user-123", email: "test@example.com" });
+    });
+
+    it("should handle edge case when note becomes unavailable during link creation", async () => {
+      // Arrange
+      mockContext.request.json = vi.fn().mockResolvedValue({});
+      createPublicLinkMock.mockRejectedValue(new Error("NOTE_DELETED"));
+
+      // Act
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("Failed to create public link");
+    });
+  });
 });
 
 describe("PATCH /api/notes/[id]/public-link - Update Public Link Status", () => {
@@ -449,6 +470,20 @@ describe("DELETE /api/notes/[id]/public-link - Delete Public Link", () => {
       expect(data.error).toBe("Internal server error");
       expect(data.message).toContain("Failed to delete");
       expect(data.details).toContain("Database connection failed");
+    });
+
+    it("should handle edge case when public link record is corrupted", async () => {
+      // Arrange
+      deletePublicLinkMock.mockRejectedValue(new Error("Invalid public link data"));
+
+      // Act
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.details).toContain("Invalid public link data");
     });
   });
 

@@ -114,6 +114,21 @@ describe("GET /api/user/profile - Fetch User Profile", () => {
       expect(data.message).toBe("Failed to fetch user profile");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should handle unexpected errors from requireAuth correctly", async () => {
+      // Arrange - simulate unexpected error type from requireAuth
+      mockRequireAuth.mockRejectedValue(new Error("Unexpected auth error"));
+
+      // Act
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(data.details).toContain("Unexpected auth error");
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -224,6 +239,21 @@ describe("GET /api/user/stats - Fetch User Statistics", () => {
       expect(data.error).toBe("Internal server error");
       expect(data.message).toBe("Failed to fetch user statistics");
       expect(data.details).toContain("Database connection failed");
+    });
+
+    it("should handle unexpected errors from requireAuth in stats correctly", async () => {
+      // Arrange - simulate unexpected error type from requireAuth
+      mockRequireAuth.mockRejectedValue(new Error("Query timeout error"));
+
+      // Act
+      const response = await GET_STATS(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(data.details).toContain("Query timeout error");
     });
   });
 
@@ -338,6 +368,77 @@ describe("DELETE /api/user/account - Delete User Account", () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe("Invalid JSON");
       expect(data.message).toContain("must be valid JSON");
+    });
+
+    it("should return 400 Bad Request for missing confirmation_email field", async () => {
+      // Arrange
+      const deletePayload = {};
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+
+      // Act
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+      expect(data.details).toBeDefined();
+    });
+
+    it("should return 400 Bad Request for empty confirmation_email", async () => {
+      // Arrange
+      const deletePayload = {
+        confirmation_email: "",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+
+      // Act
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+    });
+
+    it("should return 400 Bad Request for invalid email format", async () => {
+      // Arrange
+      const deletePayload = {
+        confirmation_email: "not-an-email",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+
+      // Act
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+    });
+
+    it("should return 400 Bad Request for email with extra spaces", async () => {
+      // Arrange
+      const deletePayload = {
+        confirmation_email: "  test@example.com  ",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+
+      // Act
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
     });
 
     it("should return 500 if the service throws an unexpected error", async () => {

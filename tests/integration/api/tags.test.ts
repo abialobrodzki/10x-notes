@@ -318,6 +318,41 @@ describe("POST /api/tags - Create New Tag", () => {
       expect(data.error).toBe("Invalid JSON");
       expect(data.message).toBe("Request body must be valid JSON");
     });
+
+    it("should return 400 Bad Request when name is missing", async () => {
+      // Arrange
+      const invalidInput = {};
+
+      mockContext.request.json = vi.fn().mockResolvedValue(invalidInput);
+
+      // Act
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+      expect(createTagMock).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 Bad Request when name is too long", async () => {
+      // Arrange
+      const invalidInput = {
+        name: "a".repeat(256), // Assuming max length is 255
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(invalidInput);
+
+      // Act
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      // Assert
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid request body");
+    });
   });
 
   describe("Unauthenticated User", () => {
