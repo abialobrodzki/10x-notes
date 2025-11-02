@@ -35,6 +35,7 @@ WARP.md
 .cursor/rules/AGENTS.md
 .clinerules/
 .roorules/
+.claude.json
 
 # unit tests
 coverage/
