@@ -225,25 +225,15 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
               searchTerm={searchTerm}
               hasActiveFilters={hasActiveFilters}
               onItemClick={handleNoteClick}
-              data-testid="app-shell-note-list"
             />
 
             {/* Pagination (Desktop) / Infinite Loader (Mobile) */}
             {!searchTerm && (
               <>
                 {isMobile ? (
-                  <InfiniteLoader
-                    loading={isLoadingMore}
-                    hasMore={hasMore}
-                    onLoadMore={handleLoadMore}
-                    data-testid="app-shell-infinite-loader"
-                  />
+                  <InfiniteLoader loading={isLoadingMore} hasMore={hasMore} onLoadMore={handleLoadMore} />
                 ) : (
-                  <Pagination
-                    pagination={notes.pagination}
-                    onPageChange={handlePageChange}
-                    data-testid="app-shell-pagination"
-                  />
+                  <Pagination pagination={notes.pagination} onPageChange={handlePageChange} />
                 )}
               </>
             )}

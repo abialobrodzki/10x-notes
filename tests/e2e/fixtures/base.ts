@@ -1,5 +1,6 @@
 import { test as base } from "playwright/test";
 import { LoginPage } from "../page-objects/LoginPage";
+import { NotesListPage } from "../page-objects/NotesListPage";
 import { NotesPage } from "../page-objects/NotesPage";
 
 /**
@@ -21,6 +22,7 @@ import { NotesPage } from "../page-objects/NotesPage";
 interface CustomFixtures {
   loginPage: LoginPage;
   notesPage: NotesPage;
+  notesListPage: NotesListPage;
 }
 
 /**
@@ -41,6 +43,14 @@ export const test = base.extend<CustomFixtures>({
   notesPage: async ({ page }, use) => {
     const notesPage = new NotesPage(page);
     await use(notesPage);
+  },
+
+  /**
+   * NotesListPage fixture - automatically instantiated for each test
+   */
+  notesListPage: async ({ page }, use) => {
+    const notesListPage = new NotesListPage(page);
+    await use(notesListPage);
   },
 });
 

@@ -1,6 +1,12 @@
 import { TEST_USERS, INVALID_CREDENTIALS } from "./config/test-users";
 import { test, expect } from "./fixtures/base";
 import { clearAuthState } from "./helpers/auth.helpers";
+import { requireE2EUserCredentials, requireE2EUsername } from "./helpers/env.helpers";
+
+// Ensure login tests never reuse the persisted authenticated state
+test.use({
+  storageState: undefined,
+});
 
 /**
  * E2E Test Suite: User Login
@@ -23,17 +29,21 @@ test.describe("Login Flow", () => {
    * Ensures isolated test environment
    */
   test.beforeEach(async ({ page, loginPage }) => {
-    // Navigate to login page first (needed for localStorage access)
+    // Always start from login page
     await loginPage.goto();
 
-    // Arrange: Clear any existing auth state
+    // Explicitly clear any leftover auth state (cookies + storage)
     await clearAuthState(page);
+
+    // Reload after clearing to guarantee a pristine login form
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("networkidle");
   });
 
   test.describe("Successful Login", () => {
     test("should login with valid credentials and redirect to /notes", async ({ page, loginPage, notesPage }) => {
       // Arrange: Valid user credentials
-      const { email, password } = TEST_USERS.validUser;
+      const { email, password } = requireE2EUserCredentials();
 
       // Act: Submit login form
       await loginPage.login(email, password);
@@ -55,7 +65,7 @@ test.describe("Login Flow", () => {
 
     test("should successfully complete login flow", async ({ loginPage, notesPage }) => {
       // Arrange: Valid credentials
-      const { email, password } = TEST_USERS.validUser;
+      const { email, password } = requireE2EUserCredentials();
 
       // Act: Submit login form
       await loginPage.login(email, password);
@@ -91,7 +101,7 @@ test.describe("Login Flow", () => {
 
     test("should show error for wrong password", async ({ page, loginPage }) => {
       // Arrange: Valid email but wrong password
-      const email = TEST_USERS.validUser.email;
+      const email = requireE2EUsername();
       const wrongPassword = "WrongPassword123!";
 
       // Act: Submit login form
@@ -220,12 +230,22 @@ test.describe("Login Flow", () => {
       expect(await loginPage.getEmailValue()).toBe(testEmail);
       expect(await loginPage.getPasswordValue()).toBe(testPassword);
     });
+
+    test("should open login page from landing navbar link", async ({ loginPage }) => {
+      // Act: Visit landing page and use navbar CTA
+      await loginPage.page.goto("/");
+      await loginPage.page.getByTestId("navbar-login-link").click();
+
+      // Assert: Redirected to login page
+      await expect(loginPage.pageContainer).toBeVisible();
+      expect(loginPage.page.url()).toContain("/login");
+    });
   });
 
   test.describe("Session Persistence", () => {
     test("should redirect authenticated user from login page to home", async ({ page, loginPage, notesPage }) => {
       // Arrange: Login first
-      const { email, password } = TEST_USERS.validUser;
+      const { email, password } = requireE2EUserCredentials();
       await loginPage.login(email, password);
       await loginPage.waitForSuccessfulLogin("/notes");
 

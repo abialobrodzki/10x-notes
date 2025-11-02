@@ -8,9 +8,8 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 /**
  * Playwright E2E Testing Configuration
  *
- * Uses environment-specific configuration:
- * - .env.test for test environment variables (loaded via dotenv)
- * - dev:e2e script runs Astro in test mode
+ * Uses setup projects to prime authentication state for application specs
+ * while keeping login specs isolated with their own preparation step.
  *
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -20,9 +19,6 @@ export default defineConfig({
 
   // Pattern for test files
   testMatch: "**/*.spec.ts",
-
-  // Global setup - runs once before all tests
-  globalSetup: "./tests/e2e/global.setup.ts",
 
   // Folder for test artifacts
   outputDir: "./tests/e2e/test-results",
@@ -37,47 +33,49 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Parallel execution - opt in workers for faster test runs
-  workers: process.env.CI ? 1 : undefined,
+  workers: undefined,
 
   // Reporter configuration
-  reporter: [
-    // HTML report for local debugging
-    ["html", { outputFolder: "./tests/e2e/playwright-report", open: "never" }],
-    // List reporter for terminal output
-    ["list"],
-  ],
+  reporter: [["html", { outputFolder: "./tests/e2e/playwright-report", open: "never" }], ["list"]],
 
   // Shared settings for all projects
   use: {
-    // Base URL for navigation (e.g., page.goto('/'))
     baseURL: "http://localhost:3000",
-
-    // Collect trace on first retry for debugging
     trace: "on-first-retry",
-
-    // Screenshot on failure
     screenshot: "only-on-failure",
-
-    // Video on first retry
     video: "retain-on-failure",
-
-    // Maximum time for actions like click(), fill() (10s)
     actionTimeout: 10 * 1000,
-
-    // Maximum time for navigation (30s)
     navigationTimeout: 30 * 1000,
   },
 
-  // Configure projects for different browsers
-  // Following Playwright guidelines: initialize with Chromium only
   projects: [
+    {
+      name: "setup-auth",
+      testMatch: ["**/setup/auth.setup.ts"],
+    },
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        // Use headless mode in CI
-        headless: !!process.env.CI,
+        headless: process.env.PLAYWRIGHT_HEADLESS !== "false",
+        storageState: "./tests/e2e/.auth/user.json",
       },
+      dependencies: ["setup-auth"],
+      testIgnore: ["**/login.spec.ts"],
+    },
+    {
+      name: "setup-login",
+      testMatch: ["**/setup/login.setup.ts"],
+    },
+    {
+      name: "chromium-login",
+      use: {
+        ...devices["Desktop Chrome"],
+        headless: process.env.PLAYWRIGHT_HEADLESS !== "false",
+        storageState: undefined,
+      },
+      dependencies: ["setup-login"],
+      testMatch: ["**/login.spec.ts"],
     },
   ],
 
@@ -86,10 +84,9 @@ export default defineConfig({
     command: "npm run dev:e2e",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes to start server
+    timeout: 120 * 1000,
     stdout: "ignore",
     stderr: "pipe",
-    // Pass environment variables to dev server
     env: {
       PUBLIC_SUPABASE_URL: process.env.PUBLIC_SUPABASE_URL || "",
       PUBLIC_SUPABASE_KEY: process.env.PUBLIC_SUPABASE_KEY || "",

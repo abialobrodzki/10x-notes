@@ -8,16 +8,17 @@
  * - E2E_USERNAME_ID: test user ID in Supabase
  */
 
+import { requireE2EUserCredentials } from "../helpers/env.helpers";
+
 export const TEST_USERS = {
-  validUser: {
-    email: process.env.E2E_USERNAME || "e2e@user.com",
-    password: process.env.E2E_PASSWORD || "12345678",
+  get validUser() {
+    return requireE2EUserCredentials();
   },
   invalidUser: {
     email: "nonexistent@example.com",
     password: "WrongPassword123!",
   },
-} as const;
+};
 
 export const INVALID_CREDENTIALS = {
   emptyEmail: {

@@ -45,7 +45,16 @@ export class LoginPage {
    * @param email - Email address
    */
   async fillEmail(email: string) {
-    await this.emailInput.fill(email);
+    await this.emailInput.waitFor({ state: "visible" });
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await this.emailInput.fill(email);
+      await this.page.waitForTimeout(200);
+      const current = (await this.emailInput.inputValue()).trim();
+      if (current === email) {
+        return;
+      }
+    }
+    throw new Error(`Unable to set login email input to "${email}"`);
   }
 
   /**
@@ -53,7 +62,16 @@ export class LoginPage {
    * @param password - Password
    */
   async fillPassword(password: string) {
-    await this.passwordInput.fill(password);
+    await this.passwordInput.waitFor({ state: "visible" });
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await this.passwordInput.fill(password);
+      await this.page.waitForTimeout(200);
+      const current = await this.passwordInput.inputValue();
+      if (current === password) {
+        return;
+      }
+    }
+    throw new Error("Unable to set login password input");
   }
 
   /**
