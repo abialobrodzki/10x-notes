@@ -112,42 +112,36 @@ npm run preview
 
 ## 📜 Available Scripts
 
-| Command                 | Description                                   |
-| ----------------------- | --------------------------------------------- |
-| `npm run dev`           | Start development server on port 3000         |
-| `npm run build`         | Build for production                          |
-| `npm run preview`       | Preview production build                      |
-| `npm run lint`          | Run ESLint (max warnings: 0)                  |
-| `npm run lint:fix`      | Fix ESLint issues automatically               |
-| `npm run format`        | Format code with Prettier                     |
-| `npm run format:check`  | Check code formatting without modifying files |
-| `npm run tsc:check`     | Run TypeScript type checking                  |
-| `npm run test:unit`     | Run unit tests (Vitest)                       |
-| `npm run test:watch`    | Run tests in watch mode                       |
-| `npm run test:ui`       | Open Vitest UI for debugging                  |
-| `npm run test:coverage` | Generate coverage report                      |
+| Command                    | Description                                   |
+| -------------------------- | --------------------------------------------- |
+| `npm run dev`              | Start development server on port 3000         |
+| `npm run dev:e2e`          | Start dev server in test mode for E2E tests   |
+| `npm run build`            | Build for production                          |
+| `npm run preview`          | Preview production build                      |
+| `npm run lint`             | Run ESLint (max warnings: 0)                  |
+| `npm run lint:fix`         | Fix ESLint issues automatically               |
+| `npm run format`           | Format code with Prettier                     |
+| `npm run format:check`     | Check code formatting without modifying files |
+| `npm run tsc:check`        | Run TypeScript type checking                  |
+| `npm run test:unit`        | Run unit tests (Vitest)                       |
+| `npm run test:watch`       | Run tests in watch mode                       |
+| `npm run test:ui`          | Open Vitest UI for debugging                  |
+| `npm run test:coverage`    | Generate coverage report                      |
+| `npm run test:e2e`         | Run E2E tests (Playwright)                    |
+| `npm run test:e2e:ui`      | Run E2E tests in interactive UI mode          |
+| `npm run test:e2e:headed`  | Run E2E tests with visible browser            |
+| `npm run test:e2e:debug`   | Debug E2E tests step by step                  |
+| `npm run test:e2e:codegen` | Generate E2E test code                        |
+| `npm run test:e2e:report`  | Show E2E test report                          |
 
 ## 🧪 Testing
 
-The project uses **Vitest** for unit testing with a focus on high-ROI test coverage:
+- **Unit Tests:** Vitest with 518 tests, 100% branch coverage, runs on pre-commit hook
+- **E2E Tests:** Playwright with Page Object Model pattern, `tests/e2e/` directory
 
-**Coverage Achieved: 99.81% Statements | 100% Branches | 98.7% Functions | 100% Lines** 🎯🎉
+**Quick start:** `npm run test:unit` | `npm run test:e2e` (requires `npx playwright install chromium`)
 
-- ✅ **100% Line Coverage** - Every executable line tested!
-- ✅ **100% Branch Coverage** - Every code path tested!
-- ✅ Utils: 100% (all metrics)
-- ✅ Validators: 100% (all metrics)
-- ✅ Middleware (lib): 100% (all metrics) - auth, rate limiting
-- ✅ Middleware (Astro): 100% (all metrics) - authentication, authorization, cache headers
-- ✅ Errors: 100% (all metrics)
-- ✅ **notes.service.ts: 100% across all metrics** (statements, branches, functions, lines)
-- ✅ openrouter.service.ts: 99.39% statements, 100% branches, 93.33% functions, 100% lines
-
-**518 unit tests** covering critical business logic, input validation, error handling, retry logic, telemetry, and comprehensive edge cases including shared notes filtering, date ranges, parameter validation, non-Error exception handling, race conditions, default value handling, multi-directional sort comparisons, null safety, Astro middleware security controls (authentication, authorization, cache headers), and all API error paths.
-
-**Pre-commit Hook:** Tests run automatically before each commit to ensure code quality.
-
-For detailed test strategy and implementation plan, see [Test Plan](.ai/test-plan.md)
+For detailed testing guidelines, coverage breakdown, and setup instructions, see [AGENTS.md](AGENTS.md#testing)
 
 ## 🎯 Project Scope
 

@@ -43,6 +43,27 @@ npm run format:check
 npm run tsc:check
 ```
 
+### Testing
+
+```bash
+# Unit Tests (Vitest) - run automatically on pre-commit hook
+npm run test:unit          # Run unit tests
+npm run test:coverage      # Generate coverage report
+
+# E2E Tests (Playwright) - Page Object Model pattern, tests/e2e/ directory
+npm run test:e2e           # Run E2E tests (headless)
+npm run test:e2e:ui        # Interactive UI mode
+npm run test:e2e:headed    # Visible browser
+npm run test:e2e:debug     # Debug mode
+```
+
+**E2E Setup:** Install Playwright browsers with `npx playwright install chromium`, configure test user in `.env.test`
+
+**For detailed testing guidelines, see:**
+
+- Unit tests: `.cursor/rules/vitest-unit-testing.mdc`
+- E2E tests: `.cursor/rules/playwright-e2e-testing.mdc`
+
 ## Code Architecture & Structure
 
 ### Tech Stack
