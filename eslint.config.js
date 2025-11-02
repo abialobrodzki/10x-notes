@@ -29,6 +29,9 @@ const baseConfig = tseslint.config({
       },
     ],
     "@typescript-eslint/no-explicit-any": "warn",
+    // Disable unified-signatures due to bug with type parameters
+    // https://github.com/typescript-eslint/typescript-eslint/issues/9464
+    "@typescript-eslint/unified-signatures": "off",
   },
 });
 
@@ -93,12 +96,22 @@ const reactConfig = tseslint.config({
   },
 });
 
+// E2E tests config - disable React rules for Playwright fixtures
+const e2eConfig = tseslint.config({
+  files: ["tests/e2e/**/*.ts"],
+  rules: {
+    "no-console": "off", // Console is expected in test setup
+    "react-hooks/rules-of-hooks": "off", // Playwright fixtures use "use" parameter
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   baseConfig,
   jsxA11yConfig,
   importConfig,
   reactConfig,
+  e2eConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );
