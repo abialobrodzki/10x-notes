@@ -258,6 +258,22 @@ describe("POST /api/auth/login - User Login", () => {
     // Should handle trimmed email
     expect([200, 302, 401]).toContain(response.status);
   });
+
+  it("should return 500 when Supabase client initialization fails unexpectedly", async () => {
+    mockContext.request.json = vi.fn().mockResolvedValue({ email: "user@example.com", password: "Password1!" });
+
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockImplementation(() => {
+      throw new Error("Supabase environment misconfigured");
+    });
+
+    const response = await POST_LOGIN(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+    expect(data.message).toBe("Wystąpił nieoczekiwany błąd. Spróbuj ponownie.");
+  });
 });
 
 describe("POST /api/auth/register - User Registration", () => {
@@ -539,6 +555,114 @@ describe("POST /api/auth/register - User Registration", () => {
 
     expect(response.status).toBe(500);
   });
+
+  it("should return 400 when request body is not an object", async () => {
+    mockContext.request.json = vi.fn().mockResolvedValue("not-an-object");
+
+    const response = await POST_REGISTER(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Invalid input");
+    expect(data.message).toBe("Request body must be an object");
+  });
+
+  it("should map Supabase password length error to a friendly message", async () => {
+    const mockSupabasePasswordError = {
+      auth: {
+        signUp: vi.fn().mockResolvedValue({
+          data: { user: null, session: null },
+          error: { message: "Password should be at least 8 characters" },
+        }),
+      },
+    } as unknown as SupabaseClient<Database>;
+
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockReturnValue(mockSupabasePasswordError);
+
+    mockContext.locals.supabase = mockSupabasePasswordError;
+    mockContext.request.json = vi.fn().mockResolvedValue({
+      email: "user@example.com",
+      password: "short",
+    });
+
+    const response = await POST_REGISTER(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.message).toBe("Hasło musi mieć co najmniej 8 znaków");
+  });
+
+  it("should map Supabase email validation error to a friendly message", async () => {
+    const mockSupabaseEmailError = {
+      auth: {
+        signUp: vi.fn().mockResolvedValue({
+          data: { user: null, session: null },
+          error: { message: "Unable to validate email address" },
+        }),
+      },
+    } as unknown as SupabaseClient<Database>;
+
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockReturnValue(mockSupabaseEmailError);
+
+    mockContext.locals.supabase = mockSupabaseEmailError;
+    mockContext.request.json = vi.fn().mockResolvedValue({
+      email: "invalid-email",
+      password: "SecurePassword123!",
+    });
+
+    const response = await POST_REGISTER(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.message).toBe("Nieprawidłowy format adresu email");
+  });
+
+  it("should map Supabase rate limit error to a friendly message", async () => {
+    const mockSupabaseRateLimitError = {
+      auth: {
+        signUp: vi.fn().mockResolvedValue({
+          data: { user: null, session: null },
+          error: { message: "Email rate limit exceeded" },
+        }),
+      },
+    } as unknown as SupabaseClient<Database>;
+
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockReturnValue(mockSupabaseRateLimitError);
+
+    mockContext.locals.supabase = mockSupabaseRateLimitError;
+    mockContext.request.json = vi.fn().mockResolvedValue({
+      email: "user@example.com",
+      password: "SecurePassword123!",
+    });
+
+    const response = await POST_REGISTER(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.message).toBe("Zbyt wiele prób rejestracji. Spróbuj ponownie później.");
+  });
+
+  it("should return 500 for unexpected errors during registration", async () => {
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockImplementation(() => {
+      throw new Error("Unexpected failure");
+    });
+
+    mockContext.request.json = vi.fn().mockResolvedValue({
+      email: "user@example.com",
+      password: "SecurePassword123!",
+    });
+
+    const response = await POST_REGISTER(mockContext);
+    const data = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(data.error).toBe("Internal server error");
+    expect(data.message).toBe("Wystąpił nieoczekiwany błąd. Spróbuj ponownie.");
+  });
 });
 
 describe("POST /api/auth/logout - User Logout", () => {
@@ -804,5 +928,21 @@ describe("POST /api/auth/forgot-password - Password Reset Request", () => {
     const response = await POST_FORGOT_PASSWORD(mockContext);
 
     expect(response.status).toBe(400);
+  });
+
+  it("should return 500 when Supabase client creation throws unexpected error", async () => {
+    const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+    createSupabaseServerClientMock.mockImplementation(() => {
+      throw new Error("Supabase credentials missing");
+    });
+
+    mockContext.request.json = vi.fn().mockResolvedValue({ email: "user@example.com" });
+
+    const response = await POST_FORGOT_PASSWORD(mockContext);
+    const responseBody = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(responseBody.error).toBe("Internal server error");
+    expect(responseBody.message).toBe("Wystąpił nieoczekiwany błąd. Spróbuj ponownie.");
   });
 });

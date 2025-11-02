@@ -125,6 +125,17 @@ describe("GET /api/notes - Fetch User Notes", () => {
       expect(data.error).toBe("Internal server error");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should return 400 when query parameters fail validation", async () => {
+      mockContext.url = new URL("http://localhost/api/notes?limit=not-a-number");
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(getNotesMock).not.toHaveBeenCalled();
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -140,6 +151,43 @@ describe("GET /api/notes - Fetch User Notes", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+    });
+
+    it("should return 500 for unexpected errors from requireAuth", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Unexpected authentication failure"));
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const mockNoteInput = {
+        original_content: "Meeting notes from today",
+        tag_id: "550e8400-e29b-41d4-a716-446655440001",
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth subsystem unavailable"));
+      mockContext.request = new Request("http://localhost/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mockNoteInput),
+      });
+      // Assigning json handler ensures we do not call createNoteMock when auth fails
+      mockContext.request.json = vi.fn().mockResolvedValue(mockNoteInput);
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(createNoteMock).not.toHaveBeenCalled();
     });
   });
 });

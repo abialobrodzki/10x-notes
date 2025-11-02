@@ -158,6 +158,19 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth routing failure"));
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid UUID format", async () => {
       // Arrange
@@ -440,6 +453,25 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const grantAccessPayload = {
+        recipient_email: "colleague@example.com",
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth session lookup failed"));
+      mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(grantTagAccessMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid UUID format", async () => {
       // Arrange
@@ -618,6 +650,20 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(revokeTagAccessMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth revocation pipeline failure"));
+
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
       expect(revokeTagAccessMock).not.toHaveBeenCalled();
     });
   });

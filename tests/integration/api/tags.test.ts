@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ZodError } from "zod";
 import { requireAuth } from "@/lib/middleware/auth.middleware";
+import { tagsListQuerySchema } from "@/lib/validators/tags.schemas";
 import { GET, POST } from "@/pages/api/tags/index";
 import type { TagsListDTO, TagDTO } from "@/types";
 import type { APIContext } from "astro";
@@ -170,6 +172,34 @@ describe("GET /api/tags - Fetch User Tags", () => {
       expect(data.message).toBe("Failed to fetch tags");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should return 400 when query validation fails", async () => {
+      const validationError = new ZodError([
+        {
+          code: "invalid_type",
+          path: ["include_shared"],
+          message: "Expected boolean",
+          expected: "boolean",
+          received: "string",
+        },
+      ]);
+
+      const safeParseSpy = vi
+        .spyOn(tagsListQuerySchema, "safeParse")
+        .mockReturnValue({ success: false, error: validationError } as ReturnType<
+          (typeof tagsListQuerySchema)["safeParse"]
+        >);
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(data.message).toBe("Invalid query parameters");
+      expect(getTagsMock).not.toHaveBeenCalled();
+
+      safeParseSpy.mockRestore();
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -185,6 +215,45 @@ describe("GET /api/tags - Fetch User Tags", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+    });
+
+    it("should return 500 for unexpected errors from requireAuth", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Unexpected auth failure"));
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+    });
+  });
+
+  describe("Error handling fallbacks", () => {
+    beforeEach(() => {
+      mockRequireAuth.mockResolvedValue({ userId: "user-123", email: "test@example.com" });
+    });
+
+    it("should fallback to generic message when service throws non-error value", async () => {
+      getTagsMock.mockRejectedValue("service-timeout");
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error");
+    });
+
+    it("should return 500 when authentication helper throws non-error value", async () => {
+      mockRequireAuth.mockRejectedValue("auth-offline");
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error occurred");
+      expect(data.error).toBe("Internal server error");
+      expect(getTagsMock).not.toHaveBeenCalled();
     });
   });
 });
@@ -373,6 +442,60 @@ describe("POST /api/tags - Create New Tag", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(createTagMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    beforeEach(() => {
+      mockRequireAuth.mockResolvedValue({ userId: "user-123", email: "test@example.com" });
+    });
+
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const mockTagInput = {
+        name: "Team",
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth context failure"));
+      mockContext.request.json = vi.fn().mockResolvedValue(mockTagInput);
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(createTagMock).not.toHaveBeenCalled();
+    });
+
+    it("should fallback to generic message when service throws non-error value", async () => {
+      const mockTagInput = {
+        name: "Team",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(mockTagInput);
+      createTagMock.mockRejectedValue("backend-offline");
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error");
+    });
+
+    it("should return 500 when authentication helper throws non-error value", async () => {
+      const mockTagInput = {
+        name: "Team",
+      };
+
+      mockRequireAuth.mockRejectedValue("auth-offline");
+      mockContext.request.json = vi.fn().mockResolvedValue(mockTagInput);
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error occurred");
       expect(createTagMock).not.toHaveBeenCalled();
     });
   });

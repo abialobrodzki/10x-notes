@@ -118,6 +118,36 @@ describe("POST /api/notes/[id]/public-link - Create Public Link", () => {
       expect(data.message).toBe("Failed to create public link");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should return 400 when request body fails validation", async () => {
+      mockContext.request = new Request("http://localhost/api/notes/550e8400-e29b-41d4-a716-446655440100/public-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(123),
+      });
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Validation failed");
+      expect(createPublicLinkMock).not.toHaveBeenCalled();
+    });
+
+    it("should return 400 for invalid JSON payload", async () => {
+      mockContext.request.text = vi.fn().mockResolvedValue("{ invalid json");
+      // remove any json mock to ensure text path is used
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (mockContext.request as any).json;
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data.error).toBe("Invalid JSON");
+      expect(data.message).toBe("Request body must be valid JSON or empty");
+      expect(createPublicLinkMock).not.toHaveBeenCalled();
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -135,6 +165,20 @@ describe("POST /api/notes/[id]/public-link - Create Public Link", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(createPublicLinkMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth service unavailable"));
+
+      const response = await POST(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
       expect(createPublicLinkMock).not.toHaveBeenCalled();
     });
   });
@@ -349,6 +393,25 @@ describe("PATCH /api/notes/[id]/public-link - Update Public Link Status", () => 
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const payload = {
+        is_enabled: true,
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth subsystem unavailable"));
+      mockContext.request.json = vi.fn().mockResolvedValue(payload);
+
+      const response = await PATCH(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(updatePublicLinkMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid note ID format", async () => {
       // Arrange
@@ -504,6 +567,20 @@ describe("DELETE /api/notes/[id]/public-link - Delete Public Link", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth pipeline failure"));
+
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(deletePublicLinkMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid note ID format", async () => {
       // Arrange
@@ -624,6 +701,17 @@ describe("POST /api/notes/[id]/public-link/rotate - Rotate Public Link Token", (
       expect(data.error).toBe("Internal server error");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should return 500 when token collision occurs during rotation", async () => {
+      rotateTokenMock.mockRejectedValue(new Error("TOKEN_COLLISION"));
+
+      const response = await POST_ROTATE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("Failed to generate unique token");
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -639,6 +727,20 @@ describe("POST /api/notes/[id]/public-link/rotate - Rotate Public Link Token", (
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(rotateTokenMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth validation crash"));
+
+      const response = await POST_ROTATE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
       expect(rotateTokenMock).not.toHaveBeenCalled();
     });
   });

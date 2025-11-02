@@ -255,6 +255,16 @@ describe("GET /api/user/stats - Fetch User Statistics", () => {
       expect(data.message).toBe("An unexpected error occurred");
       expect(data.details).toContain("Query timeout error");
     });
+
+    it("should fallback to generic message when service throws non-error value", async () => {
+      getUserStatsMock.mockRejectedValue("stale-cache");
+
+      const response = await GET_STATS(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error");
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -270,6 +280,19 @@ describe("GET /api/user/stats - Fetch User Statistics", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(getUserStatsMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws non-error value", async () => {
+      mockRequireAuth.mockRejectedValue("auth-offline");
+
+      const response = await GET_STATS(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error occurred");
       expect(getUserStatsMock).not.toHaveBeenCalled();
     });
   });
@@ -460,6 +483,45 @@ describe("DELETE /api/user/account - Delete User Account", () => {
       expect(data.message).toBe("Failed to delete account");
       expect(data.details).toContain("Database connection failed");
     });
+
+    it("should fallback to generic message when service throws non-error value", async () => {
+      const deletePayload = {
+        confirmation_email: "test@example.com",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+      deleteAccountMock.mockRejectedValue("unexpected failure");
+
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error");
+    });
+
+    it("should enforce rate limit on account deletion attempts", async () => {
+      mockRequireAuth.mockResolvedValue({ userId: "rate-limit-user", email: "rate@example.com" });
+
+      const deletePayload = {
+        confirmation_email: "rate@example.com",
+      };
+
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+      deleteAccountMock.mockResolvedValue(undefined);
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const response = await DELETE_ACCOUNT(mockContext);
+        expect(response.status).toBe(204);
+      }
+
+      const rateLimitedResponse = await DELETE_ACCOUNT(mockContext);
+      const data = await rateLimitedResponse.json();
+
+      expect(rateLimitedResponse.status).toBe(429);
+      expect(rateLimitedResponse.headers.get("Retry-After")).not.toBeNull();
+      expect(data.error).toBe("Rate limit exceeded");
+      expect(deleteAccountMock).toHaveBeenCalledTimes(10);
+    });
   });
 
   describe("Unauthenticated User", () => {
@@ -480,6 +542,25 @@ describe("DELETE /api/user/account - Delete User Account", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(deleteAccountMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws non-error value", async () => {
+      const deletePayload = {
+        confirmation_email: "test@example.com",
+      };
+
+      mockRequireAuth.mockRejectedValue("auth-offline");
+      mockContext.request.json = vi.fn().mockResolvedValue(deletePayload);
+
+      const response = await DELETE_ACCOUNT(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.details).toBe("Unknown error occurred");
+      expect(data.error).toBe("Internal server error");
       expect(deleteAccountMock).not.toHaveBeenCalled();
     });
   });

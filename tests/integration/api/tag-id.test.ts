@@ -236,6 +236,25 @@ describe("PATCH /api/tags/[id] - Update Tag", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const mockUpdatePayload = {
+        name: "New Name",
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth provider failure"));
+      mockContext.request.json = vi.fn().mockResolvedValue(mockUpdatePayload);
+
+      const response = await PATCH(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(updateTagMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid UUID format", async () => {
       // Arrange
@@ -391,6 +410,20 @@ describe("DELETE /api/tags/[id] - Delete Tag", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(deleteTagMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth token parsing failure"));
+
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
       expect(deleteTagMock).not.toHaveBeenCalled();
     });
   });

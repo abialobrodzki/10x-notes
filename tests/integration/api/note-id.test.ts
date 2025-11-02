@@ -135,6 +135,19 @@ describe("GET /api/notes/[id] - Fetch Single Note", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth middleware failure"));
+
+      const response = await GET(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid UUID format", async () => {
       // Arrange
@@ -399,6 +412,25 @@ describe("PATCH /api/notes/[id] - Update Note", () => {
     });
   });
 
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      const mockUpdatePayload = {
+        summary_text: "Updated summary",
+      };
+
+      mockRequireAuth.mockRejectedValue(new Error("Auth subsystem crashed"));
+      mockContext.request.json = vi.fn().mockResolvedValue(mockUpdatePayload);
+
+      const response = await PATCH(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
+      expect(updateNoteMock).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Invalid UUID Parameter", () => {
     it("should return 400 Bad Request for invalid UUID format", async () => {
       // Arrange
@@ -533,6 +565,20 @@ describe("DELETE /api/notes/[id] - Delete Note", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
+      expect(deleteNoteMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Authentication error handling", () => {
+    it("should return 500 when authentication helper throws unexpected error", async () => {
+      mockRequireAuth.mockRejectedValue(new Error("Auth token validation failure"));
+
+      const response = await DELETE(mockContext);
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.error).toBe("Internal server error");
+      expect(data.message).toBe("An unexpected error occurred");
       expect(deleteNoteMock).not.toHaveBeenCalled();
     });
   });
