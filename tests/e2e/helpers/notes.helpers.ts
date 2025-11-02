@@ -4,7 +4,7 @@ import { type Page } from "playwright/test";
  * Helper functions for managing test notes via API
  */
 
-interface CreateNoteParams {
+export interface CreateNoteParams {
   original_content: string;
   summary_text: string;
   meeting_date?: string | null;
@@ -13,7 +13,7 @@ interface CreateNoteParams {
   is_ai_generated?: boolean;
 }
 
-interface NoteResponse {
+export interface NoteResponse {
   id: string;
   original_content: string;
   summary_text: string;
@@ -134,4 +134,67 @@ export async function createSampleNotes(page: Page, count = 3): Promise<NoteResp
   }
 
   return notes;
+}
+
+export interface PublicLinkResponse {
+  token: string;
+  note_id: string;
+  is_enabled: boolean;
+  created_at: string;
+}
+
+/**
+ * Create a public link for a note via API
+ * @param page - Playwright page instance (for cookies)
+ * @param noteId - Note ID to create public link for
+ * @returns Public link data with token
+ */
+export async function createPublicLinkViaAPI(page: Page, noteId: string): Promise<PublicLinkResponse> {
+  const context = page.context();
+  const cookies = await context.cookies();
+
+  const response = await page.request.post(`http://localhost:3000/api/notes/${noteId}/public-link`, {
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+    },
+    data: {},
+  });
+
+  if (!response.ok()) {
+    const errorText = await response.text();
+    throw new Error(`Failed to create public link: ${response.status()} ${errorText}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Update public link settings via API
+ * @param page - Playwright page instance (for cookies)
+ * @param noteId - Note ID
+ * @param updates - Fields to update (e.g., { is_enabled: false })
+ */
+export async function updatePublicLinkViaAPI(
+  page: Page,
+  noteId: string,
+  updates: { is_enabled?: boolean }
+): Promise<PublicLinkResponse> {
+  const context = page.context();
+  const cookies = await context.cookies();
+
+  const response = await page.request.patch(`http://localhost:3000/api/notes/${noteId}/public-link`, {
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+    },
+    data: updates,
+  });
+
+  if (!response.ok()) {
+    const errorText = await response.text();
+    throw new Error(`Failed to update public link: ${response.status()} ${errorText}`);
+  }
+
+  return await response.json();
 }

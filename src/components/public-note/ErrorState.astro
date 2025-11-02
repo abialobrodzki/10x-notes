@@ -41,6 +41,7 @@ const config = getErrorConfig(code);
 <div class="container mx-auto px-4 py-16 max-w-2xl">
   <div
     class="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl text-center"
+    data-testid="public-note-error-state"
   >
     <!-- Error icon -->
     <div class="mb-6 flex justify-center">
@@ -95,16 +96,18 @@ const config = getErrorConfig(code);
     </div>
 
     <!-- Error title -->
-    <h1 class="text-2xl font-bold mb-4 text-glass-text">
+    <h1 class="text-2xl font-bold mb-4 text-glass-text" data-testid="public-note-error-title">
       {config.title}
     </h1>
 
     <!-- Error description -->
-    <p class="text-glass-text-muted mb-6">
+    <p class="text-glass-text-muted mb-6" data-testid="public-note-error-description">
       {config.description}
     </p>
 
     <!-- CTA button -->
-    <a href="/" class="btn-public-cta inline-block px-6 py-3 rounded-lg"> Powrót do strony głównej </a>
+    <a href="/" class="btn-public-cta inline-block px-6 py-3 rounded-lg" data-testid="public-note-error-cta-link">
+      Powrót do strony głównej
+    </a>
   </div>
 </div>

@@ -61,7 +61,13 @@ export default defineConfig({
         storageState: "./tests/e2e/.auth/user.json",
       },
       dependencies: ["setup-auth"],
-      testIgnore: ["**/login.spec.ts"],
+      testIgnore: [
+        "**/login.spec.ts",
+        "**/register.spec.ts",
+        "**/forgot-password.spec.ts",
+        "**/reset-password.spec.ts",
+        "**/landing.spec.ts",
+      ],
     },
     {
       name: "setup-login",
@@ -75,7 +81,13 @@ export default defineConfig({
         storageState: undefined,
       },
       dependencies: ["setup-login"],
-      testMatch: ["**/login.spec.ts"],
+      testMatch: [
+        "**/login.spec.ts",
+        "**/register.spec.ts",
+        "**/forgot-password.spec.ts",
+        "**/reset-password.spec.ts",
+        "**/landing.spec.ts",
+      ],
     },
   ],
 

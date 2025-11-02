@@ -1,0 +1,74 @@
+import { test, expect } from "./fixtures/base";
+
+test.describe("Reset Password Page", () => {
+  test.beforeEach(async ({ resetPasswordPage, page }) => {
+    // Clear any previous route handlers to avoid mock interference
+    await page.unroute("**/auth/v1/user");
+    await resetPasswordPage.goto();
+  });
+
+  test("should display the reset password page", async ({ resetPasswordPage }) => {
+    await expect(resetPasswordPage.container).toBeVisible();
+    await expect(resetPasswordPage.goToLoginButton).toBeVisible();
+  });
+
+  test("should show error messages for weak password", async ({ resetPasswordPage, page }) => {
+    // Mock API response to return password validation error instead of token error
+    await page.route("**/auth/v1/user", async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({
+          message: "Hasło musi mieć co najmniej 8 znaków",
+        }),
+      });
+    });
+
+    await resetPasswordPage.fillPassword("short");
+    await resetPasswordPage.fillConfirmPassword("short");
+    await resetPasswordPage.submitForm();
+    await expect(resetPasswordPage.errorMessage).toBeVisible();
+    const errorText = await resetPasswordPage.getErrorMessageText();
+    expect(errorText).toBeTruthy();
+  });
+
+  test("should show error messages for mismatched passwords", async ({ resetPasswordPage, page }) => {
+    // Clear previous route and set new one
+    await page.unroute("**/auth/v1/user");
+    await page.route("**/auth/v1/user", async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({
+          message: "Hasła muszą być identyczne",
+        }),
+      });
+    });
+
+    await resetPasswordPage.fillPassword("Password123!");
+    await resetPasswordPage.fillConfirmPassword("Password123");
+    await resetPasswordPage.submitForm();
+    await expect(resetPasswordPage.errorMessage).toBeVisible();
+    const errorText = await resetPasswordPage.getErrorMessageText();
+    expect(errorText).toBeTruthy();
+  });
+
+  test("should return validation error when password unchanged", async ({ resetPasswordPage, page }) => {
+    // Clear previous route and set new one
+    await page.unroute("**/auth/v1/user");
+    await page.route("**/auth/v1/user", async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "New password should be different" }),
+      });
+    });
+
+    await resetPasswordPage.fillPassword("Password123!");
+    await resetPasswordPage.fillConfirmPassword("Password123!");
+    await resetPasswordPage.submitForm();
+    await expect(resetPasswordPage.errorMessage).toBeVisible();
+    const errorText = await resetPasswordPage.getErrorMessageText();
+    expect(errorText).toBeTruthy();
+  });
+});

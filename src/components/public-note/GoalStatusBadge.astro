@@ -51,6 +51,7 @@ const config = getBadgeConfig(value);
   class={`rounded-md border px-2.5 py-0.5 text-xs font-semibold ${config.className}`}
   role="status"
   aria-label={config.ariaLabel}
+  data-testid="public-note-goal-status-badge"
 >
   {
     config.icon === "check-circle" && (

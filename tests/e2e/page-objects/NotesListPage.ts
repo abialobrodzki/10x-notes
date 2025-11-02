@@ -128,7 +128,19 @@ export class NotesListPage {
    * @param index - Note index (0-based)
    */
   async clickNoteByIndex(index: number) {
-    await this.noteListItems.nth(index).click();
+    const noteItem = this.noteListItems.nth(index);
+
+    // Wait for the note to be visible
+    await noteItem.waitFor({ state: "visible", timeout: 5000 });
+
+    // Scroll into view if needed
+    await noteItem.scrollIntoViewIfNeeded();
+
+    // Click the note
+    await noteItem.click();
+
+    // Wait a bit for click to register
+    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -342,8 +354,21 @@ export class NotesListPage {
    * @param timeout - max wait time
    */
   async waitForNoteNavigation(timeout = 10000) {
-    await this.page.waitForURL((url) => url.pathname.startsWith("/notes/") && url.pathname.length > "/notes/".length, {
-      timeout,
-    });
+    const targetPattern = /\/notes\/[^/?#]+/;
+
+    await this.page
+      .waitForURL(
+        (url) => {
+          const pathname = url.pathname;
+          return targetPattern.test(pathname);
+        },
+        { timeout }
+      )
+      .catch(async (error) => {
+        const current = this.page.url();
+        if (!targetPattern.test(new URL(current).pathname)) {
+          throw error;
+        }
+      });
   }
 }

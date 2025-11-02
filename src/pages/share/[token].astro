@@ -60,10 +60,15 @@ const getErrorCode = (code: number | null): 404 | 429 | 500 => {
         <ErrorState code={getErrorCode(errorCode)} />
       ) : publicNote ? (
         <div class="container mx-auto px-4 py-16 max-w-3xl">
-          <article class="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+          <article
+            class="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl"
+            data-testid="public-note-page"
+          >
             {/* Header with goal status badge */}
             <div class="flex items-start justify-between mb-6">
-              <h1 class="text-2xl font-bold text-glass-text flex-1">Publiczne podsumowanie</h1>
+              <h1 class="text-2xl font-bold text-glass-text flex-1" data-testid="public-note-page-title">
+                Publiczne podsumowanie
+              </h1>
               <GoalStatusBadge value={publicNote.goal_status} />
             </div>
 
@@ -91,7 +96,11 @@ const getErrorCode = (code: number | null): 404 | 429 | 500 => {
 
             {/* CTA to homepage */}
             <div class="mt-6 text-center">
-              <a href="/" class="btn-public-cta inline-block px-6 py-3 rounded-lg">
+              <a
+                href="/"
+                class="btn-public-cta inline-block px-6 py-3 rounded-lg"
+                data-testid="public-note-page-cta-link"
+              >
                 Przejdź do 10xNotes
               </a>
             </div>

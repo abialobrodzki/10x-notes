@@ -95,7 +95,9 @@ export class NotesPage {
    */
   async goToSettings() {
     // Open user menu dropdown first
+    await this.navbarUserEmailDisplay.waitFor({ state: "visible" });
     await this.navbarUserEmailDisplay.click();
+    await this.navbarSettingsLink.waitFor({ state: "visible" });
     await this.navbarSettingsLink.click();
   }
 
