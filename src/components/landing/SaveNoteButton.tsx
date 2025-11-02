@@ -94,7 +94,7 @@ export function SaveNoteButton({ originalContent, aiResult }: SaveNoteButtonProp
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-green-500/30 bg-green-500/10 p-6">
+    <div className="space-y-4 rounded-lg border border-green-500/30 bg-green-500/10 p-6" data-testid="save-note-button">
       {/* Header */}
       <div className="flex items-center space-x-2">
         <Save className="h-5 w-5 text-green-300" aria-hidden="true" />
@@ -107,7 +107,13 @@ export function SaveNoteButton({ originalContent, aiResult }: SaveNoteButtonProp
       </p>
 
       {/* Save Button */}
-      <Button onClick={handleSave} variant="gradient" disabled={isSaving} className="w-full">
+      <Button
+        onClick={handleSave}
+        variant="gradient"
+        disabled={isSaving}
+        className="w-full"
+        data-testid="save-note-button-save-button"
+      >
         {isSaving ? "Zapisywanie..." : "Zapisz notatkę"}
       </Button>
     </div>

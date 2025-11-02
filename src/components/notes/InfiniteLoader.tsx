@@ -47,15 +47,21 @@ export function InfiniteLoader({ loading, hasMore, onLoadMore }: InfiniteLoaderP
   }, [hasMore, loading, onLoadMore]);
 
   if (!hasMore) {
-    return <div className="py-8 text-center text-sm text-muted-foreground">Brak więcej notatek</div>;
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground" data-testid="infinite-loader-no-more-notes">
+        Brak więcej notatek
+      </div>
+    );
   }
 
   return (
-    <div ref={sentinelRef} className="flex items-center justify-center py-8">
+    <div ref={sentinelRef} className="flex items-center justify-center py-8" data-testid="infinite-loader">
       {loading && (
         <>
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">Ładowanie...</span>
+          <span className="ml-2 text-sm text-muted-foreground" data-testid="infinite-loader-loading-text">
+            Ładowanie...
+          </span>
         </>
       )}
     </div>

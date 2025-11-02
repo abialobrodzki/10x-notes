@@ -51,7 +51,7 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="meeting-date-picker">
       {/* Section header */}
       <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
         Data spotkania
@@ -65,6 +65,7 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
             disabled={!isOwner || isSaving}
             className={`w-full justify-start text-left font-normal ${!value && "text-input-placeholder"}`}
             aria-label="Wybierz datę spotkania"
+            data-testid="meeting-date-picker-trigger-button"
           >
             <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -86,12 +87,17 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
             locale={pl}
             initialFocus
             className="text-glass-text"
+            data-testid="meeting-date-picker-calendar"
           />
         </PopoverContent>
       </Popover>
 
       {/* Loading indicator */}
-      {isSaving && <p className="text-sm text-glass-text-muted">Zapisywanie...</p>}
+      {isSaving && (
+        <p className="text-sm text-glass-text-muted" data-testid="meeting-date-picker-loading-indicator">
+          Zapisywanie...
+        </p>
+      )}
     </div>
   );
 }

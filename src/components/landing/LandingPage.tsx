@@ -174,9 +174,15 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
   };
 
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="landing-page"
+    >
       <div className="mx-auto max-w-4xl">
-        <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl">
+        <div
+          className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 shadow-2xl backdrop-blur-xl"
+          data-testid="landing-page-content-area"
+        >
           {/* Header */}
           <div className="mb-8 text-center">
             <h1 className="mb-4 bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-5xl font-bold text-transparent drop-shadow-lg sm:text-6xl">
@@ -194,6 +200,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
               onChange={handleInputChange}
               disabled={state.isGenerating}
               error={state.error}
+              data-testid="landing-page-input-textarea"
             />
 
             <Button
@@ -202,6 +209,7 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
               size="default"
               disabled={state.isGenerating || !state.input.trim() || state.input.length > 5000}
               className="w-full"
+              data-testid="landing-page-generate-button"
             >
               <Sparkles className="mr-2 h-4 w-4" />
               {state.isGenerating ? "Generowanie..." : "Generuj notatkę"}
@@ -216,12 +224,14 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
                 className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-200"
                 role="alert"
                 aria-live="assertive"
+                data-testid="landing-page-error-message"
               >
                 <p className="font-medium">{state.error}</p>
                 {!state.error.includes("Przekroczono limit generowania") && (
                   <button
                     onClick={handleRetry}
                     className="mt-2 text-sm font-medium text-red-100 underline hover:text-red-50"
+                    data-testid="landing-page-retry-button"
                   >
                     Spróbuj ponownie
                   </button>

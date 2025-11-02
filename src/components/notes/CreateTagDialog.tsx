@@ -79,12 +79,20 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-glass-text hover-nav">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-glass-text hover-nav"
+          data-testid="create-tag-dialog-trigger-button"
+        >
           <Plus className="h-4 w-4" />
           <span className="sr-only">Utwórz nową etykietę</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+      <DialogContent
+        className="border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
+        data-testid="create-tag-dialog-content"
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-glass-text">Utwórz nową etykietę</DialogTitle>
@@ -107,19 +115,29 @@ export function CreateTagDialog({ onSuccess }: CreateTagDialogProps) {
               placeholder="np. Projekty, Spotkania, Pomysły"
               className="mt-2 border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
               disabled={isLoading}
+              data-testid="create-tag-dialog-name-input"
             />
             {error && (
-              <p className="mt-2 text-sm text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <p
+                className="mt-2 text-sm text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                data-testid="create-tag-dialog-error-message"
+              >
                 {error}
               </p>
             )}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isLoading}
+              data-testid="create-tag-dialog-cancel-button"
+            >
               Anuluj
             </Button>
-            <Button type="submit" variant="gradient" disabled={isLoading}>
+            <Button type="submit" variant="gradient" disabled={isLoading} data-testid="create-tag-dialog-submit-button">
               {isLoading ? "Tworzenie..." : "Utwórz Tag"}
             </Button>
           </DialogFooter>

@@ -40,7 +40,7 @@ export function SearchInput({ value, onChange, placeholder = "Szukaj w notatkach
   }, [onChange]);
 
   return (
-    <div className="relative">
+    <div className="relative" data-testid="search-input">
       <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-glass-text" />
       <Input
         type="text"
@@ -48,6 +48,7 @@ export function SearchInput({ value, onChange, placeholder = "Szukaj w notatkach
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         className="relative border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to pl-9 pr-9 text-glass-text placeholder:text-glass-text-muted backdrop-blur-xl"
+        data-testid="search-input-field"
       />
       {inputValue && (
         <Button
@@ -55,6 +56,7 @@ export function SearchInput({ value, onChange, placeholder = "Szukaj w notatkach
           size="icon"
           className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-glass-text-muted hover:bg-white/5! hover:text-glass-text!"
           onClick={handleClear}
+          data-testid="search-input-clear-button"
         >
           <X className="h-4 w-4" />
           <span className="sr-only">Wyczyść wyszukiwanie</span>

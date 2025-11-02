@@ -59,7 +59,10 @@ export default function ResetPasswordPage({ token }: ResetPasswordPageProps) {
   }
 
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="reset-password-page"
+    >
       <div className="mx-auto flex h-full max-w-md items-center">
         <GlassCard padding="lg" className="w-full">
           {/* Header */}
@@ -87,6 +90,7 @@ export default function ResetPasswordPage({ token }: ResetPasswordPageProps) {
                   onClick={() => {
                     window.location.href = "/login?reset=success";
                   }}
+                  data-testid="reset-password-page-go-to-login-button"
                 >
                   Przejdź do logowania
                 </Button>

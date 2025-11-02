@@ -30,11 +30,15 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
   const toDate = dateTo ? new Date(dateTo) : undefined;
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row">
+    <div className="flex flex-col gap-2 sm:flex-row" data-testid="date-range-picker">
       {/* Date From */}
       <Popover open={fromOpen} onOpenChange={setFromOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text"
+            data-testid="date-range-picker-from-button"
+          >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {fromDate ? format(fromDate, "PPP", { locale: pl }) : "Data od"}
           </Button>
@@ -50,6 +54,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             initialFocus
             locale={pl}
             className="text-glass-text"
+            data-testid="date-range-picker-from-calendar"
           />
         </PopoverContent>
       </Popover>
@@ -57,7 +62,11 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
       {/* Date To */}
       <Popover open={toOpen} onOpenChange={setToOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal sm:flex-1 text-glass-text"
+            data-testid="date-range-picker-to-button"
+          >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {toDate ? format(toDate, "PPP", { locale: pl }) : "Data do"}
           </Button>
@@ -80,6 +89,7 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
             initialFocus
             locale={pl}
             className="text-glass-text"
+            data-testid="date-range-picker-to-calendar"
           />
         </PopoverContent>
       </Popover>

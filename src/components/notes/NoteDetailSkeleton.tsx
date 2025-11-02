@@ -7,7 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export default function NoteDetailSkeleton() {
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="note-detail-skeleton"
+    >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header skeleton */}
         <GlassCard padding="md">

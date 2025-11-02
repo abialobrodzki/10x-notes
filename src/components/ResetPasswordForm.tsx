@@ -113,7 +113,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="reset-password-form">
       {/* Password input */}
       <div className="space-y-2">
         <Label htmlFor={passwordId} className="text-glass-text">
@@ -135,6 +135,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
           aria-required="true"
           aria-invalid={passwordHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="reset-password-form-password-input"
         />
         {/* Password strength indicator */}
         <PasswordStrengthIndicator password={password} />
@@ -161,6 +162,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
           aria-required="true"
           aria-invalid={confirmPasswordHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="reset-password-form-confirm-password-input"
         />
       </div>
 
@@ -180,7 +182,13 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
       </div>
 
       {/* Submit button */}
-      <Button type="submit" variant="gradient" disabled={isSubmitting} className="w-full">
+      <Button
+        type="submit"
+        variant="gradient"
+        disabled={isSubmitting}
+        className="w-full"
+        data-testid="reset-password-form-submit-button"
+      >
         {isSubmitting ? "Ustawianie hasła..." : "Ustaw nowe hasło"}
       </Button>
     </form>

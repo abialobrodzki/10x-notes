@@ -77,7 +77,7 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" data-testid="add-recipient-form">
       <div className="space-y-2">
         <Label htmlFor={emailInputId} className="text-sm font-medium">
           Dodaj nowego użytkownika
@@ -94,14 +94,26 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
               aria-invalid={!!validationError}
               aria-describedby={validationError ? `${emailInputId}-error` : undefined}
               className={validationError ? "border-input-border-error" : ""}
+              data-testid="add-recipient-form-email-input"
             />
             {validationError && (
-              <p id={`${emailInputId}-error`} className="mt-1 text-xs text-destructive" role="alert">
+              <p
+                id={`${emailInputId}-error`}
+                className="mt-1 text-xs text-destructive"
+                role="alert"
+                data-testid="add-recipient-form-validation-error"
+              >
                 {validationError}
               </p>
             )}
           </div>
-          <Button type="submit" disabled={isAdding || !email.trim()} size="default" aria-label="Dodaj użytkownika">
+          <Button
+            type="submit"
+            disabled={isAdding || !email.trim()}
+            size="default"
+            aria-label="Dodaj użytkownika"
+            data-testid="add-recipient-form-submit-button"
+          >
             {isAdding ? (
               <>Dodawanie...</>
             ) : (

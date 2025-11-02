@@ -64,6 +64,7 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
         className="flex items-center space-x-2 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-green-200"
         role="status"
         aria-live="polite"
+        data-testid="save-prompt-banner-success-message"
       >
         <CheckCircle className="h-5 w-5" aria-hidden="true" />
         <span className="text-sm font-medium">Zapisano! Przekierowywanie...</span>
@@ -72,7 +73,7 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-6">
+    <div className="space-y-4 rounded-lg border border-blue-400/30 bg-blue-500/10 p-6" data-testid="save-prompt-banner">
       {/* Header */}
       <div className="flex items-center space-x-2">
         <Save className="h-5 w-5 text-blue-300" aria-hidden="true" />
@@ -96,6 +97,7 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
           onClick={() => handleSaveAndRedirect("/login")}
           className="flex-1 bg-blue-600 hover:bg-blue-700"
           size="lg"
+          data-testid="save-prompt-banner-login-button"
         >
           <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
           Zaloguj się
@@ -106,6 +108,7 @@ export function SavePromptBanner({ originalContent, aiResult }: SavePromptBanner
           variant="outline"
           className="flex-1 border-blue-400/50 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20"
           size="lg"
+          data-testid="save-prompt-banner-register-button"
         >
           <UserPlus className="mr-2 h-4 w-4" aria-hidden="true" />
           Utwórz konto

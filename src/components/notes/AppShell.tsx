@@ -142,9 +142,15 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
   const hasMore = notes.pagination.page < notes.pagination.total_pages;
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to">
+    <div
+      className="flex h-full w-full overflow-hidden bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to"
+      data-testid="app-shell"
+    >
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 border-r border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block">
+      <aside
+        className="hidden w-64 border-r border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block"
+        data-testid="app-shell-desktop-sidebar"
+      >
         <TagSidebar tags={tags.tags} selectedTagId={selectedTagId} onTagSelect={handleTagSelect} />
       </aside>
 
@@ -154,7 +160,12 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
         <header className="flex h-14 items-center gap-4 border-b border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to px-4 backdrop-blur-xl md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-glass-text hover:text-glass-text-hover">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-glass-text hover:text-glass-text-hover"
+                data-testid="app-shell-mobile-menu-button"
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
@@ -162,6 +173,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
             <SheetContent
               side="left"
               className="w-64 border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+              data-testid="app-shell-mobile-menu-content"
             >
               <TagSidebar
                 tags={tags.tags}
@@ -179,7 +191,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto p-4 md:p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6" data-testid="app-shell-main-content">
           {error && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
               <p className="text-sm font-medium text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
@@ -213,15 +225,25 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
               searchTerm={searchTerm}
               hasActiveFilters={hasActiveFilters}
               onItemClick={handleNoteClick}
+              data-testid="app-shell-note-list"
             />
 
             {/* Pagination (Desktop) / Infinite Loader (Mobile) */}
             {!searchTerm && (
               <>
                 {isMobile ? (
-                  <InfiniteLoader loading={isLoadingMore} hasMore={hasMore} onLoadMore={handleLoadMore} />
+                  <InfiniteLoader
+                    loading={isLoadingMore}
+                    hasMore={hasMore}
+                    onLoadMore={handleLoadMore}
+                    data-testid="app-shell-infinite-loader"
+                  />
                 ) : (
-                  <Pagination pagination={notes.pagination} onPageChange={handlePageChange} />
+                  <Pagination
+                    pagination={notes.pagination}
+                    onPageChange={handlePageChange}
+                    data-testid="app-shell-pagination"
+                  />
                 )}
               </>
             )}

@@ -97,7 +97,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="tag-combobox">
       {/* Section header */}
       <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
         Etykieta
@@ -112,6 +112,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
             aria-expanded={isOpen}
             disabled={!isOwner || isSaving}
             className="w-full justify-between"
+            data-testid="tag-combobox-trigger-button"
           >
             <div className="flex items-center gap-2">
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -122,7 +123,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
                   d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                 />
               </svg>
-              <span>{currentTag.name}</span>
+              <span data-testid="tag-combobox-current-tag-name">{currentTag.name}</span>
             </div>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -134,9 +135,13 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
               value={searchQuery}
               onValueChange={setSearchQuery}
               className="border-glass-border text-glass-text placeholder:text-input-placeholder"
+              data-testid="tag-combobox-search-input"
             />
             <CommandList>
-              <CommandEmpty className="py-6 text-center text-sm text-glass-text-muted">
+              <CommandEmpty
+                className="py-6 text-center text-sm text-glass-text-muted"
+                data-testid="tag-combobox-empty-message"
+              >
                 {isLoading ? "Ładowanie..." : "Nie znaleziono etykiety"}
               </CommandEmpty>
 
@@ -149,6 +154,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
                       value={tag.id}
                       onSelect={() => handleSelectTag(tag.id)}
                       className="dropdown-item-glass cursor-pointer"
+                      data-testid={`tag-combobox-existing-tag-item-${tag.id}`}
                     >
                       <Check className={`mr-2 h-4 w-4 ${currentTag.id === tag.id ? "opacity-100" : "opacity-0"}`} />
                       <span className="flex-1">{tag.name}</span>
@@ -167,6 +173,7 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
                     value={`create-${searchQuery}`}
                     onSelect={handleCreateTag}
                     className="dropdown-item-glass cursor-pointer text-green-200"
+                    data-testid="tag-combobox-create-new-tag-option"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     <span>Utwórz nową: &quot;{searchQuery.trim()}&quot;</span>
@@ -179,7 +186,11 @@ export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreate
       </Popover>
 
       {/* Loading indicator */}
-      {isSaving && <p className="text-sm text-glass-text-muted">Zapisywanie...</p>}
+      {isSaving && (
+        <p className="text-sm text-glass-text-muted" data-testid="tag-combobox-loading-indicator">
+          Zapisywanie...
+        </p>
+      )}
     </div>
   );
 }

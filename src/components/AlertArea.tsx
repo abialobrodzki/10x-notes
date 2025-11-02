@@ -22,10 +22,17 @@ export default function AlertArea({ messages, variant = "error" }: AlertAreaProp
   };
 
   return (
-    <div role="alert" aria-live="polite" className={`rounded-lg border p-4 backdrop-blur-sm ${variantStyles[variant]}`}>
-      <ul className="list-disc space-y-1 pl-5 text-sm">
+    <div
+      role="alert"
+      aria-live="polite"
+      className={`rounded-lg border p-4 backdrop-blur-sm ${variantStyles[variant]}`}
+      data-testid={`alert-area-${variant}`}
+    >
+      <ul className="list-disc space-y-1 pl-5 text-sm" data-testid="alert-area-messages">
         {messages.map((message, index) => (
-          <li key={index}>{message}</li>
+          <li key={index} data-testid={`alert-area-message-${index}`}>
+            {message}
+          </li>
         ))}
       </ul>
     </div>

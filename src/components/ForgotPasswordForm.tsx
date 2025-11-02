@@ -104,7 +104,7 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="forgot-password-form">
       {/* Email input */}
       <div className="space-y-2">
         <Label htmlFor={emailId} className="text-glass-text">
@@ -126,11 +126,18 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
           aria-required="true"
           aria-invalid={emailHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="forgot-password-form-email-input"
         />
       </div>
 
       {/* Submit button */}
-      <Button type="submit" variant="gradient" disabled={isSubmitting} className="w-full">
+      <Button
+        type="submit"
+        variant="gradient"
+        disabled={isSubmitting}
+        className="w-full"
+        data-testid="forgot-password-form-submit-button"
+      >
         {isSubmitting ? "Wysyłanie..." : "Wyślij link resetujący"}
       </Button>
     </form>

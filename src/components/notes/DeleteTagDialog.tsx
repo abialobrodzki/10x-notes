@@ -110,11 +110,15 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
           size="icon"
           className="h-6 w-6 text-glass-text-muted hover-destructive"
           aria-label="Usuń etykietę"
+          data-testid="delete-tag-dialog-trigger-button"
         >
           <Trash2 className="h-3 w-3" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-lg border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+      <AlertDialogContent
+        className="max-w-lg border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
+        data-testid="delete-tag-dialog-content"
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <AlertTriangle className="h-5 w-5" />
@@ -123,10 +127,16 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
           <AlertDialogDescription className="space-y-2 text-glass-text-muted">
             <p>
               Czy na pewno chcesz usunąć etykietę{" "}
-              <span className="font-semibold text-glass-text">&quot;{tagName}&quot;</span>?
+              <span className="font-semibold text-glass-text" data-testid="delete-tag-dialog-tag-name">
+                &quot;{tagName}&quot;
+              </span>
+              ?
             </p>
             {noteCount > 0 && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+                data-testid="delete-tag-dialog-notes-warning"
+              >
                 <p className="font-medium">⚠️ Ta etykieta ma {noteCount} przypisanych notatek</p>
                 <p className="mt-1 text-xs">
                   Nie możesz usunąć etykiety z notatkami. Najpierw przenieś notatki do innej etykiety lub usuń je.
@@ -134,19 +144,26 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
               </div>
             )}
             {noteCount === 0 && (
-              <p className="text-sm">Ta akcja jest nieodwracalna. Etykieta zostanie trwale usunięta.</p>
+              <p className="text-sm" data-testid="delete-tag-dialog-irreversible-message">
+                Ta akcja jest nieodwracalna. Etykieta zostanie trwale usunięta.
+              </p>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline" disabled={isDeleting}>
+            <Button variant="outline" disabled={isDeleting} data-testid="delete-tag-dialog-cancel-button">
               Anuluj
             </Button>
           </AlertDialogCancel>
           {noteCount === 0 && (
             <AlertDialogAction asChild>
-              <Button variant="destructive-action" disabled={isDeleting} onClick={handleDelete}>
+              <Button
+                variant="destructive-action"
+                disabled={isDeleting}
+                onClick={handleDelete}
+                data-testid="delete-tag-dialog-delete-button"
+              >
                 {isDeleting ? "Usuwanie..." : "Usuń Tag"}
               </Button>
             </AlertDialogAction>

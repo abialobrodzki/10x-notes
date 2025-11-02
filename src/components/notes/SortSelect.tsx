@@ -24,13 +24,18 @@ export function SortSelect({ order, onOrderChange }: SortSelectProps) {
   const currentOrder = order || "desc";
 
   return (
-    <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)}>
-      <SelectTrigger>
-        <SelectValue placeholder="Kolejność" />
+    <Select value={currentOrder} onValueChange={(value) => onOrderChange(value as SortOrder)} data-testid="sort-select">
+      <SelectTrigger data-testid="sort-select-trigger">
+        <SelectValue placeholder="Kolejność" data-testid="sort-select-value" />
       </SelectTrigger>
       <SelectContent className="dropdown-content-glass">
         {ORDER_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value} className="glass-select dropdown-item-glass">
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="glass-select dropdown-item-glass"
+            data-testid={`sort-select-option-${option.value}`}
+          >
             {option.label}
           </SelectItem>
         ))}

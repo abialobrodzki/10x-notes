@@ -25,7 +25,7 @@ export function NoteList({ items, isLoading, searchTerm, hasActiveFilters = fals
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="note-list-loading-skeleton">
         {Array.from({ length: 5 }).map((_, i) => (
           <GlassCard key={i} padding="sm">
             <div className="space-y-3">
@@ -61,12 +61,22 @@ export function NoteList({ items, isLoading, searchTerm, hasActiveFilters = fals
     }
 
     return (
-      <GlassCard padding="lg" className="flex flex-col items-center justify-center text-center border-dashed">
+      <GlassCard
+        padding="lg"
+        className="flex flex-col items-center justify-center text-center border-dashed"
+        data-testid="note-list-empty-state"
+      >
         <FileText className="mb-4 h-12 w-12 text-glass-text-muted" />
         <h3 className="mb-2 text-lg font-semibold text-glass-text">Brak notatek</h3>
-        <p className="mb-6 text-sm text-glass-text-muted">{emptyMessage}</p>
+        <p className="mb-6 text-sm text-glass-text-muted" data-testid="note-list-empty-message">
+          {emptyMessage}
+        </p>
         {showCTA && (
-          <a href="/" className="rounded-lg btn-gradient-primary px-6 py-2.5 text-sm font-medium hover-gradient">
+          <a
+            href="/"
+            className="rounded-lg btn-gradient-primary px-6 py-2.5 text-sm font-medium hover-gradient"
+            data-testid="note-list-empty-state-cta"
+          >
             Generuj pierwszą notatkę
           </a>
         )}
@@ -76,7 +86,7 @@ export function NoteList({ items, isLoading, searchTerm, hasActiveFilters = fals
 
   // Notes list
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="note-list">
       {items.map((item) => (
         <NoteListItem key={item.id} item={item} onClick={onItemClick} searchTerm={searchTerm} />
       ))}

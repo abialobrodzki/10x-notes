@@ -44,6 +44,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
       <div
         ref={scrollContainerRef}
         className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+        data-testid="settings-page-error-state"
       >
         <div className="mx-auto max-w-4xl">
           <GlassCard padding="lg">
@@ -61,12 +62,17 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
     <div
       ref={scrollContainerRef}
       className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="settings-page"
     >
       <div className="mx-auto max-w-6xl">
         <GlassCard padding="lg">
           {/* Breadcrumb */}
-          <nav className="mb-6" aria-label="Breadcrumb">
-            <a href="/notes" className="inline-flex items-center gap-2 text-sm text-glass-text-muted hover-link">
+          <nav className="mb-6" aria-label="Breadcrumb" data-testid="settings-page-breadcrumb">
+            <a
+              href="/notes"
+              className="inline-flex items-center gap-2 text-sm text-glass-text-muted hover-link"
+              data-testid="settings-page-back-link"
+            >
               <ArrowLeft className="h-4 w-4" />
               Powrót do notatek
             </a>
@@ -83,11 +89,12 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
           </div>
 
           {/* Tabs Navigation */}
-          <Tabs defaultValue="profile" className="space-y-6">
+          <Tabs defaultValue="profile" className="space-y-6" data-testid="settings-page-tabs">
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-linear-to-b from-glass-bg-from to-glass-bg-to border border-glass-border backdrop-blur-lg p-1 h-auto">
               <TabsTrigger
                 value="profile"
                 className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                data-testid="settings-page-profile-tab"
               >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">Profil</span>
@@ -95,6 +102,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               <TabsTrigger
                 value="stats"
                 className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                data-testid="settings-page-stats-tab"
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Statystyki</span>
@@ -103,6 +111,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
                 value="security"
                 className="flex items-center gap-2 text-glass-text-muted data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all opacity-50"
                 disabled
+                data-testid="settings-page-security-tab"
               >
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">Bezpieczeństwo</span>
@@ -110,6 +119,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               <TabsTrigger
                 value="danger"
                 className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                data-testid="settings-page-danger-tab"
               >
                 <AlertTriangle className="h-4 w-4" />
                 <span className="hidden sm:inline">Strefa zagrożeń</span>
@@ -128,7 +138,10 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
 
             {/* Security Section - Coming Soon */}
             <TabsContent value="security" className="space-y-6">
-              <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+              <div
+                className="rounded-lg border border-dashed p-8 text-center text-muted-foreground"
+                data-testid="settings-page-security-section-coming-soon"
+              >
                 <Shield className="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <h3 className="mb-2 text-lg font-semibold">Wkrótce dostępne</h3>
                 <p>Sekcja bezpieczeństwa jest obecnie w fazie rozwoju.</p>

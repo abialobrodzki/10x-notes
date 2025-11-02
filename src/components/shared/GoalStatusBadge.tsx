@@ -59,9 +59,10 @@ export function GoalStatusBadge({ status, className = "", showIcon = true }: Goa
       className={`inline-flex items-center gap-1.5 ${config.className} ${className}`}
       role="status"
       aria-label={config.ariaLabel}
+      data-testid={`goal-status-badge-${status}`}
     >
       {showIcon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
-      <span>{config.label}</span>
+      <span data-testid="goal-status-badge-label">{config.label}</span>
     </Badge>
   );
 }

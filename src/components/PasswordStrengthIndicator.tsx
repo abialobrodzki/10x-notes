@@ -25,19 +25,28 @@ export default function PasswordStrengthIndicator({ password, className }: Passw
   }
 
   return (
-    <div className={cn("w-full space-y-2", className)} role="status" aria-live="polite">
+    <div
+      className={cn("w-full space-y-2", className)}
+      role="status"
+      aria-live="polite"
+      data-testid="password-strength-indicator"
+    >
       {/* Progress bar */}
-      <div className="password-strength-bar">
+      <div className="password-strength-bar" data-testid="password-strength-indicator-bar">
         <div
           className={cn("password-strength-fill", strength.colorClass)}
           style={{ width: `${strength.percentage}%` }}
           aria-hidden="true"
+          data-testid="password-strength-indicator-fill"
         />
       </div>
 
       {/* Label */}
       <p className="text-xs text-glass-text-muted">
-        Siła hasła: <span className="font-medium text-glass-text">{strength.label}</span>
+        Siła hasła:{" "}
+        <span className="font-medium text-glass-text" data-testid="password-strength-indicator-label">
+          {strength.label}
+        </span>
       </p>
     </div>
   );

@@ -30,16 +30,26 @@ export function GoalStatusMultiSelect({ value, onChange }: GoalStatusMultiSelect
       onValueChange={(newValue) => {
         onChange(newValue === NULL_VALUE ? undefined : (newValue as GoalStatus));
       }}
+      data-testid="goal-status-multi-select"
     >
-      <SelectTrigger>
-        <SelectValue placeholder={selectedLabel} />
+      <SelectTrigger data-testid="goal-status-multi-select-trigger">
+        <SelectValue placeholder={selectedLabel} data-testid="goal-status-multi-select-value" />
       </SelectTrigger>
       <SelectContent className="dropdown-content-glass" align="start">
-        <SelectItem value={NULL_VALUE} className="dropdown-item-glass">
+        <SelectItem
+          value={NULL_VALUE}
+          className="dropdown-item-glass"
+          data-testid="goal-status-multi-select-all-option"
+        >
           Wszystkie
         </SelectItem>
         {GOAL_STATUS_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value} className="dropdown-item-glass">
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="dropdown-item-glass"
+            data-testid={`goal-status-multi-select-option-${option.value}`}
+          >
             {option.label}
           </SelectItem>
         ))}

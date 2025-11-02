@@ -191,7 +191,7 @@ export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" data-testid="tag-access-modal">
         <DialogHeader>
           <DialogTitle>Zarządzanie dostępem do etykiety</DialogTitle>
           <DialogDescription>
@@ -201,7 +201,12 @@ export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessMod
 
         <div className="min-h-[300px] space-y-6">
           {error && (
-            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive" role="alert" aria-live="polite">
+            <div
+              className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive"
+              role="alert"
+              aria-live="polite"
+              data-testid="tag-access-modal-error"
+            >
               {error}
             </div>
           )}

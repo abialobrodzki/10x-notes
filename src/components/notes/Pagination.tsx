@@ -49,7 +49,12 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   }
 
   return (
-    <nav className="flex items-center justify-center gap-2" role="navigation" aria-label="Paginacja notatek">
+    <nav
+      className="flex items-center justify-center gap-2"
+      role="navigation"
+      aria-label="Paginacja notatek"
+      data-testid="pagination"
+    >
       {/* First Page */}
       <Button
         variant="outline"
@@ -57,6 +62,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         onClick={() => onPageChange(1)}
         disabled={page === 1}
         aria-label="Pierwsza strona"
+        data-testid="pagination-first-page-button"
       >
         <ChevronsLeft className="h-4 w-4" />
       </Button>
@@ -68,6 +74,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
         aria-label="Poprzednia strona"
+        data-testid="pagination-previous-page-button"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -90,6 +97,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
             onClick={() => onPageChange(pageNum)}
             aria-label={`Strona ${pageNum}`}
             aria-current={page === pageNum ? "page" : undefined}
+            data-testid={`pagination-page-button-${pageNum}`}
           >
             {pageNum}
           </Button>
@@ -103,6 +111,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         onClick={() => onPageChange(page + 1)}
         disabled={page === total_pages}
         aria-label="Następna strona"
+        data-testid="pagination-next-page-button"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
@@ -114,6 +123,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         onClick={() => onPageChange(total_pages)}
         disabled={page === total_pages}
         aria-label="Ostatnia strona"
+        data-testid="pagination-last-page-button"
       >
         <ChevronsRight className="h-4 w-4" />
       </Button>

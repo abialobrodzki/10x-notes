@@ -11,5 +11,5 @@ interface GoalStatusDisplayProps {
  * @deprecated Use GoalStatusBadge directly instead
  */
 export function GoalStatusDisplay({ status, className }: GoalStatusDisplayProps) {
-  return <GoalStatusBadge status={status} className={className} showIcon />;
+  return <GoalStatusBadge status={status} className={className} showIcon data-testid="goal-status-display" />;
 }

@@ -28,6 +28,7 @@ export function SummaryCard({ data }: SummaryCardProps) {
       role="status"
       aria-live="polite"
       aria-label="Wygenerowane podsumowanie"
+      data-testid="summary-card"
     >
       {/* Header */}
       <div className="flex items-center space-x-2">
@@ -38,7 +39,10 @@ export function SummaryCard({ data }: SummaryCardProps) {
       {/* Summary Text */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-glass-text">Streszczenie:</h3>
-        <p className="whitespace-pre-wrap rounded-md bg-glass-bg-to p-4 text-sm leading-relaxed text-glass-text-hover">
+        <p
+          className="whitespace-pre-wrap rounded-md bg-glass-bg-to p-4 text-sm leading-relaxed text-glass-text-hover"
+          data-testid="summary-card-summary-text"
+        >
           {data.summary_text}
         </p>
       </div>
@@ -57,9 +61,11 @@ export function SummaryCard({ data }: SummaryCardProps) {
 
       {/* Generation Metrics */}
       <div className="flex items-center space-x-4 border-t border-glass-border pt-4 text-xs text-glass-text-muted">
-        <span>Czas generowania: {formatGenerationTime(data.generation_time_ms)}</span>
+        <span data-testid="summary-card-generation-time">
+          Czas generowania: {formatGenerationTime(data.generation_time_ms)}
+        </span>
         <span>•</span>
-        <span>Tokeny: {data.tokens_used.toLocaleString("pl-PL")}</span>
+        <span data-testid="summary-card-tokens-used">Tokeny: {data.tokens_used.toLocaleString("pl-PL")}</span>
       </div>
     </div>
   );

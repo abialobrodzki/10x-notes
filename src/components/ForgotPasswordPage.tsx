@@ -66,7 +66,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="forgot-password-page"
+    >
       <div className="mx-auto flex h-full max-w-md items-center">
         <GlassCard padding="lg" className="w-full">
           {/* Header */}
@@ -91,7 +94,11 @@ export default function ForgotPasswordPage() {
                   variant="success"
                 />
                 <div className="text-center">
-                  <a href="/login" className="text-sm text-glass-text hover-link">
+                  <a
+                    href="/login"
+                    className="text-sm text-glass-text hover-link"
+                    data-testid="forgot-password-page-return-to-login-link-success"
+                  >
                     Powrót do logowania
                   </a>
                 </div>
@@ -101,7 +108,11 @@ export default function ForgotPasswordPage() {
                 <AlertArea messages={errors} />
                 <ForgotPasswordForm onError={setErrors} onSuccess={setSuccess} />
                 <div className="text-center">
-                  <a href="/login" className="text-sm text-glass-text hover-link">
+                  <a
+                    href="/login"
+                    className="text-sm text-glass-text hover-link"
+                    data-testid="forgot-password-page-return-to-login-link"
+                  >
                     Powrót do logowania
                   </a>
                 </div>

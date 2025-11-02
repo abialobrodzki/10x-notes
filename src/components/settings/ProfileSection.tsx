@@ -24,7 +24,10 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
   });
 
   return (
-    <Card className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
+    <Card
+      className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg"
+      data-testid="profile-section"
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-glass-text">
           <User className="h-5 w-5" />
@@ -39,7 +42,12 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
             Adres e-mail
           </Label>
           <GlassCard padding="sm" className="rounded-md">
-            <div id="email" className="text-sm text-glass-text" aria-readonly="true">
+            <div
+              id="email"
+              className="text-sm text-glass-text"
+              aria-readonly="true"
+              data-testid="profile-section-email"
+            >
               {profile.email}
             </div>
           </GlassCard>
@@ -52,7 +60,12 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
             Data utworzenia konta
           </Label>
           <GlassCard padding="sm" className="rounded-md">
-            <div id="created-at" className="text-sm text-glass-text" aria-readonly="true">
+            <div
+              id="created-at"
+              className="text-sm text-glass-text"
+              aria-readonly="true"
+              data-testid="profile-section-created-date"
+            >
               {formattedDate}
             </div>
           </GlassCard>

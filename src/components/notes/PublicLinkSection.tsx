@@ -191,7 +191,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="public-link-section">
       {/* Section header */}
       <div className="flex items-center justify-between">
         <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
@@ -200,7 +200,11 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
 
         {/* Toggle switch */}
         <div className="flex items-center gap-3">
-          <Label htmlFor="public-link-toggle" className="text-glass-text-muted">
+          <Label
+            htmlFor="public-link-toggle"
+            className="text-glass-text-muted"
+            data-testid="public-link-section-toggle-label"
+          >
             {isEnabled ? "Włączony" : "Wyłączony"}
           </Label>
           <Switch
@@ -209,6 +213,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             onCheckedChange={handleToggle}
             disabled={isSaving}
             className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
+            data-testid="public-link-section-toggle-switch"
           />
         </div>
       </div>
@@ -231,6 +236,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
                 readOnly
                 className="flex-1 bg-transparent text-sm text-glass-text outline-none"
                 onClick={(e) => e.currentTarget.select()}
+                data-testid="public-link-section-url-input"
               />
             </div>
           </GlassCard>
@@ -242,6 +248,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
               onClick={handleCopy}
               variant="outline"
               className="flex-1 border-input-border bg-glass-bg-from text-glass-text hover-glass"
+              data-testid="public-link-section-copy-button"
             >
               {copied ? (
                 <>
@@ -257,7 +264,12 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             </Button>
 
             {/* Rotate button */}
-            <Button onClick={() => setShowRotateDialog(true)} disabled={isRotating} variant="warning">
+            <Button
+              onClick={() => setShowRotateDialog(true)}
+              disabled={isRotating}
+              variant="warning"
+              data-testid="public-link-section-rotate-button"
+            >
               <RotateCw className={`mr-2 h-4 w-4 ${isRotating ? "animate-spin" : ""}`} />
               {isRotating ? "Zmienianie..." : "Zmień token"}
             </Button>
@@ -267,7 +279,10 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
 
       {/* Rotate confirmation dialog */}
       <AlertDialog open={showRotateDialog} onOpenChange={setShowRotateDialog}>
-        <AlertDialogContent className="border-input-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl">
+        <AlertDialogContent
+          className="border-input-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl"
+          data-testid="public-link-section-rotate-dialog"
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-glass-text">Czy na pewno chcesz zmienić token?</AlertDialogTitle>
             <AlertDialogDescription className="text-glass-text-muted">
@@ -277,10 +292,12 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button variant="outline">Anuluj</Button>
+              <Button variant="outline" data-testid="public-link-section-rotate-dialog-cancel">
+                Anuluj
+              </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="warning" onClick={handleRotate}>
+              <Button variant="warning" onClick={handleRotate} data-testid="public-link-section-rotate-dialog-confirm">
                 Tak, zmień token
               </Button>
             </AlertDialogAction>

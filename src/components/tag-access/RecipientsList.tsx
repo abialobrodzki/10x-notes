@@ -36,7 +36,7 @@ export function RecipientsList({ recipients, loading, removing, onRemove }: Reci
   );
   if (loading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3" data-testid="recipients-list-loading">
         <h3 className="text-sm font-medium">Użytkownicy z dostępem</h3>
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -54,15 +54,15 @@ export function RecipientsList({ recipients, loading, removing, onRemove }: Reci
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="recipients-list">
       <h3 className="text-sm font-medium">Użytkownicy z dostępem ({recipients.length})</h3>
 
       {recipients.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-6 text-center">
+        <div className="rounded-lg border border-dashed p-6 text-center" data-testid="recipients-list-empty">
           <p className="text-sm text-muted-foreground">Brak użytkowników z dostępem do tej etykiety</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2" data-testid="recipients-list-items">
           {recipients.map((recipient) => (
             <RecipientItem
               key={recipient.recipient_id}

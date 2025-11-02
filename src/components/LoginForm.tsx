@@ -122,7 +122,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="login-form">
       {/* Email input */}
       <div className="space-y-2">
         <Label htmlFor={emailId} className="text-glass-text">
@@ -144,6 +144,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
           aria-required="true"
           aria-invalid={emailHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="login-form-email-input"
         />
       </div>
 
@@ -168,6 +169,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
           aria-required="true"
           aria-invalid={passwordHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="login-form-password-input"
         />
       </div>
 
@@ -187,7 +189,13 @@ export default function LoginForm({ onError }: LoginFormProps) {
       </div>
 
       {/* Submit button */}
-      <Button type="submit" variant="gradient" disabled={isSubmitting} className="w-full">
+      <Button
+        type="submit"
+        variant="gradient"
+        disabled={isSubmitting}
+        className="w-full"
+        data-testid="login-form-submit-button"
+      >
         {isSubmitting ? "Logowanie..." : "Zaloguj się"}
       </Button>
     </form>

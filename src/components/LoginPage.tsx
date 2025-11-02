@@ -68,7 +68,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="login-page"
+    >
       <div className="mx-auto flex h-full max-w-md items-center">
         <GlassCard padding="lg" className="w-full">
           {/* Header */}
@@ -86,7 +89,11 @@ export default function LoginPage() {
             <LoginForm onError={setErrors} />
             {/* Forgot password link */}
             <div className="text-center">
-              <a href="/forgot-password" className="text-sm text-glass-text hover-link">
+              <a
+                href="/forgot-password"
+                className="text-sm text-glass-text hover-link"
+                data-testid="login-page-forgot-password-link"
+              >
                 Nie pamiętasz hasła?
               </a>
             </div>

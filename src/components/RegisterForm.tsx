@@ -144,7 +144,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
   );
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="register-form">
       {/* Email input */}
       <div className="space-y-2">
         <Label htmlFor={emailId} className="text-glass-text">
@@ -166,6 +166,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
           aria-required="true"
           aria-invalid={emailHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="register-form-email-input"
         />
       </div>
 
@@ -190,6 +191,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
           aria-required="true"
           aria-invalid={passwordHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="register-form-password-input"
         />
         {/* Password strength indicator */}
         <PasswordStrengthIndicator password={password} />
@@ -216,6 +218,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
           aria-required="true"
           aria-invalid={confirmPasswordHasError ? "true" : "false"}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
+          data-testid="register-form-confirm-password-input"
         />
       </div>
 
@@ -235,7 +238,13 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
       </div>
 
       {/* Submit button */}
-      <Button type="submit" variant="gradient" disabled={isSubmitting} className="w-full">
+      <Button
+        type="submit"
+        variant="gradient"
+        disabled={isSubmitting}
+        className="w-full"
+        data-testid="register-form-submit-button"
+      >
         {isSubmitting ? "Rejestracja..." : "Zarejestruj się"}
       </Button>
     </form>

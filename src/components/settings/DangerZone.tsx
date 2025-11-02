@@ -13,7 +13,10 @@ interface DangerZoneProps {
  */
 export function DangerZone({ userEmail }: DangerZoneProps) {
   return (
-    <Card className="border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl shadow-lg">
+    <Card
+      className="border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl shadow-lg"
+      data-testid="danger-zone"
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
           <AlertTriangle className="h-5 w-5" />
@@ -25,7 +28,7 @@ export function DangerZone({ userEmail }: DangerZoneProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Account deletion section */}
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="danger-zone-delete-account-section">
           <div>
             <h3 className="text-base font-semibold text-glass-text">Usuń konto</h3>
             <p className="text-sm text-glass-text-muted">
@@ -33,7 +36,10 @@ export function DangerZone({ userEmail }: DangerZoneProps) {
             </p>
           </div>
 
-          <div className="rounded-lg border border-destructive/30 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-4 space-y-3">
+          <div
+            className="rounded-lg border border-destructive/30 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-4 space-y-3"
+            data-testid="danger-zone-deletion-info"
+          >
             <p className="text-sm font-medium text-glass-text">Co zostanie usunięte:</p>
             <ul className="list-inside list-disc space-y-1 text-sm text-glass-text-muted">
               <li>Wszystkie notatki i ich zawartość</li>

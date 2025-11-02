@@ -65,37 +65,56 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
   }, [onClick, item.id]);
 
   return (
-    <GlassCard hover padding="sm" className="cursor-pointer" onClick={handleClick}>
+    <GlassCard hover padding="sm" className="cursor-pointer" onClick={handleClick} data-testid="note-list-item">
       <div className="space-y-3">
         {/* Header: Date + Indicators */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm text-glass-text-muted">
             <Calendar className="h-4 w-4" />
-            <time dateTime={item.meeting_date}>{format(meetingDate, "PPP", { locale: pl })}</time>
+            <time dateTime={item.meeting_date} data-testid="note-list-item-meeting-date">
+              {format(meetingDate, "PPP", { locale: pl })}
+            </time>
           </div>
 
           <div className="flex items-center gap-2">
             {item.is_ai_generated && (
-              <Sparkles className="h-4 w-4 text-purple-400" aria-label="Wygenerowane przez AI" />
+              <Sparkles
+                className="h-4 w-4 text-purple-400"
+                aria-label="Wygenerowane przez AI"
+                data-testid="note-list-item-ai-indicator"
+              />
             )}
-            {item.has_public_link && <Globe className="h-4 w-4 text-blue-400" aria-label="Link publiczny" />}
+            {item.has_public_link && (
+              <Globe
+                className="h-4 w-4 text-blue-400"
+                aria-label="Link publiczny"
+                data-testid="note-list-item-public-link-indicator"
+              />
+            )}
             {item.is_owner && (item.tag.shared_recipients ?? 0) > 0 && (
               <Users
                 className="h-4 w-4 text-amber-400"
                 aria-label={`Udostępniono ${item.tag.shared_recipients} użytkownikom`}
+                data-testid="note-list-item-shared-indicator"
               />
             )}
           </div>
         </div>
 
         {/* Summary Preview */}
-        <p className="line-clamp-3 text-sm leading-relaxed text-glass-text">{highlightText(summaryPreview)}</p>
+        <p
+          className="line-clamp-3 text-sm leading-relaxed text-glass-text"
+          data-testid="note-list-item-summary-preview"
+        >
+          {highlightText(summaryPreview)}
+        </p>
 
         {/* Footer: Tag + Goal Status + Shared Indicator */}
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="secondary"
             className="border-glass-border bg-linear-to-br from-glass-bg-from to-glass-bg-to text-xs text-glass-text"
+            data-testid="note-list-item-tag-name"
           >
             {item.tag.name}
           </Badge>
@@ -103,7 +122,11 @@ export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTe
           <GoalStatusBadge status={item.goal_status} className="text-xs" />
 
           {!item.is_owner && (
-            <Badge variant="outline" className="border-amber-400/50 bg-amber-500/10 text-xs text-amber-300">
+            <Badge
+              variant="outline"
+              className="border-amber-400/50 bg-amber-500/10 text-xs text-amber-300"
+              data-testid="note-list-item-shared-badge"
+            >
               <User className="mr-1 h-3 w-3" />
               Udostępniona
             </Badge>

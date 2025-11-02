@@ -11,13 +11,16 @@ export function GenerationSkeleton() {
       role="status"
       aria-live="polite"
       aria-label="Generowanie podsumowania w toku"
+      data-testid="generation-skeleton"
     >
       {/* Loading indicator text */}
       <div className="flex items-center space-x-2">
         <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
         <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400 animation-delay-200" />
         <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400 animation-delay-400" />
-        <span className="text-sm text-blue-200">Analizuję treść i generuję podsumowanie...</span>
+        <span className="text-sm text-blue-200" data-testid="generation-skeleton-loading-text">
+          Analizuję treść i generuję podsumowanie...
+        </span>
       </div>
 
       {/* Summary section skeleton */}

@@ -64,14 +64,19 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="goal-status-radio">
       {/* Section header */}
       <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
         Status celów
       </h3>
 
       {/* Radio group */}
-      <div role="radiogroup" aria-label="Status osiągnięcia celów" className="space-y-2">
+      <div
+        role="radiogroup"
+        aria-label="Status osiągnięcia celów"
+        className="space-y-2"
+        data-testid="goal-status-radio-group"
+      >
         {options.map((option) => {
           const isSelected = value === option.value;
           const isDisabled = !isOwner || isSaving;
@@ -88,6 +93,7 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
               className={`flex w-full items-center gap-3 rounded-lg border p-3 ${
                 isSelected ? option.selectedClasses : option.colorClasses
               } ${isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              data-testid={`goal-status-radio-${option.value}-option`}
             >
               {/* Radio indicator */}
               <div
@@ -116,7 +122,11 @@ export default function GoalStatusRadio({ value, isOwner, onChange, isSaving }: 
       </div>
 
       {/* Loading indicator */}
-      {isSaving && <p className="text-sm text-glass-text-muted">Zapisywanie...</p>}
+      {isSaving && (
+        <p className="text-sm text-glass-text-muted" data-testid="goal-status-radio-loading-indicator">
+          Zapisywanie...
+        </p>
+      )}
     </div>
   );
 }

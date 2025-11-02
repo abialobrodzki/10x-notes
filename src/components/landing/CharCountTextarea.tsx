@@ -39,7 +39,7 @@ export function CharCountTextarea({ value, onChange, disabled = false, error }: 
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="char-count-textarea">
       <div className="flex items-center justify-between">
         <Label htmlFor={textareaId} className="text-blue-100">
           Treść notatki ze spotkania
@@ -53,6 +53,7 @@ export function CharCountTextarea({ value, onChange, disabled = false, error }: 
             !isNearLimit && "text-blue-300"
           )}
           aria-live="polite"
+          data-testid="char-count-textarea-counter"
         >
           {charCount}/{MAX_LENGTH}
         </span>
@@ -74,25 +75,42 @@ export function CharCountTextarea({ value, onChange, disabled = false, error }: 
         )}
         aria-describedby={cn(counterId, error && errorId)}
         aria-invalid={!!error || isAtLimit}
+        data-testid="char-count-textarea-input"
       />
 
       {/* Warning for near limit */}
       {isNearLimit && !isAtLimit && !error && (
-        <p className="text-sm text-yellow-400" role="status" aria-live="polite">
+        <p
+          className="text-sm text-yellow-400"
+          role="status"
+          aria-live="polite"
+          data-testid="char-count-textarea-warning-message"
+        >
           Zbliżasz się do limitu znaków
         </p>
       )}
 
       {/* Error message */}
       {error && (
-        <p id={errorId} className="text-sm font-medium text-red-400" role="alert" aria-live="assertive">
+        <p
+          id={errorId}
+          className="text-sm font-medium text-red-400"
+          role="alert"
+          aria-live="assertive"
+          data-testid="char-count-textarea-error-message"
+        >
           {error}
         </p>
       )}
 
       {/* Limit reached message */}
       {isAtLimit && !error && (
-        <p className="text-sm text-red-400" role="alert" aria-live="assertive">
+        <p
+          className="text-sm text-red-400"
+          role="alert"
+          aria-live="assertive"
+          data-testid="char-count-textarea-limit-reached-message"
+        >
           Osiągnięto maksymalną długość tekstu
         </p>
       )}

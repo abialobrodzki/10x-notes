@@ -19,14 +19,19 @@ interface StatCardProps {
  * Displays a single metric with icon, label, and value
  */
 function StatCard({ icon, label, value, description }: StatCardProps) {
+  // Generate data-testid from label (lowercase, replace spaces with hyphens)
+  const testId = `stat-card-${label.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
-    <GlassCard padding="sm" className="flex items-start gap-4">
+    <GlassCard padding="sm" className="flex items-start gap-4" data-testid={testId}>
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-gradient-button-from to-gradient-button-to text-white shadow-lg">
         {icon}
       </div>
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium text-glass-text-muted">{label}</p>
-        <p className="text-2xl font-bold text-glass-text">{value}</p>
+        <p className="text-2xl font-bold text-glass-text" data-testid={`${testId}-value`}>
+          {value}
+        </p>
         {description && <p className="text-xs text-glass-text-muted">{description}</p>}
       </div>
     </GlassCard>
@@ -52,7 +57,10 @@ export function StatsSection({ stats }: StatsSectionProps) {
   };
 
   return (
-    <Card className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg">
+    <Card
+      className="bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl shadow-lg"
+      data-testid="stats-section"
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-glass-text">
           <Zap className="h-5 w-5" />
@@ -61,7 +69,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
         <CardDescription className="text-glass-text-muted">Podsumowanie Twojej aktywności w 10xNotes</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="stats-section-grid">
           {/* AI Generation Stats */}
           <StatCard
             icon={<Zap className="h-5 w-5" />}

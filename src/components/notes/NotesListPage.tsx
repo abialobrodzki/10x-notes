@@ -152,7 +152,10 @@ export function NotesListPage({ initialNotes, initialTags, initialQuery, initial
   // Show loading overlay during auto-save
   if (isAutoSaving) {
     return (
-      <div className="flex h-full overflow-auto items-center justify-center bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to">
+      <div
+        className="flex h-full overflow-auto items-center justify-center bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to"
+        data-testid="notes-list-page-autosaving-overlay"
+      >
         <div className="rounded-lg border border-glass-border bg-glass-bg-from p-8 text-center">
           <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-gradient-button-from border-t-transparent" />
           <p className="text-glass-text">Zapisywanie notatki...</p>

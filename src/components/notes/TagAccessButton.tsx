@@ -30,7 +30,7 @@ export default function TagAccessButton({ tagId, isOwner }: TagAccessButtonProps
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="tag-access-button">
         {/* Section header */}
         <h3 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-lg font-semibold text-transparent">
           Udostępnianie
@@ -46,6 +46,7 @@ export default function TagAccessButton({ tagId, isOwner }: TagAccessButtonProps
           onClick={handleOpenModal}
           variant="outline"
           className="w-full border-input-border bg-glass-bg-from text-glass-text hover-glass"
+          data-testid="tag-access-button-manage-button"
         >
           <Users className="mr-2 h-4 w-4" />
           Zarządzaj dostępem

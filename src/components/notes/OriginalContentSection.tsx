@@ -19,7 +19,10 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
   const displayedLines = isExpanded || !shouldTruncate ? lines : lines.slice(0, 8);
 
   return (
-    <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl">
+    <div
+      className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-8 backdrop-blur-xl"
+      data-testid="original-content-section"
+    >
       {/* Section header */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
@@ -32,6 +35,7 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
             className="text-sm font-medium text-glass-text hover-link"
             aria-expanded={isExpanded}
             aria-controls="original-content"
+            data-testid="original-content-section-toggle-button"
           >
             {isExpanded ? "Pokaż mniej" : "Pokaż więcej"}
           </button>
@@ -42,8 +46,11 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
       <div
         id="original-content"
         className="rounded-lg border border-glass-border bg-glass-bg-to p-4 font-mono text-sm text-glass-text-muted"
+        data-testid="original-content-section-content"
       >
-        <pre className="whitespace-pre-wrap break-words">{displayedLines.join("\n")}</pre>
+        <pre className="whitespace-pre-wrap break-words" data-testid="original-content-section-text">
+          {displayedLines.join("\n")}
+        </pre>
 
         {/* Show more indicator when truncated */}
         {shouldTruncate && !isExpanded && (
@@ -51,6 +58,7 @@ export default function OriginalContentSection({ originalContent }: OriginalCont
             <button
               onClick={() => setIsExpanded(true)}
               className="inline-flex items-center gap-2 text-sm font-medium text-glass-text transition-colors hover:text-input-text"
+              data-testid="original-content-section-show-more-button"
             >
               <span>Pokaż pozostałe {lines.length - 8} linii</span>
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

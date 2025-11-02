@@ -13,12 +13,15 @@ interface NoteHeaderProps {
  */
 export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps) {
   return (
-    <div className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-6 backdrop-blur-xl">
+    <div
+      className="rounded-2xl border border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-6 backdrop-blur-xl"
+      data-testid="note-header"
+    >
       {/* Breadcrumbs */}
       <nav className="mb-4 text-sm text-glass-text-muted" aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">
           <li>
-            <a href="/notes" className="hover-link">
+            <a href="/notes" className="hover-link" data-testid="note-header-notes-breadcrumb">
               Notatki
             </a>
           </li>
@@ -35,6 +38,7 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
         <a
           href={`/notes?tag_id=${tag.id}`}
           className="inline-flex items-center gap-1.5 rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-sm font-medium text-purple-100 hover-tag"
+          data-testid="note-header-tag-badge"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -49,7 +53,10 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
 
         {/* Owner/Recipient badge */}
         {isOwner ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-green-400/30 bg-green-500/20 px-3 py-1 text-sm font-medium text-green-100">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-green-400/30 bg-green-500/20 px-3 py-1 text-sm font-medium text-green-100"
+            data-testid="note-header-owner-badge"
+          >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
@@ -61,7 +68,10 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
             <span>Właściciel</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-sm font-medium text-glass-text">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-sm font-medium text-glass-text"
+            data-testid="note-header-shared-badge"
+          >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path
@@ -77,7 +87,10 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
 
         {/* Public link badge (only for owners) */}
         {isOwner && publicLink && publicLink.is_enabled && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/30 bg-yellow-500/20 px-3 py-1 text-sm font-medium text-yellow-100">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/30 bg-yellow-500/20 px-3 py-1 text-sm font-medium text-yellow-100"
+            data-testid="note-header-public-link-badge"
+          >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
@@ -92,7 +105,10 @@ export default function NoteHeader({ tag, isOwner, publicLink }: NoteHeaderProps
 
         {/* Tag shared with users badge (only for owners with shared tags) */}
         {isOwner && (tag.shared_recipients ?? 0) > 0 && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/20 px-3 py-1 text-sm font-medium text-amber-100">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-100"
+            data-testid="note-header-tag-shared-with-users-badge"
+          >
             <Users className="h-4 w-4" aria-hidden="true" />
             <span>
               Udostępniono {tag.shared_recipients} użytkownik{tag.shared_recipients === 1 ? "owi" : "om"}

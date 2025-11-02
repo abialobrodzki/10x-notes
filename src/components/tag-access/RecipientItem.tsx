@@ -55,10 +55,15 @@ export const RecipientItem = memo(function RecipientItem({ recipient, isRemoving
       padding="sm"
       className="flex items-center justify-between transition-opacity"
       style={{ opacity: isRemoving ? 0.5 : 1 }}
+      data-testid="recipient-item"
     >
       <div className="flex-1 space-y-1">
-        <p className="text-sm font-medium">{recipient.email}</p>
-        <p className="text-xs text-muted-foreground">Dostęp nadany: {formattedDate}</p>
+        <p className="text-sm font-medium" data-testid="recipient-item-email">
+          {recipient.email}
+        </p>
+        <p className="text-xs text-muted-foreground" data-testid="recipient-item-granted-date">
+          Dostęp nadany: {formattedDate}
+        </p>
       </div>
 
       <Button
@@ -68,6 +73,7 @@ export const RecipientItem = memo(function RecipientItem({ recipient, isRemoving
         onClick={onRemove}
         className="text-destructive hover-destructive"
         aria-label={`Usuń dostęp dla ${recipient.email}`}
+        data-testid="recipient-item-remove-button"
       >
         <Trash2 className="h-4 w-4" />
         {isRemoving ? "Usuwanie..." : "Usuń"}

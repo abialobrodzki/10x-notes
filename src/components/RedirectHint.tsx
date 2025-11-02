@@ -6,7 +6,7 @@ export default function RedirectHint() {
   return (
     <p className="text-center text-sm text-glass-text-muted">
       Nie masz konta?{" "}
-      <a href="/register" className="font-medium text-glass-text hover-link">
+      <a href="/register" className="font-medium text-glass-text hover-link" data-testid="login-page-signup-link">
         Zarejestruj się
       </a>
     </p>

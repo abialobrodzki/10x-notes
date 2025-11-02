@@ -53,7 +53,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8">
+    <div
+      className="h-full overflow-auto bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-4 sm:p-8"
+      data-testid="register-page"
+    >
       <div className="mx-auto flex h-full overflow-auto max-w-md items-center">
         <GlassCard padding="lg" className="w-full">
           {/* Header */}
@@ -71,7 +74,11 @@ export default function RegisterPage() {
             {/* RedirectHint - link to login */}
             <p className="text-center text-sm text-glass-text-muted">
               Masz już konto?{" "}
-              <a href="/login" className="font-medium text-glass-text hover-link">
+              <a
+                href="/login"
+                className="font-medium text-glass-text hover-link"
+                data-testid="register-page-signin-link"
+              >
                 Zaloguj się
               </a>
             </p>

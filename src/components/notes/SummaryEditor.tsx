@@ -60,7 +60,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
   }, [editedValue, isOverLimit, onSave]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="summary-editor">
       {/* Section header */}
       <div className="flex items-center justify-between">
         <h2 className="bg-linear-to-r from-gradient-heading-from to-purple-200 bg-clip-text text-xl font-semibold text-transparent">
@@ -72,6 +72,7 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
             variant="outline"
             size="sm"
             className="border-input-border bg-glass-bg-from text-glass-text hover-glass"
+            data-testid="summary-editor-edit-button"
           >
             Edytuj
           </Button>
@@ -89,12 +90,14 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
             className="min-h-[200px] border-input-border bg-glass-bg-from text-white placeholder:text-input-placeholder"
             aria-label="Podsumowanie notatki"
             aria-describedby="summary-char-count"
+            data-testid="summary-editor-textarea"
           />
 
           {/* Character counter */}
           <div
             id="summary-char-count"
             className={`text-sm ${isOverLimit ? "font-semibold text-red-200" : "text-glass-text-muted"}`}
+            data-testid="summary-editor-char-counter"
           >
             {characterCount} / {MAX_SUMMARY_LENGTH} znaków
             {isOverLimit && <span className="ml-2">(przekroczono limit o {characterCount - MAX_SUMMARY_LENGTH})</span>}
@@ -102,17 +105,31 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
 
           {/* Action buttons */}
           <div className="flex gap-3">
-            <Button onClick={handleSave} variant="gradient" disabled={!hasChanges || isOverLimit || isSaving}>
+            <Button
+              onClick={handleSave}
+              variant="gradient"
+              disabled={!hasChanges || isOverLimit || isSaving}
+              data-testid="summary-editor-save-button"
+            >
               {isSaving ? "Zapisywanie..." : "Zapisz"}
             </Button>
-            <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              disabled={isSaving}
+              data-testid="summary-editor-cancel-button"
+            >
               Anuluj
             </Button>
           </div>
 
           {/* Validation error */}
           {isOverLimit && (
-            <div role="alert" className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200">
+            <div
+              role="alert"
+              className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-200"
+              data-testid="summary-editor-validation-error"
+            >
               Podsumowanie jest za długie. Usuń {characterCount - MAX_SUMMARY_LENGTH} znaków, aby zapisać.
             </div>
           )}
@@ -120,9 +137,13 @@ export default function SummaryEditor({ value, isOwner, onSave, isSaving }: Summ
       ) : (
         <div className="rounded-lg border border-glass-border bg-glass-bg-to p-4">
           {value ? (
-            <p className="whitespace-pre-wrap text-glass-text-muted">{value}</p>
+            <p className="whitespace-pre-wrap text-glass-text-muted" data-testid="summary-editor-display-text">
+              {value}
+            </p>
           ) : (
-            <p className="italic text-input-placeholder">Brak podsumowania</p>
+            <p className="italic text-input-placeholder" data-testid="summary-editor-no-summary-message">
+              Brak podsumowania
+            </p>
           )}
         </div>
       )}

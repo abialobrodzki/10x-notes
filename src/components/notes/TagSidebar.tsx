@@ -37,7 +37,7 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
   const ownTagsCount = useMemo(() => tags.filter((t) => t.is_owner).length, [tags]);
   const sharedTagsCount = useMemo(() => tags.filter((t) => !t.is_owner).length, [tags]);
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" data-testid="tag-sidebar">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <h2 className="text-lg font-semibold text-glass-text">Etykiety</h2>
@@ -59,10 +59,15 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
                 : "text-glass-text-muted"
             )}
             onClick={() => onTagSelect(null)}
+            data-testid="tag-sidebar-all-notes-button"
           >
             <Tag className="h-4 w-4" />
             <span className="flex-1 text-left">Wszystkie notatki</span>
-            <Badge variant="outline" className="ml-auto border-glass-border text-glass-text">
+            <Badge
+              variant="outline"
+              className="ml-auto border-glass-border text-glass-text"
+              data-testid="tag-sidebar-all-notes-count"
+            >
               {totalNoteCount}
             </Badge>
           </Button>
@@ -71,7 +76,9 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
 
           {/* Individual Tags */}
           {tags.length === 0 ? (
-            <div className="p-4 text-center text-sm text-glass-text-muted">Brak etykiet. Utwórz pierwszą etykietę.</div>
+            <div className="p-4 text-center text-sm text-glass-text-muted" data-testid="tag-sidebar-empty-message">
+              Brak etykiet. Utwórz pierwszą etykietę.
+            </div>
           ) : (
             tags.map((tag) => (
               <div key={tag.id} className="group relative flex items-center gap-1">
@@ -84,17 +91,28 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
                       : "text-glass-text-muted"
                   )}
                   onClick={() => onTagSelect(tag.id)}
+                  data-testid={`tag-sidebar-tag-button-${tag.id}`}
                 >
                   <Tag className="h-4 w-4" />
-                  <span className="flex-1 truncate text-left">{tag.name}</span>
+                  <span className="flex-1 truncate text-left" data-testid={`tag-sidebar-tag-name-${tag.id}`}>
+                    {tag.name}
+                  </span>
 
                   {/* Shared tag indicator */}
                   {!tag.is_owner && (
-                    <Users className="h-3 w-3 text-glass-text-muted" aria-label="Współdzielona etykieta" />
+                    <Users
+                      className="h-3 w-3 text-glass-text-muted"
+                      aria-label="Współdzielona etykieta"
+                      data-testid={`tag-sidebar-shared-tag-indicator-${tag.id}`}
+                    />
                   )}
 
                   {/* Note count */}
-                  <Badge variant="outline" className="ml-auto border-glass-border text-glass-text">
+                  <Badge
+                    variant="outline"
+                    className="ml-auto border-glass-border text-glass-text"
+                    data-testid={`tag-sidebar-tag-note-count-${tag.id}`}
+                  >
                     {tag.note_count}
                   </Badge>
                 </Button>
@@ -106,6 +124,7 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
                     tagName={tag.name}
                     noteCount={tag.note_count}
                     onSuccess={() => window.location.reload()}
+                    data-testid={`tag-sidebar-delete-tag-dialog-${tag.id}`}
                   />
                 )}
               </div>
@@ -118,7 +137,7 @@ export function TagSidebar({ tags, selectedTagId, onTagSelect }: TagSidebarProps
 
       {/* Footer - Future: "Manage Access" button */}
       <div className="p-4">
-        <p className="text-xs text-glass-text-muted">
+        <p className="text-xs text-glass-text-muted" data-testid="tag-sidebar-own-tags-count">
           {ownTagsCount} moich etykiet
           {sharedTagsCount > 0 && ` • ${sharedTagsCount} współdzielonych`}
         </p>

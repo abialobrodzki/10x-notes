@@ -168,12 +168,19 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="w-full sm:w-auto hover-destructive-action transition-all">
+        <Button
+          variant="destructive"
+          className="w-full sm:w-auto hover-destructive-action transition-all"
+          data-testid="delete-account-wizard-trigger"
+        >
           <AlertTriangle className="mr-2 h-4 w-4" />
           Usuń konto
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-lg bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl">
+      <AlertDialogContent
+        className="max-w-lg bg-linear-to-b from-glass-bg-from to-glass-bg-to border-glass-border backdrop-blur-xl"
+        data-testid="delete-account-wizard-dialog"
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             <AlertTriangle className="h-5 w-5" />
@@ -214,9 +221,15 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
               aria-invalid={emailError ? "true" : "false"}
               aria-describedby={emailError ? `${emailId}-error` : undefined}
               className={`text-input-text placeholder:text-input-placeholder ${emailError ? "border-destructive" : ""}`}
+              data-testid="delete-account-wizard-email-input"
             />
             {emailError && (
-              <p id={`${emailId}-error`} className="text-sm text-destructive" role="alert">
+              <p
+                id={`${emailId}-error`}
+                className="text-sm text-destructive"
+                role="alert"
+                data-testid="delete-account-wizard-email-error"
+              >
                 {emailError}
               </p>
             )}
@@ -230,6 +243,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
               onCheckedChange={(checked) => setIsConfirmed(checked === true)}
               disabled={isDeleting}
               aria-required="true"
+              data-testid="delete-account-wizard-confirm-checkbox"
             />
             <div className="space-y-1 leading-none">
               <Label
@@ -245,7 +259,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
 
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline" disabled={isDeleting}>
+            <Button variant="outline" disabled={isDeleting} data-testid="delete-account-wizard-cancel-button">
               Anuluj
             </Button>
           </AlertDialogCancel>
@@ -257,6 +271,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
                 e.preventDefault(); // Prevent default dialog close
                 handleDelete();
               }}
+              data-testid="delete-account-wizard-confirm-button"
             >
               {isDeleting ? "Usuwanie..." : "Usuń konto na zawsze"}
             </Button>

@@ -96,12 +96,16 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-glass-border bg-linear-to-r from-gradient-from/90 via-gradient-via/90 to-gradient-to/90 shadow-lg backdrop-blur-xl">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-glass-border bg-linear-to-r from-gradient-from/90 via-gradient-via/90 to-gradient-to/90 shadow-lg backdrop-blur-xl"
+      data-testid="navbar"
+    >
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo/Brand */}
         <a
           href={isAuthenticated ? "/notes" : "/"}
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          data-testid="navbar-logo-link"
         >
           <span className="bg-linear-to-r from-gradient-heading-from via-gradient-heading-via to-gradient-heading-to bg-clip-text text-xl font-bold text-transparent drop-shadow-lg">
             10xNotes
@@ -113,12 +117,17 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
           <>
             {/* Authenticated - Desktop Navigation */}
             <nav className="hidden items-center gap-4 md:flex">
-              <a href="/notes" className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav">
+              <a
+                href="/notes"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav"
+                data-testid="navbar-notes-link"
+              >
                 Moje notatki
               </a>
               <a
                 href="/"
                 className="flex items-center gap-2 rounded-lg btn-gradient-primary px-4 py-2 text-sm font-medium hover-gradient"
+                data-testid="navbar-generate-note-button"
               >
                 <Plus className="h-4 w-4" />
                 <span>Generuj notatkę</span>
@@ -127,16 +136,24 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
               {/* User Menu Dropdown - Email visible next to icon */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full px-3 py-1.5 text-glass-text hover-nav focus:outline-none focus:ring-2 focus:ring-input-border-focus">
+                  <button
+                    className="flex items-center gap-2 rounded-full px-3 py-1.5 text-glass-text hover-nav focus:outline-none focus:ring-2 focus:ring-input-border-focus"
+                    data-testid="navbar-user-email-display"
+                  >
                     <span className="text-sm font-medium">{userProfile?.email || "Ładowanie..."}</span>
                     <User className="h-5 w-5" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 dropdown-content-glass">
+                <DropdownMenuContent
+                  align="end"
+                  className="w-48 dropdown-content-glass"
+                  data-testid="navbar-user-menu-dropdown"
+                >
                   <DropdownMenuItem asChild>
                     <a
                       href="/settings"
                       className="flex cursor-pointer items-center gap-2 text-glass-text hover:bg-white/5! hover:text-glass-text-hover! focus:bg-white/5! focus:text-glass-text-hover!"
+                      data-testid="navbar-settings-link"
                     >
                       <Settings className="h-4 w-4" />
                       <span>Ustawienia</span>
@@ -147,6 +164,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className="flex cursor-pointer items-center gap-2 text-destructive hover:bg-destructive/10! hover:text-destructive! focus:bg-destructive/10! focus:text-destructive!"
+                    data-testid="navbar-logout-button"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>{isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}</span>
@@ -162,18 +180,28 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-glass-text hover-nav">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-glass-text hover-nav"
+                    data-testid="navbar-mobile-menu-button"
+                  >
                     <Menu className="h-5 w-5" />
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-64 dropdown-content-glass">
+                <SheetContent
+                  side="right"
+                  className="w-64 dropdown-content-glass"
+                  data-testid="navbar-mobile-menu-content"
+                >
                   <div className="flex flex-col gap-4 py-4">
                     {/* Navigation Links */}
                     <a
                       href="/notes"
                       className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text hover-nav"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      data-testid="navbar-mobile-notes-link"
                     >
                       Moje notatki
                     </a>
@@ -182,6 +210,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                       href="/"
                       className="flex items-center gap-2 rounded-lg btn-gradient-primary px-3 py-2 text-sm font-medium hover-gradient"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      data-testid="navbar-mobile-generate-note-link"
                     >
                       <Plus className="h-4 w-4" />
                       Generuj notatkę
@@ -191,6 +220,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                       href="/settings"
                       className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-glass-text hover-nav"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      data-testid="navbar-mobile-settings-link"
                     >
                       <Settings className="h-4 w-4" />
                       Ustawienia
@@ -206,6 +236,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                       }}
                       disabled={isLoggingOut}
                       className="interactive-destructive flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+                      data-testid="navbar-mobile-logout-button"
                     >
                       <LogOut className="h-4 w-4" />
                       {isLoggingOut ? "Wylogowywanie..." : "Wyloguj się"}
@@ -219,12 +250,17 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
           <>
             {/* Public - Desktop Navigation */}
             <nav className="hidden items-center gap-4 md:flex">
-              <a href="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav">
+              <a
+                href="/login"
+                className="rounded-lg px-4 py-2 text-sm font-medium text-glass-text hover-nav"
+                data-testid="navbar-login-link"
+              >
                 Zaloguj się
               </a>
               <a
                 href="/register"
                 className="rounded-lg btn-gradient-primary px-4 py-2 text-sm font-medium hover-gradient"
+                data-testid="navbar-register-link"
               >
                 Zarejestruj się
               </a>
@@ -232,12 +268,17 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
 
             {/* Public - Mobile Navigation */}
             <div className="flex items-center gap-3 md:hidden">
-              <a href="/login" className="rounded-lg px-3 py-1.5 text-sm font-medium text-glass-text hover-nav">
+              <a
+                href="/login"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-glass-text hover-nav"
+                data-testid="navbar-mobile-login-link"
+              >
                 Zaloguj
               </a>
               <a
                 href="/register"
                 className="rounded-lg btn-gradient-primary px-3 py-1.5 text-sm font-medium hover-gradient"
+                data-testid="navbar-mobile-register-link"
               >
                 Rejestracja
               </a>

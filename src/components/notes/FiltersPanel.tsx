@@ -47,12 +47,13 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
   };
 
   return (
-    <GlassCard padding="sm">
+    <GlassCard padding="sm" data-testid="filters-panel">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 text-sm font-medium text-glass-text hover-nav py-2 rounded hover:bg-glass-bg-from/50 transition-colors flex-1"
+            data-testid="filters-panel-toggle-button"
           >
             <span>Filtry i sortowanie</span>
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -63,6 +64,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
               size="sm"
               onClick={handleReset}
               className="h-8 px-2 text-glass-text-muted hover-nav lg:px-3"
+              data-testid="filters-panel-clear-button"
             >
               <X className="mr-2 h-4 w-4" />
               Wyczyść
@@ -80,6 +82,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
                 dateTo={filters.date_to}
                 onDateFromChange={(date_from) => onChange({ ...filters, date_from, page: 1 })}
                 onDateToChange={(date_to) => onChange({ ...filters, date_to, page: 1 })}
+                data-testid="filters-panel-date-range-picker"
               />
             </div>
 
@@ -89,6 +92,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
               <GoalStatusMultiSelect
                 value={filters.goal_status}
                 onChange={(goal_status) => onChange({ ...filters, goal_status, page: 1 })}
+                data-testid="filters-panel-goal-status-multi-select"
               />
             </div>
 
@@ -100,6 +104,7 @@ export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
                 order={filters.order}
                 onSortByChange={(sort_by) => onChange({ ...filters, sort_by, page: 1 })}
                 onOrderChange={(order) => onChange({ ...filters, order, page: 1 })}
+                data-testid="filters-panel-sort-select"
               />
             </div>
           </div>
