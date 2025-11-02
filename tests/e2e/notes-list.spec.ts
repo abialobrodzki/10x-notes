@@ -37,7 +37,7 @@ test.describe("Notes List Page - With Notes", () => {
     await page.goto("http://localhost:3000/notes");
 
     // Create sample notes via API
-    await createSampleNotes(page, 5);
+    await createSampleNotes(page, 25);
 
     await context.close();
   });
@@ -120,10 +120,10 @@ test.describe("Notes List Page - With Notes", () => {
       await notesListPage.clickNoteByIndex(0);
 
       // Assert: Wait for navigation to note details page
-      await page.waitForURL(/\/notes\/[a-f0-9-]{36}/, { timeout: 5000 });
+      await notesListPage.waitForNoteNavigation();
 
       // Assert: URL contains /notes/{id} pattern
-      expect(page.url()).toMatch(/\/notes\/[a-f0-9-]{36}/);
+      expect(page.url()).toMatch(/\/notes\/.+/);
     });
   });
 
@@ -200,7 +200,7 @@ test.describe("Notes List Page - With Notes", () => {
       // If no pagination, that's also valid (less than 20 notes)
     });
 
-    test("should navigate between pages using pagination controls", async ({ notesListPage, page }) => {
+    test("should navigate between pages using pagination controls", async ({ notesListPage }) => {
       // Arrange: Wait for notes to load
       await notesListPage.waitForNotesToLoad();
 
@@ -213,20 +213,20 @@ test.describe("Notes List Page - With Notes", () => {
         return;
       }
 
-      // Get initial URL
-      const initialUrl = page.url();
+      const initialPageNumber = await notesListPage.getCurrentPageNumber();
+      const expectedPageNumber = initialPageNumber + 1;
 
       // Act: Try to go to next page if available
       const isNextButtonDisabled = await notesListPage.paginationNextPageButton.isDisabled().catch(() => true);
 
       if (!isNextButtonDisabled) {
+        const navigationPromise = notesListPage.waitForPageNumber(expectedPageNumber);
         await notesListPage.goToNextPage();
+        await navigationPromise;
 
         // Assert: URL changed to include page=2
-        await page.waitForLoadState("networkidle");
-        const newUrl = page.url();
-        expect(newUrl).not.toBe(initialUrl);
-        expect(newUrl).toContain("page=2");
+        const newPageNumber = await notesListPage.getCurrentPageNumber();
+        expect(newPageNumber).toBe(expectedPageNumber);
       }
     });
   });

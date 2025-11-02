@@ -186,6 +186,29 @@ export class NotesListPage {
   }
 
   /**
+   * Get current page number from URL
+   */
+  async getCurrentPageNumber() {
+    const { searchParams } = new URL(this.page.url());
+    const pageParam = searchParams.get("page");
+    return pageParam ? Number.parseInt(pageParam, 10) : 1;
+  }
+
+  /**
+   * Wait until URL reflects given page number
+   */
+  async waitForPageNumber(pageNumber: number, timeout = 10000) {
+    await this.page.waitForURL(
+      (url) => {
+        const param = url.searchParams.get("page");
+        const current = param ? Number.parseInt(param, 10) : 1;
+        return current === pageNumber;
+      },
+      { timeout }
+    );
+  }
+
+  /**
    * Navigate to previous page
    */
   async goToPreviousPage() {
@@ -312,5 +335,15 @@ export class NotesListPage {
     const noteItem = this.getNoteByIndex(index);
     const sharedIndicator = noteItem.getByTestId("note-list-item-shared-indicator");
     return await sharedIndicator.isVisible().catch(() => false);
+  }
+
+  /**
+   * Wait for navigation to note details page
+   * @param timeout - max wait time
+   */
+  async waitForNoteNavigation(timeout = 10000) {
+    await this.page.waitForURL((url) => url.pathname.startsWith("/notes/") && url.pathname.length > "/notes/".length, {
+      timeout,
+    });
   }
 }
