@@ -85,6 +85,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         // Call server-side registration endpoint
         const response = await fetch("/api/auth/register", {
           method: "POST",
+          credentials: "include", // Include cookies for server-side session management
           headers: {
             "Content-Type": "application/json",
           },

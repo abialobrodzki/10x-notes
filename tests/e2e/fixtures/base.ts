@@ -59,10 +59,13 @@ interface CustomFixtures {
 export const test = base.extend<CustomFixtures>({
   /**
    * LoginPage fixture - automatically instantiated for each test
+   * Cleans up auth state after each test to prevent cookie pollution
    */
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await use(loginPage);
+    // Cleanup: Clear cookies after login tests
+    await page.context().clearCookies();
   },
 
   /**
@@ -107,10 +110,13 @@ export const test = base.extend<CustomFixtures>({
 
   /**
    * RegisterPage fixture - automatically instantiated for each test
+   * Cleans up auth state after each test to prevent cookie pollution
    */
   registerPage: async ({ page }, use) => {
     const registerPage = new RegisterPage(page);
     await use(registerPage);
+    // Cleanup: Clear cookies after registration tests
+    await page.context().clearCookies();
   },
 
   /**
@@ -157,6 +163,7 @@ export const test = base.extend<CustomFixtures>({
    * Authenticated page fixture.
    * This fixture uses the storageState from `global.setup.ts` to provide an authenticated page.
    * It navigates to the base URL and waits for the user profile to be loaded.
+   * Cleans up auth state after test to prevent pollution of subsequent tests.
    */
   authenticatedPage: async ({ page }, use) => {
     const { email } = requireE2EUserCredentials();
@@ -172,6 +179,14 @@ export const test = base.extend<CustomFixtures>({
     // For some pages, we might need to wait for a specific element or API call to confirm load
     // For now, simply navigating to '/' is sufficient if the global setup handles auth.
     await use(authenticatedPage);
+
+    // Cleanup: Clear cookies and storage after test to prevent affecting other tests
+    // This is important because modified auth state can persist and break subsequent tests
+    await page.context().clearCookies();
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
   },
 
   /**

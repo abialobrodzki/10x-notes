@@ -52,6 +52,12 @@ export async function middlewareHandler(context: APIContext, next: MiddlewareNex
     data: { user },
   } = await context.locals.supabase.auth.getUser();
 
+  // Debug logging for auth issues
+  if (context.url.pathname !== "/") {
+    // eslint-disable-next-line no-console
+    console.log(`[AUTH] Path: ${context.url.pathname}, User: ${user?.email || "none"}`);
+  }
+
   // Store user in locals if authenticated
   if (user && user.email) {
     context.locals.user = {
@@ -61,6 +67,8 @@ export async function middlewareHandler(context: APIContext, next: MiddlewareNex
 
     // Redirect authenticated users away from auth-only pages (login, register, reset password)
     if (isAuthOnlyPath(context.url.pathname)) {
+      // eslint-disable-next-line no-console
+      console.log(`[AUTH] Redirecting authenticated user away from auth page: ${context.url.pathname}`);
       const redirectResponse = context.redirect("/");
       // Prevent caching of redirect to avoid showing auth pages via browser back button
       redirectResponse.headers.set("Cache-Control", "no-store, must-revalidate, no-cache, private");
@@ -72,20 +80,37 @@ export async function middlewareHandler(context: APIContext, next: MiddlewareNex
   }
 
   // User is not authenticated
+  // Clear invalid auth cookies if they exist (safety mechanism for corrupted sessions)
+  const response = new Response();
+  const cookieHeader = context.request.headers.get("cookie") || "";
+  if (cookieHeader.includes("sb-") || cookieHeader.includes("auth")) {
+    // Invalidate all Supabase auth cookies
+    response.headers.append(
+      "Set-Cookie",
+      "sb-access-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC; HttpOnly; Secure; SameSite=Lax"
+    );
+    response.headers.append(
+      "Set-Cookie",
+      "sb-refresh-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 UTC; HttpOnly; Secure; SameSite=Lax"
+    );
+  }
+
   // Allow access to public paths and auth-only pages
   if (isPublicPath(context.url.pathname) || isAuthOnlyPath(context.url.pathname)) {
-    const response = await next();
+    const pageResponse = await next();
 
     // Prevent caching of auth pages to avoid showing them via browser back button
     if (isAuthOnlyPath(context.url.pathname)) {
-      response.headers.set("Cache-Control", "no-store, must-revalidate, no-cache, private");
-      response.headers.set("Pragma", "no-cache");
+      pageResponse.headers.set("Cache-Control", "no-store, must-revalidate, no-cache, private");
+      pageResponse.headers.set("Pragma", "no-cache");
     }
 
-    return response;
+    return pageResponse;
   }
 
   // Redirect to login for protected routes
+  // eslint-disable-next-line no-console
+  console.log(`[AUTH] Redirecting unauthenticated user to login from: ${context.url.pathname}`);
   return context.redirect("/login");
 }
 

@@ -75,6 +75,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
         // Call server-side login endpoint
         const response = await fetch("/api/auth/login", {
           method: "POST",
+          credentials: "include", // Include cookies for server-side session management
           headers: {
             "Content-Type": "application/json",
           },

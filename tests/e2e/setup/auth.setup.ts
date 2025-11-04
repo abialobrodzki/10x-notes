@@ -51,4 +51,16 @@ setup("authenticate test user", async ({ page }) => {
 
   // Persist storage state for dependent projects
   await page.context().storageState({ path: authFile });
+
+  // Cleanup: Clear any test-specific data to prevent polluting the storage state
+  // This ensures clean state for dependent tests
+  await page.evaluate(() => {
+    // Remove any test-specific items from localStorage
+    const keys = Array.from(Object.keys(localStorage));
+    keys.forEach((key) => {
+      if (key.includes("test") || key.includes("pending")) {
+        localStorage.removeItem(key);
+      }
+    });
+  });
 });
