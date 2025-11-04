@@ -36,6 +36,8 @@ WARP.md
 .clinerules/
 .roorules/
 .claude.json
+.gemini/settings.json
+.codex/config.toml
 
 # unit tests
 coverage/
