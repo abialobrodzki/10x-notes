@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -35,6 +35,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
 
   const {
     register,
+    control,
     handleSubmit: handleReactHookFormSubmit,
     formState: { errors },
     watch,
@@ -48,7 +49,12 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
     },
   });
 
-  const isConfirmed = watch("isConfirmed");
+  const isConfirmed = watch("isConfirmed") ?? false;
+  const confirmationEmail = watch("confirmation_email") ?? "";
+  const normalizedUserEmail = userEmail.trim().toLowerCase();
+  const normalizedConfirmationEmail = confirmationEmail.trim().toLowerCase();
+  const isEmailMatchingUser =
+    normalizedConfirmationEmail.length > 0 && normalizedConfirmationEmail === normalizedUserEmail;
   const emailError = errors.confirmation_email;
   const confirmCheckboxError = errors.isConfirmed;
 
@@ -152,11 +158,20 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
 
           {/* Confirmation checkbox */}
           <div className="flex items-start space-x-3 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-3">
-            <Checkbox
-              disabled={deleteAccountMutation.isPending}
-              aria-required="true"
-              data-testid="delete-account-wizard-confirm-checkbox"
-              {...register("isConfirmed")}
+            <Controller
+              control={control}
+              name="isConfirmed"
+              render={({ field }) => (
+                <Checkbox
+                  ref={field.ref}
+                  disabled={deleteAccountMutation.isPending}
+                  aria-required="true"
+                  data-testid="delete-account-wizard-confirm-checkbox"
+                  checked={!!field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  onBlur={field.onBlur}
+                />
+              )}
             />
             <div className="space-y-1 leading-none">
               <Label className="text-sm font-medium leading-tight cursor-pointer text-glass-text">
@@ -189,7 +204,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
             <Button
               type="submit"
               variant="destructive-action"
-              disabled={!isConfirmed || deleteAccountMutation.isPending}
+              disabled={!isConfirmed || !isEmailMatchingUser || deleteAccountMutation.isPending}
               data-testid="delete-account-wizard-confirm-button"
             >
               {deleteAccountMutation.isPending ? "Usuwanie..." : "Usuń konto na zawsze"}

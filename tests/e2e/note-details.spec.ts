@@ -119,10 +119,8 @@ test.describe("Note Details Page", () => {
       // ACT
       await noteDetailPage.selectGoalStatus("not_achieved");
 
-      // Wait for save
-      await noteDetailPage.page.waitForTimeout(1000);
-
       // ASSERT
+      await noteDetailPage.waitForGoalStatus("not_achieved");
       const status = await noteDetailPage.getSelectedGoalStatus();
       expect(status).toBe("not_achieved");
     });

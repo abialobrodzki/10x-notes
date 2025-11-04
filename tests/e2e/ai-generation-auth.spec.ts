@@ -134,11 +134,13 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
 
     // Change to not_achieved
     await noteDetailPage.selectGoalStatus("not_achieved");
+    await noteDetailPage.waitForGoalStatus("not_achieved");
     let updatedStatus = await noteDetailPage.getSelectedGoalStatus();
     expect(updatedStatus).toBe("not_achieved");
 
     // Change back to achieved
     await noteDetailPage.selectGoalStatus("achieved");
+    await noteDetailPage.waitForGoalStatus("achieved");
     updatedStatus = await noteDetailPage.getSelectedGoalStatus();
     expect(updatedStatus).toBe("achieved");
   });

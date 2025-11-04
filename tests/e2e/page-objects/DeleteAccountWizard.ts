@@ -1,4 +1,4 @@
-import { type Locator, type Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 /**
  * Page Object Model for Delete Account Wizard
@@ -49,11 +49,17 @@ export class DeleteAccountWizardPOM {
   }
 
   async checkConfirmation() {
+    await expect(this.confirmCheckbox).toBeVisible();
+    await this.confirmCheckbox.focus();
     await this.confirmCheckbox.check();
+    await expect(this.confirmCheckbox).toBeChecked();
   }
 
   async uncheckConfirmation() {
+    await expect(this.confirmCheckbox).toBeVisible();
+    await this.confirmCheckbox.focus();
     await this.confirmCheckbox.uncheck();
+    await expect(this.confirmCheckbox).not.toBeChecked();
   }
 
   async isConfirmationChecked() {

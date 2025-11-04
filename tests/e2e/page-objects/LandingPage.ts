@@ -25,8 +25,8 @@ export class LandingPage {
     this.contentArea = page.getByTestId("landing-page-content-area");
     this.textarea = page.getByTestId("char-count-textarea-input");
     this.generateButton = page.getByTestId("landing-page-generate-button");
-    this.errorMessage = page.getByTestId("landing-page-error-message");
-    this.retryButton = page.getByTestId("landing-page-retry-button");
+    this.errorMessage = page.getByTestId("generation-error");
+    this.retryButton = page.getByTestId("generation-error-retry-button");
     this.charCounter = page.getByTestId("char-count-textarea-counter");
     this.limitWarning = page.getByTestId("char-count-textarea-warning-message");
     this.limitReachedMessage = page.getByTestId("char-count-textarea-limit-reached-message");

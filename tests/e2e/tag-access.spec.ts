@@ -258,26 +258,30 @@ test.describe("Tag Access Management", () => {
       expect(true).toBe(true); // Placeholder
     });
 
-    test("should handle non-existent user error", async ({ noteDetailPage, page }) => {
+    test("should handle non-existent user error", async ({ noteDetailPage, tagAccessModal, page }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
+      await tagAccessModal.waitForRecipientsLoaded();
 
       // ACT - Try to add non-existent email
       const emailInput = noteDetailPage.page.getByTestId("add-recipient-form-email-input");
       const submitButton = noteDetailPage.page.getByTestId("add-recipient-form-submit-button");
 
-      await emailInput.fill("nonexistent@example.com");
+      await emailInput.fill("truly-nonexistent-user-xyz@example.com");
+      await emailInput.blur();
+      await page.waitForTimeout(100);
       await submitButton.click();
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(100);
 
-      // ASSERT
-      const hasError = await noteDetailPage.page
-        .getByTestId("tag-access-modal-error")
-        .isVisible()
-        .catch(() => false);
-      expect(hasError).toBe(true);
+      // ASSERT - Wait for error message to appear with longer timeout
+      const fieldError = page.getByTestId("add-recipient-form-validation-error");
+
+      // Use waitFor to check if error appears
+      await fieldError.isVisible({ timeout: 5000 });
+      const errorText = await fieldError.textContent();
+      expect(errorText).toContain("Użytkownik nie istnieje");
     });
   });
 

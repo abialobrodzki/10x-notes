@@ -61,7 +61,12 @@ test.describe("Full Account Deletion Flow", () => {
     expect(isDisabled).toBe(false);
   });
 
-  test("should require both email and checkbox confirmation", async ({ settingsPage, deleteAccountWizard, user }) => {
+  test("should require both email and checkbox confirmation", async ({
+    settingsPage,
+    deleteAccountWizard,
+    user,
+    page,
+  }) => {
     // ARRANGE
     await settingsPage.goto();
     await settingsPage.waitForLoaded();
@@ -78,12 +83,14 @@ test.describe("Full Account Deletion Flow", () => {
 
     // Only check confirmation
     await deleteAccountWizard.emailInput.clear();
+    await page.waitForTimeout(500);
     await deleteAccountWizard.checkConfirmation();
     isDisabled = await deleteAccountWizard.isConfirmButtonDisabled();
     expect(isDisabled).toBe(true);
 
     // Both filled with correct email
     await deleteAccountWizard.fillEmail(user.email);
+    await page.waitForTimeout(500);
     isDisabled = await deleteAccountWizard.isConfirmButtonDisabled();
     expect(isDisabled).toBe(false);
   });

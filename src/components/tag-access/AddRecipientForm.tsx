@@ -29,16 +29,18 @@ export function AddRecipientForm({ tagId }: AddRecipientFormProps) {
     formState: { errors },
     reset,
     setError,
+    watch,
   } = useForm<AddRecipientInput>({
     resolver: zodResolver(addRecipientSchema),
     mode: "onBlur",
   });
 
+  const emailValue = watch("email") ?? "";
+
   const addRecipientMutation = useAddRecipientMutation({
     onError: (error) => {
       // Set field-level error for user feedback
       // The mutation hook maps HTTP status codes to friendly error messages
-
       setError("email", {
         type: "server",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,7 +90,7 @@ export function AddRecipientForm({ tagId }: AddRecipientFormProps) {
           </div>
           <Button
             type="submit"
-            disabled={addRecipientMutation.isPending}
+            disabled={!emailValue.trim() || addRecipientMutation.isPending}
             size="default"
             aria-label="Dodaj użytkownika"
             data-testid="add-recipient-form-submit-button"

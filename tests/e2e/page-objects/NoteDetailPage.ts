@@ -1,4 +1,4 @@
-import { type Locator, type Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 /**
  * Page Object Model for Note Detail Page (/notes/:id)
@@ -195,6 +195,16 @@ export class NoteDetailPage {
   async selectGoalStatus(status: "achieved" | "not_achieved") {
     const button = status === "achieved" ? this.goalStatusAchievedOption : this.goalStatusNotAchievedOption;
     await button.click();
+    await this.waitForGoalStatus(status);
+  }
+
+  async waitForGoalStatus(status: "achieved" | "not_achieved") {
+    const selectedOption = status === "achieved" ? this.goalStatusAchievedOption : this.goalStatusNotAchievedOption;
+    const otherOption = status === "achieved" ? this.goalStatusNotAchievedOption : this.goalStatusAchievedOption;
+
+    await expect(selectedOption).toHaveAttribute("aria-checked", "true");
+    await expect(otherOption).not.toHaveAttribute("aria-checked", "true");
+    await expect(this.goalStatusLoadingIndicator).not.toBeVisible();
   }
 
   async getSelectedGoalStatus() {
