@@ -15,8 +15,9 @@ test.describe("Forgot Password Page", () => {
   test("should show an error for invalid email format", async ({ forgotPasswordPage }) => {
     await forgotPasswordPage.fillEmail("invalid-email");
     await forgotPasswordPage.submitForm();
-    await expect(forgotPasswordPage.errorMessage).toBeVisible();
-    await expect(forgotPasswordPage.getErrorMessageText()).resolves.toContain("Podaj poprawny adres email");
+    expect(await forgotPasswordPage.hasEmailError()).toBe(true);
+    const emailError = await forgotPasswordPage.getEmailErrorText();
+    expect(emailError).toContain("Podaj poprawny adres email");
   });
 
   test("should show a success message after submitting a valid email", async ({ forgotPasswordPage, page }) => {

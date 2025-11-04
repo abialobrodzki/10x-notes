@@ -124,13 +124,59 @@ export class LoginPage {
   }
 
   /**
-   * Check if error message is displayed
+   * Get email field error message
+   * @returns Error message text or null if no error
+   */
+  async getEmailErrorText() {
+    // Error is rendered as <p> after the email input within the same div
+    const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
+    try {
+      return await errorElement.textContent();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get password field error message
+   * @returns Error message text or null if no error
+   */
+  async getPasswordErrorText() {
+    // Error is rendered as <p> after the password input within the same div
+    const errorElement = this.form.locator("div").filter({ has: this.passwordInput }).locator("p.text-destructive");
+    try {
+      return await errorElement.textContent();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if email error is visible
+   * @returns True if email error message is displayed
+   */
+  async hasEmailError() {
+    const errorText = await this.getEmailErrorText();
+    return errorText !== null && errorText.trim().length > 0;
+  }
+
+  /**
+   * Check if password error is visible
+   * @returns True if password error message is displayed
+   */
+  async hasPasswordError() {
+    const errorText = await this.getPasswordErrorText();
+    return errorText !== null && errorText.trim().length > 0;
+  }
+
+  /**
+   * Check if specific error message is displayed
    * @param errorText - Expected error text
    * @returns True if error is visible
    */
   async hasError(errorText: string) {
     const error = this.page.getByText(errorText);
-    return await error.isVisible();
+    return await error.isVisible().catch(() => false);
   }
 
   /**
@@ -158,23 +204,5 @@ export class LoginPage {
    */
   async getPasswordValue() {
     return await this.passwordInput.inputValue();
-  }
-
-  /**
-   * Check if email input has error styling
-   * @returns True if input has error class
-   */
-  async emailHasError() {
-    const classes = await this.emailInput.getAttribute("class");
-    return classes?.includes("border-red") || classes?.includes("error");
-  }
-
-  /**
-   * Check if password input has error styling
-   * @returns True if input has error class
-   */
-  async passwordHasError() {
-    const classes = await this.passwordInput.getAttribute("class");
-    return classes?.includes("border-red") || classes?.includes("error");
   }
 }

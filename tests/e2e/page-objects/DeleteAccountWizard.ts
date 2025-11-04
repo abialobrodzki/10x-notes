@@ -13,6 +13,7 @@ export class DeleteAccountWizardPOM {
   readonly emailInput: Locator;
   readonly emailError: Locator;
   readonly confirmCheckbox: Locator;
+  readonly confirmError: Locator;
   readonly cancelButton: Locator;
   readonly confirmButton: Locator;
   readonly dangerTab: Locator;
@@ -25,6 +26,7 @@ export class DeleteAccountWizardPOM {
     this.emailInput = page.getByTestId("delete-account-wizard-email-input");
     this.emailError = page.getByTestId("delete-account-wizard-email-error");
     this.confirmCheckbox = page.getByTestId("delete-account-wizard-confirm-checkbox");
+    this.confirmError = page.getByTestId("delete-account-wizard-confirm-error");
     this.cancelButton = page.getByTestId("delete-account-wizard-cancel-button");
     this.confirmButton = page.getByTestId("delete-account-wizard-confirm-button");
     this.dangerTab = page.getByTestId("settings-page-danger-tab");
@@ -64,6 +66,14 @@ export class DeleteAccountWizardPOM {
 
   async hasEmailError() {
     return await this.emailError.isVisible().catch(() => false);
+  }
+
+  async getConfirmationError(): Promise<string | null> {
+    return await this.confirmError.textContent().catch(() => null);
+  }
+
+  async hasConfirmationError() {
+    return await this.confirmError.isVisible().catch(() => false);
   }
 
   async deleteAccount(email: string) {

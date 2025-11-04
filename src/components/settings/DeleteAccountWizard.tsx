@@ -166,7 +166,12 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
             </div>
           </div>
           {confirmCheckboxError && (
-            <p className="text-sm text-destructive" role="alert">
+            <p
+              id="confirmed-error"
+              className="text-sm text-destructive"
+              role="alert"
+              data-testid="delete-account-wizard-confirm-error"
+            >
               {confirmCheckboxError.message}
             </p>
           )}

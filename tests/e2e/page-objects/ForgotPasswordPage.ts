@@ -3,6 +3,7 @@ import type { Locator, Page } from "playwright/test";
 export class ForgotPasswordPage {
   readonly page: Page;
   readonly container: Locator;
+  readonly form: Locator;
   readonly emailInput: Locator;
   readonly submitButton: Locator;
   readonly alerts: Locator;
@@ -14,6 +15,7 @@ export class ForgotPasswordPage {
   constructor(page: Page) {
     this.page = page;
     this.container = page.getByTestId("forgot-password-page");
+    this.form = page.getByTestId("forgot-password-form");
     this.emailInput = page.getByTestId("forgot-password-form-email-input");
     this.submitButton = page.getByTestId("forgot-password-form-submit-button");
     this.alerts = page.locator('[data-testid^="alert-area-"]');
@@ -61,7 +63,22 @@ export class ForgotPasswordPage {
 
     await Promise.race([responsePromise, this.page.waitForTimeout(1500)]);
 
-    await this.waitForAlert();
+    // Wait for either error or success (inline or success message)
+    await Promise.race([
+      this.page
+        .waitForFunction(
+          () =>
+            Boolean(
+              document
+                .querySelector('[data-testid="forgot-password-form-email-input"]')
+                ?.nextElementSibling?.querySelector("p.text-destructive")
+            ),
+          undefined,
+          { timeout: 3000 }
+        )
+        .catch(() => undefined),
+      this.successMessage.waitFor({ state: "visible", timeout: 3000 }).catch(() => undefined),
+    ]);
 
     await this.page.waitForTimeout(150);
   }
@@ -87,5 +104,28 @@ export class ForgotPasswordPage {
           { timeout }
         );
       });
+  }
+
+  /**
+   * Get email field error message
+   * @returns Error message text or null if no error
+   */
+  async getEmailErrorText() {
+    // Error is rendered as <p> after the email input within the same div
+    const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
+    try {
+      return await errorElement.textContent();
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Check if email error is visible
+   * @returns True if email error message is displayed
+   */
+  async hasEmailError() {
+    const errorText = await this.getEmailErrorText();
+    return errorText !== null && errorText.trim().length > 0;
   }
 }
