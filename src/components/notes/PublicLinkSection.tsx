@@ -1,6 +1,5 @@
 import { Copy, Check, RotateCw, Link } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { usePublicLink } from "@/components/hooks/usePublicLink";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,162 +30,21 @@ interface PublicLinkSectionProps {
  * - Display URL with copy-to-clipboard
  * - Rotate token with confirmation dialog
  * - Only visible for owners
+ * Presentational component using usePublicLink hook
  */
 export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdate }: PublicLinkSectionProps) {
-  const [isSaving, setIsSaving] = useState(false);
-  const [isRotating, setIsRotating] = useState(false);
-  const [showRotateDialog, setShowRotateDialog] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // Optimistic state for switch - syncs with publicLink but updates immediately on toggle
-  const [optimisticEnabled, setOptimisticEnabled] = useState(publicLink?.is_enabled || false);
-
-  const isEnabled = optimisticEnabled;
-  const fullUrl = publicLink?.url ? `${window.location.origin}${publicLink.url}` : "";
-
-  // Sync optimistic state with actual publicLink prop
-  useEffect(() => {
-    setOptimisticEnabled(publicLink?.is_enabled || false);
-  }, [publicLink?.is_enabled]);
-
-  /**
-   * Enable public link (POST)
-   */
-  const handleEnable = useCallback(async () => {
-    if (!isOwner) return;
-
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/notes/${noteId}/public-link`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to enable public link");
-      }
-
-      const newLink: PublicLinkDTO = await response.json();
-      onUpdate(newLink);
-      toast.success("Link publiczny został włączony");
-    } catch (error) {
-      // Rollback optimistic update on error
-      setOptimisticEnabled(false);
-      // eslint-disable-next-line no-console
-      console.error("Failed to enable public link:", error);
-      toast.error(error instanceof Error ? error.message : "Nie udało się włączyć linku");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [isOwner, noteId, onUpdate]);
-
-  /**
-   * Disable public link (PATCH)
-   */
-  const handleDisable = useCallback(async () => {
-    if (!isOwner) return;
-
-    setIsSaving(true);
-    try {
-      const response = await fetch(`/api/notes/${noteId}/public-link`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ is_enabled: false }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to disable public link");
-      }
-
-      const updatedLink: PublicLinkDTO = await response.json();
-      onUpdate(updatedLink);
-      toast.success("Link publiczny został wyłączony");
-    } catch (error) {
-      // Rollback optimistic update on error
-      setOptimisticEnabled(true);
-      // eslint-disable-next-line no-console
-      console.error("Failed to disable public link:", error);
-      toast.error(error instanceof Error ? error.message : "Nie udało się wyłączyć linku");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [isOwner, noteId, onUpdate]);
-
-  /**
-   * Toggle public link on/off
-   */
-  const handleToggle = useCallback(
-    async (checked: boolean) => {
-      // Optimistically update UI immediately
-      setOptimisticEnabled(checked);
-
-      if (checked) {
-        await handleEnable();
-      } else {
-        await handleDisable();
-      }
-    },
-    [handleEnable, handleDisable]
-  );
-
-  /**
-   * Copy URL to clipboard
-   */
-  const handleCopy = useCallback(async () => {
-    if (!fullUrl) return;
-
-    try {
-      await navigator.clipboard.writeText(fullUrl);
-      toast.success("Link skopiowany do schowka");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to copy URL:", error);
-      toast.error("Nie udało się skopiować linku");
-    }
-
-    // Show copied state regardless of clipboard success (e.g., in headless tests)
-    setCopied(true);
-
-    // Reset copied state after 2 seconds
-    setTimeout(() => setCopied(false), 2000);
-  }, [fullUrl]);
-
-  /**
-   * Rotate token (POST with confirmation)
-   */
-  const handleRotate = useCallback(async () => {
-    if (!isOwner || isRotating) return;
-
-    setIsRotating(true);
-    setShowRotateDialog(false);
-
-    try {
-      const response = await fetch(`/api/notes/${noteId}/public-link/rotate`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to rotate token");
-      }
-
-      const rotatedLink: PublicLinkDTO = await response.json();
-      onUpdate(rotatedLink);
-      toast.success("Token został zmieniony - stary link przestał działać");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to rotate token:", error);
-      toast.error(error instanceof Error ? error.message : "Nie udało się zmienić tokenu");
-    } finally {
-      setIsRotating(false);
-    }
-  }, [isOwner, isRotating, noteId, onUpdate]);
+  const {
+    isEnabled,
+    fullUrl,
+    toggleLink,
+    rotateLink,
+    copyLink,
+    isSaving,
+    isRotating,
+    copied,
+    showRotateDialog,
+    setShowRotateDialog,
+  } = usePublicLink(noteId, publicLink, onUpdate);
 
   if (!isOwner) {
     return null;
@@ -212,7 +70,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
           <Switch
             id="public-link-toggle"
             checked={isEnabled}
-            onCheckedChange={handleToggle}
+            onCheckedChange={toggleLink}
             disabled={isSaving}
             className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
             data-testid="public-link-section-toggle-switch"
@@ -247,7 +105,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
           <div className="flex gap-3">
             {/* Copy button */}
             <Button
-              onClick={handleCopy}
+              onClick={copyLink}
               variant="outline"
               className="flex-1 border-input-border bg-glass-bg-from text-glass-text hover-glass"
               data-testid="public-link-section-copy-button"
@@ -299,7 +157,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
               </Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="warning" onClick={handleRotate} data-testid="public-link-section-rotate-dialog-confirm">
+              <Button variant="warning" onClick={rotateLink} data-testid="public-link-section-rotate-dialog-confirm">
                 Tak, zmień token
               </Button>
             </AlertDialogAction>
