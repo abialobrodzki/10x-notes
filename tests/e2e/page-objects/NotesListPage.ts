@@ -187,7 +187,14 @@ export class NotesListPage {
    * Wait for notes to load
    */
   async waitForNotesToLoad() {
-    await this.noteList.waitFor({ state: "visible" });
+    try {
+      await this.noteList.waitFor({ state: "visible", timeout: 5000 });
+    } catch (error) {
+      // Fallback to empty state visibility when there are no notes to display
+      await this.noteListEmptyState.waitFor({ state: "visible", timeout: 5000 }).catch(() => {
+        throw error;
+      });
+    }
   }
 
   /**

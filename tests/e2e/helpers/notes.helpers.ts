@@ -70,7 +70,10 @@ export async function deleteNoteViaAPI(page: Page, noteId: string): Promise<void
 
   if (!response.ok()) {
     const errorText = await response.text();
-    throw new Error(`Failed to delete note: ${response.status()} ${errorText}`);
+    // Ignore 404 errors since the note may have been shared (no delete permission) or already removed
+    if (response.status() !== 404) {
+      throw new Error(`Failed to delete note: ${response.status()} ${errorText}`);
+    }
   }
 }
 

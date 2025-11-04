@@ -1,5 +1,6 @@
 import { test as base } from "playwright/test";
 import { requireE2EUserCredentials, requireEnvVar } from "../helpers/env.helpers";
+import { DeleteAccountWizardPOM } from "../page-objects/DeleteAccountWizard";
 import { ForgotPasswordPage } from "../page-objects/ForgotPasswordPage";
 import { LandingPage } from "../page-objects/LandingPage";
 import { LoginPage } from "../page-objects/LoginPage";
@@ -10,6 +11,7 @@ import { PublicNotePage } from "../page-objects/PublicNotePage";
 import { RegisterPage } from "../page-objects/RegisterPage";
 import { ResetPasswordPage } from "../page-objects/ResetPasswordPage";
 import { SettingsPage } from "../page-objects/SettingsPage";
+import { TagAccessModalPOM } from "../page-objects/TagAccessModal";
 
 type AuthenticatedNotesPage = NotesPage & {
   user: {
@@ -45,6 +47,8 @@ interface CustomFixtures {
   resetPasswordPage: ResetPasswordPage;
   settingsPage: SettingsPage;
   publicNotePage: PublicNotePage;
+  tagAccessModal: TagAccessModalPOM;
+  deleteAccountWizard: DeleteAccountWizardPOM;
   authenticatedPage: AuthenticatedNotesPage;
   user: { email: string; id: string };
 }
@@ -131,6 +135,22 @@ export const test = base.extend<CustomFixtures>({
   publicNotePage: async ({ page }, use) => {
     const publicNotePage = new PublicNotePage(page);
     await use(publicNotePage);
+  },
+
+  /**
+   * TagAccessModal fixture - automatically instantiated for each test
+   */
+  tagAccessModal: async ({ page }, use) => {
+    const tagAccessModal = new TagAccessModalPOM(page);
+    await use(tagAccessModal);
+  },
+
+  /**
+   * DeleteAccountWizard fixture - automatically instantiated for each test
+   */
+  deleteAccountWizard: async ({ page }, use) => {
+    const deleteAccountWizard = new DeleteAccountWizardPOM(page);
+    await use(deleteAccountWizard);
   },
 
   /**

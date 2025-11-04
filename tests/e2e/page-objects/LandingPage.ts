@@ -45,25 +45,9 @@ export class LandingPage {
     await this.textarea.click();
 
     await this.textarea.fill("");
-    await this.textarea.type(value, { delay: 1 });
-
-    const expectedTimeout = Math.max(12000, value.length * 2);
-
-    await this.page.waitForFunction(
-      (expectedLength) => {
-        const text = document.querySelector('[data-testid="char-count-textarea-counter"]')?.textContent || "";
-        const matches = text.match(/(\d+)\/5000/);
-        if (!matches) return false;
-        const currentCount = parseInt(matches[1], 10);
-        // Allow ±10 character difference for very large texts due to async updates
-        return Math.abs(currentCount - expectedLength) <= 10;
-      },
-      value.length,
-      { timeout: expectedTimeout }
-    );
-
-    // Give React a moment to stabilize
-    await this.page.waitForTimeout(200);
+    await this.textarea.fill(value);
+    await this.textarea.dispatchEvent("change");
+    await this.textarea.dispatchEvent("blur");
   }
 
   async clickGenerate() {
