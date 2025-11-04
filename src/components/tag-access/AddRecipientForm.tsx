@@ -1,9 +1,11 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
-import { useState, useId } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { addRecipientSchema, type AddRecipientInput } from "@/lib/validators/tags.schemas";
 
 interface AddRecipientFormProps {
   /** Whether add operation is in progress */
@@ -14,6 +16,7 @@ interface AddRecipientFormProps {
 
 /**
  * AddRecipientForm - Form for adding new recipient by email
+ * Uses React Hook Form for state management and Zod for validation
  *
  * Features:
  * - Email input with validation
@@ -22,45 +25,25 @@ interface AddRecipientFormProps {
  * - Form reset after successful submission
  */
 export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
-  const [email, setEmail] = useState("");
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const emailInputId = useId();
+  const {
+    register,
+    handleSubmit: handleReactHookFormSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<AddRecipientInput>({
+    resolver: zodResolver(addRecipientSchema),
+    mode: "onBlur",
+  });
 
-  const validateEmail = (email: string): boolean => {
-    const trimmedEmail = email.trim();
-
-    if (!trimmedEmail) {
-      setValidationError("Email jest wymagany");
-      return false;
-    }
-
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setValidationError("Nieprawidłowy format email");
-      return false;
-    }
-
-    setValidationError(null);
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateEmail(email)) {
-      return;
-    }
-
-    const trimmedEmail = email.trim();
+  const handleSubmit = async (data: AddRecipientInput) => {
+    const trimmedEmail = data.email.trim();
     const success = await onAdd(trimmedEmail);
 
     if (success) {
       toast.success("Dodano dostęp", {
         description: `Użytkownik ${trimmedEmail} ma teraz dostęp do tej etykiety`,
       });
-      setEmail("");
-      setValidationError(null);
+      reset();
     } else {
       toast.error("Nie udało się dodać dostępu", {
         description: "Sprawdź czy użytkownik istnieje i ma potwierdzony email",
@@ -68,48 +51,38 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
     }
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    // Clear validation error on input change
-    if (validationError) {
-      setValidationError(null);
-    }
-  };
+  const emailError = errors.email;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" data-testid="add-recipient-form">
+    <form onSubmit={handleReactHookFormSubmit(handleSubmit)} className="space-y-4" data-testid="add-recipient-form">
       <div className="space-y-2">
-        <Label htmlFor={emailInputId} className="text-sm font-medium">
-          Dodaj nowego użytkownika
-        </Label>
+        <Label className="text-sm font-medium">Dodaj nowego użytkownika</Label>
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              id={emailInputId}
               type="email"
               placeholder="email@example.com"
-              value={email}
-              onChange={handleEmailChange}
               disabled={isAdding}
-              aria-invalid={!!validationError}
-              aria-describedby={validationError ? `${emailInputId}-error` : undefined}
-              className={validationError ? "border-input-border-error" : ""}
+              aria-invalid={!!emailError}
+              aria-describedby={emailError ? "email-error" : undefined}
+              className={emailError ? "border-input-border-error" : ""}
               data-testid="add-recipient-form-email-input"
+              {...register("email")}
             />
-            {validationError && (
+            {emailError && (
               <p
-                id={`${emailInputId}-error`}
+                id="email-error"
                 className="mt-1 text-xs text-destructive"
                 role="alert"
                 data-testid="add-recipient-form-validation-error"
               >
-                {validationError}
+                {emailError.message}
               </p>
             )}
           </div>
           <Button
             type="submit"
-            disabled={isAdding || !email.trim()}
+            disabled={isAdding}
             size="default"
             aria-label="Dodaj użytkownika"
             data-testid="add-recipient-form-submit-button"

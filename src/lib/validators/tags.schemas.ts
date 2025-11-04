@@ -88,3 +88,23 @@ export const grantTagAccessSchema = z.object({
  * Use this type for validated grant tag access input
  */
 export type GrantTagAccessInput = z.infer<typeof grantTagAccessSchema>;
+
+/**
+ * Validation schema for AddRecipientForm
+ * Used to add a new recipient/user to share a tag with
+ * Validates email format for new recipients
+ */
+export const addRecipientSchema = z.object({
+  /**
+   * Email address of recipient to add access for
+   * Must be valid email format
+   * User must exist in the system (auth.users) with verified email
+   */
+  email: z.string().email("Podaj poprawny adres email").min(1, "Email jest wymagany"),
+});
+
+/**
+ * TypeScript type inferred from addRecipient schema
+ * Use this type for validated add recipient form input
+ */
+export type AddRecipientInput = z.infer<typeof addRecipientSchema>;

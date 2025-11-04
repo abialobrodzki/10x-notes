@@ -1,8 +1,10 @@
-import { useState, useCallback, useId } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { validateEmail } from "@/lib/validators/auth.validators";
+import { forgotPasswordSchema, type ForgotPasswordInput } from "@/lib/validators/auth.schemas";
 
 interface ForgotPasswordFormProps {
   onError: (errors: string[]) => void;
@@ -11,123 +13,84 @@ interface ForgotPasswordFormProps {
 
 /**
  * ForgotPasswordForm component - password reset request form
+ * Uses React Hook Form for state management and Zod for validation
  * Integrates with Supabase Auth to send password reset email
  * Validates email and handles submission flow
  */
 export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswordFormProps) {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({ email: false });
   const [hasSubmitError, setHasSubmitError] = useState(false);
 
-  const emailId = useId();
+  const {
+    register,
+    handleSubmit: handleReactHookFormSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onBlur",
+  });
 
-  /**
-   * Validates form inputs
-   * @returns Array of validation errors (empty if valid)
-   */
-  const validateForm = useCallback((): string[] => {
-    return validateEmail(email);
-  }, [email]);
+  const handleSubmit = async (data: ForgotPasswordInput) => {
+    onError([]);
+    setHasSubmitError(false);
 
-  /**
-   * Mark field as touched when user leaves it
-   */
-  const handleBlur = useCallback(() => {
-    setTouchedFields({ email: true });
-  }, []);
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email.trim(),
+        }),
+      });
 
-  // Check if email has validation error OR submit failed
-  const emailHasError = (touchedFields.email && validateEmail(email).length > 0) || hasSubmitError;
+      const responseData = await response.json();
 
-  /**
-   * Handles form submission with Supabase Auth
-   */
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Clear previous errors
-      onError([]);
-
-      // Mark all fields as touched on submit
-      setTouchedFields({ email: true });
-
-      // Validate form
-      const validationErrors = validateForm();
-      if (validationErrors.length > 0) {
-        onError(validationErrors);
-        return;
+      if (!response.ok) {
+        throw new Error(responseData.message || "Password reset request failed");
       }
 
-      setIsSubmitting(true);
+      // Success - show confirmation message
+      // Note: For security, we don't reveal if email exists
+      onSuccess(true);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Password reset request error:", error);
 
-      try {
-        // Call server-side forgot password endpoint
-        const response = await fetch("/api/auth/forgot-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-          }),
-        });
+      setHasSubmitError(true);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          // Handle API errors
-          throw new Error(data.message || "Password reset request failed");
-        }
-
-        // Success - show confirmation message
-        // Note: For security, we don't reveal if email exists
-        onSuccess(true);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Password reset request error:", error);
-
-        // Mark submit as failed - show red borders
-        setHasSubmitError(true);
-
-        if (error instanceof Error) {
-          onError([error.message]);
-        } else {
-          onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-        }
-
-        setIsSubmitting(false);
+      if (error instanceof Error) {
+        onError([error.message]);
+      } else {
+        onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
       }
-    },
-    [email, onError, onSuccess, validateForm]
-  );
+    }
+  };
+
+  const emailError = errors.email || (hasSubmitError ? errors.email : null);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="forgot-password-form">
+    <form
+      onSubmit={handleReactHookFormSubmit(handleSubmit)}
+      className="space-y-4"
+      noValidate
+      data-testid="forgot-password-form"
+    >
       {/* Email input */}
       <div className="space-y-2">
-        <Label htmlFor={emailId} className="text-glass-text">
-          Email
-        </Label>
+        <Label className="text-glass-text">Email</Label>
         <Input
-          id={emailId}
           type="email"
           placeholder="twoj@email.com"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (hasSubmitError) setHasSubmitError(false);
-          }}
-          onBlur={handleBlur}
           disabled={isSubmitting}
           autoComplete="email"
-          required
           aria-required="true"
-          aria-invalid={emailHasError ? "true" : "false"}
+          aria-invalid={!!emailError}
           className="border-input-border bg-input-bg text-input-text placeholder:text-input-placeholder"
           data-testid="forgot-password-form-email-input"
+          {...register("email")}
         />
+        {emailError && <p className="text-sm text-destructive">{emailError.message}</p>}
       </div>
 
       {/* Submit button */}
