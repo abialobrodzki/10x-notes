@@ -1,5 +1,9 @@
 import { Menu } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
+import { useInfiniteScroll } from "@/components/hooks/useInfiniteScroll";
+import { useNoteFiltering } from "@/components/hooks/useNoteFiltering";
+import { useNotesNavigation } from "@/components/hooks/useNotesNavigation";
+import { useResponsive } from "@/components/hooks/useResponsive";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { FiltersPanel } from "./FiltersPanel";
@@ -8,7 +12,7 @@ import { NoteList } from "./NoteList";
 import { Pagination } from "./Pagination";
 import { SearchInput } from "./SearchInput";
 import { TagSidebar } from "./TagSidebar";
-import type { NotesListDTO, TagsListDTO, NotesListQuery, NoteListItemDTO } from "@/types";
+import type { NotesListDTO, TagsListDTO, NotesListQuery } from "@/types";
 
 interface AppShellProps {
   notes: NotesListDTO;
@@ -25,121 +29,31 @@ interface AppShellProps {
  */
 export function AppShell({ notes, tags, query, error }: AppShellProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
-  const [allNotes, setAllNotes] = useState<NoteListItemDTO[]>(notes.notes);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const selectedTagId = query.tag_id || null;
 
-  // Detect mobile/desktop
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768); // md breakpoint
-    };
+  // Navigation and filtering hooks
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedTagId,
+    hasActiveFilters,
+    handleTagSelect,
+    handleFiltersChange,
+    handlePageChange,
+  } = useNotesNavigation({ query });
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+  // Responsive detection
+  const isMobile = useResponsive();
 
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  // Infinite scroll
+  const { allNotes, isLoadingMore, hasMore, handleLoadMore } = useInfiniteScroll({ notes, query });
 
-  // Reset allNotes when notes change (e.g., from SSR or filter change)
-  useEffect(() => {
-    setAllNotes(notes.notes);
-  }, [notes.notes]);
-
-  const handleTagSelect = (tagId: string | null) => {
-    // Update URL with new tag_id
-    const url = new URL(window.location.href);
-    if (tagId) {
-      url.searchParams.set("tag_id", tagId);
-    } else {
-      url.searchParams.delete("tag_id");
-    }
-    // Reset to page 1 when changing filters
-    url.searchParams.set("page", "1");
-    window.location.href = url.toString();
-  };
-
-  const handleFiltersChange = (newFilters: NotesListQuery) => {
-    // Update URL with new filters
-    const url = new URL(window.location.href);
-
-    // Apply all filter params
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        url.searchParams.set(key, String(value));
-      } else {
-        url.searchParams.delete(key);
-      }
-    });
-
-    window.location.href = url.toString();
-  };
-
-  // Check if user has any active filters (excluding pagination/sorting)
-  const hasActiveFilters = useMemo(() => {
-    return Boolean(query.tag_id || query.goal_status || query.date_from || query.date_to);
-  }, [query.tag_id, query.goal_status, query.date_from, query.date_to]);
-
-  const handlePageChange = (page: number) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", String(page));
-    window.location.href = url.toString();
-  };
-
-  const handleLoadMore = async () => {
-    if (isLoadingMore || notes.pagination.page >= notes.pagination.total_pages) return;
-
-    setIsLoadingMore(true);
-
-    try {
-      // Build URL for next page
-      const url = new URL("/api/notes", window.location.origin);
-      const nextPage = notes.pagination.page + 1;
-
-      // Copy all current query params
-      Object.entries(query).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          url.searchParams.set(key, String(value));
-        }
-      });
-      url.searchParams.set("page", String(nextPage));
-
-      const response = await fetch(url.toString());
-      if (!response.ok) throw new Error("Failed to load more notes");
-
-      const data: NotesListDTO = await response.json();
-      setAllNotes((prev) => [...prev, ...data.notes]);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("Error loading more notes:", err);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
+  // Client-side note filtering
+  const notesForFiltering = isMobile ? allNotes : notes.notes;
+  const filteredNotes = useNoteFiltering({ notes: notesForFiltering, searchTerm });
 
   const handleNoteClick = (id: string) => {
     window.location.href = `/notes/${id}`;
   };
-
-  // Client-side filtering by search term
-  const filteredNotes = useMemo(() => {
-    const notesToFilter = isMobile ? allNotes : notes.notes;
-
-    if (!searchTerm || searchTerm.trim() === "") {
-      return notesToFilter;
-    }
-
-    const term = searchTerm.toLowerCase();
-    return notesToFilter.filter((note) => {
-      const summaryMatch = note.summary_text?.toLowerCase().includes(term);
-      const tagMatch = note.tag.name.toLowerCase().includes(term);
-      return summaryMatch || tagMatch;
-    });
-  }, [isMobile, allNotes, notes.notes, searchTerm]);
-
-  const hasMore = notes.pagination.page < notes.pagination.total_pages;
 
   return (
     <div

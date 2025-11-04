@@ -1,23 +1,12 @@
 import { Sparkles } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useAiGeneration } from "@/components/hooks/useAiGeneration";
 import { Button } from "@/components/ui/button";
 import { CharCountTextarea } from "./CharCountTextarea";
+import { GenerationError } from "./GenerationError";
 import { GenerationSkeleton } from "./GenerationSkeleton";
 import { SaveNoteButton } from "./SaveNoteButton";
 import { SavePromptBanner } from "./SavePromptBanner";
 import { SummaryCard } from "./SummaryCard";
-import type { AiSummaryDTO } from "@/types";
-
-/**
- * LandingVM - View Model for Landing Page state
- */
-interface LandingVM {
-  input: string;
-  isGenerating: boolean;
-  error?: string;
-  result?: AiSummaryDTO;
-}
 
 interface LandingPageProps {
   /** Whether user is authenticated */
@@ -31,147 +20,7 @@ interface LandingPageProps {
  * - Authenticated users: shown SaveNoteButton (direct save)
  */
 export function LandingPage({ isAuthenticated }: LandingPageProps) {
-  const [state, setState] = useState<LandingVM>({
-    input: "",
-    isGenerating: false,
-  });
-
-  const handleInputChange = (value: string) => {
-    setState((prev) => ({ ...prev, input: value, error: undefined }));
-  };
-
-  const handleGenerate = async () => {
-    // Validation: ensure input is not empty
-    if (!state.input.trim()) {
-      setState((prev) => ({ ...prev, error: "Treść nie może być pusta" }));
-      return;
-    }
-
-    // Validation: ensure input doesn't exceed limit
-    if (state.input.length > 5000) {
-      setState((prev) => ({
-        ...prev,
-        error: "Treść przekracza limit 5000 znaków",
-      }));
-      return;
-    }
-
-    setState((prev) => ({ ...prev, isGenerating: true, error: undefined }));
-
-    try {
-      // Setup timeout controller (60s as per plan)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-      const response = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          original_content: state.input,
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Handle rate limiting (429)
-      if (response.status === 429) {
-        const retryAfter = response.headers.get("Retry-After");
-        const retrySeconds = retryAfter ? parseInt(retryAfter, 10) : 60;
-        setState((prev) => ({
-          ...prev,
-          isGenerating: false,
-          error: `Przekroczono limit generowania. Spróbuj ponownie za ${retrySeconds}s`,
-        }));
-
-        // Toast with countdown for rate limiting
-        toast.error("Limit generowania przekroczony", {
-          description: `Spróbuj ponownie za ${retrySeconds} sekund`,
-          duration: retrySeconds * 1000,
-        });
-        return;
-      }
-
-      // Handle validation errors (400)
-      if (response.status === 400) {
-        const errorData = await response.json();
-        const errorMsg = errorData.message || "Nieprawidłowa treść";
-        setState((prev) => ({
-          ...prev,
-          isGenerating: false,
-          error: errorMsg,
-        }));
-        toast.error("Błąd walidacji", { description: errorMsg });
-        return;
-      }
-
-      // Handle service unavailable (503)
-      if (response.status === 503) {
-        const errorMsg = "Serwis AI jest tymczasowo niedostępny. Spróbuj ponownie za chwilę";
-        setState((prev) => ({
-          ...prev,
-          isGenerating: false,
-          error: errorMsg,
-        }));
-        toast.error("Serwis niedostępny", { description: errorMsg });
-        return;
-      }
-
-      // Handle other errors
-      if (!response.ok) {
-        const errorMsg = "Wystąpił błąd podczas generowania podsumowania";
-        setState((prev) => ({
-          ...prev,
-          isGenerating: false,
-          error: errorMsg,
-        }));
-        toast.error("Błąd generowania", { description: errorMsg });
-        return;
-      }
-
-      const result: AiSummaryDTO = await response.json();
-
-      setState((prev) => ({
-        ...prev,
-        isGenerating: false,
-        result,
-        error: undefined,
-      }));
-
-      // Success toast
-      toast.success("Podsumowanie wygenerowane pomyślnie!", {
-        description: "Przewiń w dół, aby zobaczyć wynik i zapisać notatkę",
-      });
-    } catch (error) {
-      // Handle timeout (AbortError)
-      if (error instanceof Error && error.name === "AbortError") {
-        const errorMsg = "Przekroczono limit czasu (60s). Spróbuj ponownie";
-        setState((prev) => ({
-          ...prev,
-          isGenerating: false,
-          error: errorMsg,
-        }));
-        toast.error("Timeout", { description: errorMsg });
-        return;
-      }
-
-      // Handle network errors
-      const errorMsg = "Błąd połączenia. Sprawdź internet i spróbuj ponownie";
-      setState((prev) => ({
-        ...prev,
-        isGenerating: false,
-        error: errorMsg,
-      }));
-      toast.error("Błąd sieci", { description: errorMsg });
-    }
-  };
-
-  const handleRetry = () => {
-    setState((prev) => ({ ...prev, error: undefined }));
-    handleGenerate();
-  };
+  const { input, isGenerating, error, result, handleInputChange, handleGenerate, handleRetry } = useAiGeneration();
 
   return (
     <div
@@ -196,10 +45,10 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
           {/* Input Area */}
           <div className="space-y-6">
             <CharCountTextarea
-              value={state.input}
+              value={input}
               onChange={handleInputChange}
-              disabled={state.isGenerating}
-              error={state.error}
+              disabled={isGenerating}
+              error={error}
               data-testid="landing-page-input-textarea"
             />
 
@@ -207,46 +56,28 @@ export function LandingPage({ isAuthenticated }: LandingPageProps) {
               onClick={handleGenerate}
               variant="blue-gradient"
               size="default"
-              disabled={state.isGenerating || !state.input.trim() || state.input.length > 5000}
+              disabled={isGenerating || !input.trim() || input.length > 5000}
               className="w-full"
               data-testid="landing-page-generate-button"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              {state.isGenerating ? "Generowanie..." : "Generuj notatkę"}
+              {isGenerating ? "Generowanie..." : "Generuj notatkę"}
             </Button>
 
             {/* Loading State */}
-            {state.isGenerating && <GenerationSkeleton />}
+            {isGenerating && <GenerationSkeleton />}
 
             {/* Error State with Retry */}
-            {state.error && !state.isGenerating && (
-              <div
-                className="rounded-lg border border-red-500/50 bg-red-500/10 p-4 text-red-200"
-                role="alert"
-                aria-live="assertive"
-                data-testid="landing-page-error-message"
-              >
-                <p className="font-medium">{state.error}</p>
-                {!state.error.includes("Przekroczono limit generowania") && (
-                  <button
-                    onClick={handleRetry}
-                    className="mt-2 text-sm font-medium text-red-100 underline hover:text-red-50"
-                    data-testid="landing-page-retry-button"
-                  >
-                    Spróbuj ponownie
-                  </button>
-                )}
-              </div>
-            )}
+            {error && !isGenerating && <GenerationError error={error} onRetry={handleRetry} />}
 
             {/* Success State */}
-            {state.result && !state.isGenerating && (
+            {result && !isGenerating && (
               <div className="space-y-6">
-                <SummaryCard data={state.result} />
+                <SummaryCard data={result} />
                 {isAuthenticated ? (
-                  <SaveNoteButton originalContent={state.input} aiResult={state.result} />
+                  <SaveNoteButton originalContent={input} aiResult={result} />
                 ) : (
-                  <SavePromptBanner originalContent={state.input} aiResult={state.result} />
+                  <SavePromptBanner originalContent={input} aiResult={result} />
                 )}
               </div>
             )}

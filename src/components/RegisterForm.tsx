@@ -1,10 +1,9 @@
-import { useState, useCallback, useId } from "react";
+import { useId } from "react";
+import { useRegistrationForm } from "@/components/hooks/useRegistrationForm";
 import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getPendingNote } from "@/lib/utils/pending-note.utils";
-import { validateEmail, validatePasswordRegister, validatePasswordConfirm } from "@/lib/validators/auth.validators";
 
 interface RegisterFormProps {
   onError: (errors: string[]) => void;
@@ -17,132 +16,29 @@ interface RegisterFormProps {
  * - Redirects to /notes?autoSave=true if pending note exists
  */
 export default function RegisterForm({ onError }: RegisterFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({
-    email: false,
-    password: false,
-    confirmPassword: false,
-  });
-  const [hasSubmitError, setHasSubmitError] = useState(false);
+  const {
+    email,
+    password,
+    confirmPassword,
+    showPassword,
+    isSubmitting,
+    hasSubmitError,
+    emailHasError,
+    passwordHasError,
+    confirmPasswordHasError,
+    setEmail,
+    setPassword,
+    setConfirmPassword,
+    setShowPassword,
+    setHasSubmitError,
+    handleBlur,
+    handleSubmit,
+  } = useRegistrationForm({ onError });
 
   const emailId = useId();
   const passwordId = useId();
   const confirmPasswordId = useId();
   const showPasswordId = useId();
-
-  /**
-   * Validates form inputs
-   * @returns Array of validation errors (empty if valid)
-   */
-  const validateForm = useCallback((): string[] => {
-    const errors: string[] = [];
-    errors.push(...validateEmail(email));
-    errors.push(...validatePasswordRegister(password));
-    errors.push(...validatePasswordConfirm(password, confirmPassword));
-    return errors;
-  }, [email, password, confirmPassword]);
-
-  /**
-   * Mark field as touched when user leaves it
-   */
-  const handleBlur = useCallback((field: "email" | "password" | "confirmPassword") => {
-    setTouchedFields((prev) => ({ ...prev, [field]: true }));
-  }, []);
-
-  // Check if fields have validation errors OR submit failed
-  const emailHasError = (touchedFields.email && validateEmail(email).length > 0) || hasSubmitError;
-  const passwordHasError = (touchedFields.password && validatePasswordRegister(password).length > 0) || hasSubmitError;
-  const confirmPasswordHasError =
-    (touchedFields.confirmPassword && validatePasswordConfirm(password, confirmPassword).length > 0) || hasSubmitError;
-
-  /**
-   * Handles form submission with Supabase Auth
-   */
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Clear previous errors
-      onError([]);
-
-      // Mark all fields as touched on submit
-      setTouchedFields({ email: true, password: true, confirmPassword: true });
-
-      // Validate form
-      const validationErrors = validateForm();
-      if (validationErrors.length > 0) {
-        onError(validationErrors);
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      try {
-        // Call server-side registration endpoint
-        const response = await fetch("/api/auth/register", {
-          method: "POST",
-          credentials: "include", // Include cookies for server-side session management
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // Handle API errors
-          throw new Error(data.message || "Registration failed");
-        }
-
-        // Check if email confirmation is required
-        if (data.requiresConfirmation || !data.session) {
-          // Email confirmation required
-          onError([
-            data.message ||
-              "Rejestracja udana! Sprawdź swoją skrzynkę email i kliknij link potwierdzający, aby aktywować konto.",
-          ]);
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Registration successful with immediate session
-        // Check for pending generated note in sessionStorage
-        const pendingNote = getPendingNote();
-
-        if (pendingNote) {
-          // Replace current history entry to prevent going back to register page
-          window.location.replace("/notes?autoSave=true");
-          return;
-        }
-
-        // No pending note or expired - replace current history entry
-        window.location.replace("/notes");
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Registration error:", error);
-
-        // Mark submit as failed - show red borders
-        setHasSubmitError(true);
-
-        if (error instanceof Error) {
-          onError([error.message]);
-        } else {
-          onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-        }
-
-        setIsSubmitting(false);
-      }
-    },
-    [email, password, onError, validateForm]
-  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="register-form">
