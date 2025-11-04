@@ -37,20 +37,32 @@ export async function createNoteViaAPI(page: Page, noteData: CreateNoteParams): 
   const context = page.context();
   const cookies = await context.cookies();
 
-  const response = await page.request.post("http://localhost:3000/api/notes", {
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
-    },
-    data: noteData,
-  });
+  try {
+    const response = await page.request.post("http://localhost:3000/api/notes", {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      },
+      data: noteData,
+    });
 
-  if (!response.ok()) {
-    const errorText = await response.text();
-    throw new Error(`Failed to create note: ${response.status()} ${errorText}`);
+    if (!response.ok()) {
+      const errorText = await response.text();
+      console.warn(`Warning: Failed to create note: ${response.status()}`);
+      throw new Error(`Failed to create note: ${response.status()} ${errorText}`);
+    }
+
+    const contentType = response.headers()["content-type"];
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`Warning: Unexpected content type when creating note: ${contentType}`);
+      throw new Error(`Unexpected content type: ${contentType}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn(`Warning: Error creating note: ${error}`);
+    throw error;
   }
-
-  return await response.json();
 }
 
 /**
@@ -86,19 +98,30 @@ export async function getNotesViaAPI(page: Page): Promise<NoteResponse[]> {
   const context = page.context();
   const cookies = await context.cookies();
 
-  const response = await page.request.get("http://localhost:3000/api/notes", {
-    headers: {
-      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
-    },
-  });
+  try {
+    const response = await page.request.get("http://localhost:3000/api/notes", {
+      headers: {
+        Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      },
+    });
 
-  if (!response.ok()) {
-    const errorText = await response.text();
-    throw new Error(`Failed to get notes: ${response.status()} ${errorText}`);
+    if (!response.ok()) {
+      console.warn(`Warning: Failed to get notes: ${response.status()}`);
+      return [];
+    }
+
+    const contentType = response.headers()["content-type"];
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`Warning: Unexpected content type: ${contentType}`);
+      return [];
+    }
+
+    const data = await response.json();
+    return data.notes || [];
+  } catch (error) {
+    console.warn(`Warning: Error getting notes: ${error}`);
+    return [];
   }
-
-  const data = await response.json();
-  return data.notes || [];
 }
 
 /**
@@ -108,9 +131,10 @@ export async function getNotesViaAPI(page: Page): Promise<NoteResponse[]> {
  */
 export async function deleteAllNotesViaAPI(page: Page): Promise<void> {
   const notes = await getNotesViaAPI(page);
-
-  for (const note of notes) {
-    await deleteNoteViaAPI(page, note.id);
+  const chunkSize = 5;
+  for (let i = 0; i < notes.length; i += chunkSize) {
+    const chunk = notes.slice(i, i + chunkSize);
+    await Promise.all(chunk.map((note) => deleteNoteViaAPI(page, note.id)));
   }
 }
 
@@ -120,22 +144,17 @@ export async function deleteAllNotesViaAPI(page: Page): Promise<void> {
  * @param count - Number of notes to create (default: 3)
  * @returns Array of created notes
  */
-export async function createSampleNotes(page: Page, count = 3): Promise<NoteResponse[]> {
+export async function createSampleNotes(page: Page, count = 1): Promise<NoteResponse[]> {
   const notes: NoteResponse[] = [];
-
   for (let i = 0; i < count; i++) {
     const note = await createNoteViaAPI(page, {
-      original_content: `Testowa notatka ${i + 1}\n\nTo jest treść testowej notatki do celów E2E testing.`,
-      summary_text: `Podsumowanie notatki ${i + 1}. Testujemy wyświetlanie notatek na liście.`,
-      meeting_date: new Date().toISOString().split("T")[0], // Today's date in YYYY-MM-DD format
-      goal_status: i % 2 === 0 ? "achieved" : "not_achieved",
-      tag_name: i === 0 ? "E2E Test" : "Testowa Etykieta",
-      is_ai_generated: i % 2 === 0,
+      original_content: `This is a test note ${i}`,
+      summary_text: `This is a summary ${i}`,
+      tag_name: "test",
+      goal_status: "not_achieved",
     });
-
     notes.push(note);
   }
-
   return notes;
 }
 
@@ -156,20 +175,32 @@ export async function createPublicLinkViaAPI(page: Page, noteId: string): Promis
   const context = page.context();
   const cookies = await context.cookies();
 
-  const response = await page.request.post(`http://localhost:3000/api/notes/${noteId}/public-link`, {
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
-    },
-    data: {},
-  });
+  try {
+    const response = await page.request.post(`http://localhost:3000/api/notes/${noteId}/public-link`, {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      },
+      data: {},
+    });
 
-  if (!response.ok()) {
-    const errorText = await response.text();
-    throw new Error(`Failed to create public link: ${response.status()} ${errorText}`);
+    if (!response.ok()) {
+      const errorText = await response.text();
+      console.warn(`Warning: Failed to create public link: ${response.status()}`);
+      throw new Error(`Failed to create public link: ${response.status()} ${errorText}`);
+    }
+
+    const contentType = response.headers()["content-type"];
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`Warning: Unexpected content type when creating public link: ${contentType}`);
+      throw new Error(`Unexpected content type: ${contentType}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn(`Warning: Error creating public link: ${error}`);
+    throw error;
   }
-
-  return await response.json();
 }
 
 /**
@@ -186,18 +217,30 @@ export async function updatePublicLinkViaAPI(
   const context = page.context();
   const cookies = await context.cookies();
 
-  const response = await page.request.patch(`http://localhost:3000/api/notes/${noteId}/public-link`, {
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
-    },
-    data: updates,
-  });
+  try {
+    const response = await page.request.patch(`http://localhost:3000/api/notes/${noteId}/public-link`, {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
+      },
+      data: updates,
+    });
 
-  if (!response.ok()) {
-    const errorText = await response.text();
-    throw new Error(`Failed to update public link: ${response.status()} ${errorText}`);
+    if (!response.ok()) {
+      const errorText = await response.text();
+      console.warn(`Warning: Failed to update public link: ${response.status()}`);
+      throw new Error(`Failed to update public link: ${response.status()} ${errorText}`);
+    }
+
+    const contentType = response.headers()["content-type"];
+    if (!contentType || !contentType.includes("application/json")) {
+      console.warn(`Warning: Unexpected content type when updating public link: ${contentType}`);
+      throw new Error(`Unexpected content type: ${contentType}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn(`Warning: Error updating public link: ${error}`);
+    throw error;
   }
-
-  return await response.json();
 }

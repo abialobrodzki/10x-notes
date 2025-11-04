@@ -24,25 +24,26 @@ test.describe("Global Navigation and Layout", () => {
       await notesPage.waitForUserProfileLoaded(user.email);
     });
 
-    test("should navigate from notes to settings", async ({ notesPage, settingsPage, page }) => {
+    test("should navigate from notes to settings via navbar", async ({ notesPage, settingsPage, page, user }) => {
       // ARRANGE
       await notesPage.goto();
+      await notesPage.waitForUserProfileLoaded(user.email);
 
       // ACT
-      await settingsPage.goto();
+      await notesPage.goToSettings();
 
       // ASSERT
       await expect(page).toHaveURL(/\/settings/);
       await settingsPage.waitForLoaded();
     });
 
-    test("should navigate from settings back to notes", async ({ settingsPage, notesPage, page }) => {
+    test("should navigate from settings back to notes", async ({ settingsPage, page }) => {
       // ARRANGE
       await settingsPage.goto();
       await settingsPage.waitForLoaded();
 
       // ACT
-      await notesPage.goto();
+      await page.getByTestId("navbar-notes-link").click();
 
       // ASSERT
       await expect(page).toHaveURL(/\/notes/);
@@ -104,6 +105,20 @@ test.describe("Global Navigation and Layout", () => {
       expect(firstNotesUrl).toMatch(/\/notes$/);
     });
 
+    test("should open landing page from navbar generate button", async ({ notesPage, page, user }) => {
+      // ARRANGE
+      await notesPage.goto();
+      await notesPage.waitForUserProfileLoaded(user.email);
+
+      // ACT
+      await notesPage.navbarGenerateNoteButton.click();
+      await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
+
+      // ASSERT
+      await expect(page).toHaveURL("/");
+      await expect(page.getByTestId("landing-page")).toBeVisible();
+    });
+
     test("should handle direct URL navigation", async ({ page }) => {
       // ARRANGE
       const targetUrl = "/notes";
@@ -136,6 +151,30 @@ test.describe("Global Navigation and Layout", () => {
     //     await newContext.close();
     //   }
     // });
+  });
+
+  test.describe("Mobile Navigation", () => {
+    test("should open and use mobile menu links", async ({ notesPage, settingsPage, page, user }) => {
+      // ARRANGE
+      await page.setViewportSize({ width: 390, height: 844 });
+      await notesPage.goto();
+      await notesPage.waitForUserProfileLoaded(user.email);
+
+      // ACT - Open mobile menu and navigate to settings
+      await page.getByTestId("navbar-mobile-menu-button").click();
+      await page.getByTestId("navbar-mobile-settings-link").click();
+
+      // ASSERT
+      await expect(page).toHaveURL(/\/settings/);
+      await settingsPage.waitForLoaded();
+
+      // ACT - Return to notes via mobile menu
+      await page.getByTestId("navbar-mobile-menu-button").click();
+      await page.getByTestId("navbar-mobile-notes-link").click();
+
+      // ASSERT
+      await expect(page).toHaveURL(/\/notes$/);
+    });
   });
 
   test.describe("Notes List Navigation", () => {
@@ -345,5 +384,55 @@ test.describe("Global Navigation and Layout", () => {
       // ASSERT - Should be back at notes list
       await expect(authenticatedPage.page).toHaveURL(/\/notes/);
     });
+  });
+});
+
+test.describe("Authentication Management", () => {
+  // Logout test - no afterEach cleanup since session is destroyed
+  test("should logout via navbar dropdown", async ({ notesPage, page, user }) => {
+    // ARRANGE
+    await notesPage.goto();
+    await notesPage.waitForUserProfileLoaded(user.email);
+
+    // ACT
+    await notesPage.logout();
+    await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
+
+    // ASSERT
+    await expect(page).toHaveURL("/");
+    await expect(page.getByTestId("navbar-login-link")).toBeVisible();
+    await expect(page.getByTestId("landing-page")).toBeVisible();
+  });
+});
+
+test.describe("Public Navbar Navigation", () => {
+  test.use({ storageState: undefined });
+
+  test("should navigate to login and register from desktop navbar", async ({ page }) => {
+    // ARRANGE
+    await page.goto("/");
+
+    // ACT & ASSERT - Login link
+    await page.getByTestId("navbar-login-link").click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    // ACT & ASSERT - Go back and open register
+    await page.goBack();
+    await page.getByTestId("navbar-register-link").click();
+    await expect(page).toHaveURL(/\/register$/);
+  });
+
+  test("should navigate using mobile navbar links", async ({ page }) => {
+    // ARRANGE
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    // ACT - Mobile links
+    await page.getByTestId("navbar-mobile-login-link").click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    await page.goBack();
+    await page.getByTestId("navbar-mobile-register-link").click();
+    await expect(page).toHaveURL(/\/register$/);
   });
 });
