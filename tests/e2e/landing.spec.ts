@@ -1,4 +1,34 @@
 import { test, expect } from "./fixtures/base";
+import { mockAiGenerate, mockAiGenerateSequence, type AiGenerateMockOptions } from "./helpers/api.mock";
+import type { Page } from "playwright/test";
+
+const REAL_AI_FLAG = (process.env.E2E_ENABLE_REAL_AI ?? "").toLowerCase() === "true";
+const SAMPLE_CONTENT = "Spotkanie zespołu o planie sprintu oraz zadaniach zaległych.";
+const SUCCESS_RESPONSE = {
+  summary_text: "Zespół omówił plan sprintu i ustalił kroki dla zaległych zadań.",
+  goal_status: "achieved",
+  suggested_tag: "Plan sprintu",
+  generation_time_ms: 980,
+  tokens_used: 640,
+} as const;
+
+async function withAiMock(page: Page, config: AiGenerateMockOptions, run: () => Promise<void>) {
+  const dispose = await mockAiGenerate(page, config);
+  try {
+    await run();
+  } finally {
+    await dispose();
+  }
+}
+
+async function withAiSequence(page: Page, configs: AiGenerateMockOptions[], run: () => Promise<void>) {
+  const dispose = await mockAiGenerateSequence(page, configs);
+  try {
+    await run();
+  } finally {
+    await dispose();
+  }
+}
 
 test.use({ storageState: undefined });
 
@@ -30,15 +60,12 @@ test.describe("Landing Page", () => {
       await expect(landingPage.generateButton).not.toBeDisabled();
     });
 
-    test("should display character count correctly", async ({ landingPage, page }) => {
+    test("should display character count correctly", async ({ landingPage }) => {
       // ARRANGE
       const testText = "Hello World";
 
       // ACT
       await landingPage.fillInput(testText);
-      await page.waitForTimeout(100);
-
-      // ASSERT
       await expect(landingPage.charCounter).toHaveText(`${testText.length}/5000`);
     });
 
@@ -62,230 +89,124 @@ test.describe("Landing Page", () => {
     });
 
     test("should show deterministic summary content on successful generation", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "This is a test note about project planning.";
-      const mockSummary = "Project planning overview";
-      const mockGoalStatus = "achieved";
-      const mockTag = "Planning";
+      await withAiMock(
+        page,
+        {
+          status: 200,
+          body: SUCCESS_RESPONSE,
+        },
+        async () => {
+          await landingPage.fillInput(SAMPLE_CONTENT);
+          await landingPage.generateButton.click();
 
-      // Mock the API response
-      await page.route("**/api/ai/generate", async (route) => {
-        if (route.request().method() === "POST") {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              summary_text: mockSummary,
-              goal_status: mockGoalStatus,
-              suggested_tag: {
-                id: "tag-123",
-                name: mockTag,
-              },
-            }),
-          });
-        } else {
-          await route.continue();
+          await expect(page.getByTestId("summary-card")).toBeVisible();
+          await expect(page.getByTestId("summary-card-summary-text")).toHaveText(SUCCESS_RESPONSE.summary_text);
+          const generationTime = await page.getByTestId("summary-card-generation-time").textContent();
+          expect(generationTime).toContain("980");
+          await expect(page.getByTestId("summary-card-tokens-used")).toContainText("640");
         }
-      });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.generateButton.click();
-      await page.waitForResponse("**/api/ai/generate");
-      await page.waitForLoadState("networkidle");
-      await landingPage.errorMessage.waitFor({ state: "hidden" });
-
-      // ASSERT
-      // await expect(landingPage.contentArea).toContainText(mockSummary);
-      // // Check goal status is displayed
-      // // Assuming goal status is always displayed after successful generation
-      // expect(await page.locator(`text=/${mockGoalStatus}/`).first().isVisible()).toBe(true);
-
-      // // Check tag is displayed
-      // // Assuming tag is always displayed after successful generation
-      // expect(await page.locator(`text=/${mockTag}/`).first().isVisible()).toBe(true);
+      );
     });
 
-    test("should display UI for 429 rate limit error", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content for rate limit test";
+    const errorScenarios = [
+      {
+        title: "should display UI for 429 rate limit error",
+        config: { status: 429, headers: { "Retry-After": "60" }, body: { message: "Rate limit exceeded" } },
+        expected: /limit|spróbuj/i,
+      },
+      {
+        title: "should display UI for validation error (400)",
+        config: { status: 400, body: { message: "Invalid content format" } },
+        expected: /invalid|nieprawidłowa/i,
+      },
+      {
+        title: "should display UI for general AI service error (500)",
+        config: { status: 500, body: { message: "Internal server error" } },
+        expected: /błąd|error/i,
+      },
+      {
+        title: "should display UI for 503 service unavailable error",
+        config: { status: 503, body: { message: "Service temporarily unavailable" } },
+        expected: /niedostępny|unavailable/i,
+      },
+    ] as const;
 
-      // Mock rate limit response
-      await page.route("**/api/ai/generate", async (route) => {
-        await route.fulfill({
-          status: 429,
-          headers: {
-            "Retry-After": "60",
-          },
-          contentType: "application/json",
-          body: JSON.stringify({
-            message: "Rate limit exceeded",
-          }),
+    for (const scenario of errorScenarios) {
+      test(scenario.title, async ({ landingPage, page }) => {
+        await withAiMock(page, scenario.config, async () => {
+          await landingPage.fillInput(SAMPLE_CONTENT);
+          await landingPage.generateButton.click();
+
+          await expect(landingPage.errorMessage).toBeVisible();
+          await expect(landingPage.errorMessage).toContainText(scenario.expected);
         });
       });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.generateButton.click();
-
-      // Wait for error message to appear
-      await landingPage.errorMessage.waitFor({ state: "visible" });
-
-      // ASSERT
-      const errorVisible = await landingPage.errorMessage.isVisible();
-      expect(errorVisible).toBe(true);
-
-      const errorText = await landingPage.errorMessage.textContent();
-      expect(errorText).toMatch(/limit|Spróbuj/);
-    });
-
-    test("should display UI for general AI service error (500)", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content for server error test";
-
-      // Mock server error response
-      await page.route("**/api/ai/generate", async (route) => {
-        await route.fulfill({
-          status: 500,
-          contentType: "application/json",
-          body: JSON.stringify({
-            message: "Internal server error",
-          }),
-        });
-      });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.generateButton.click();
-
-      // Wait for error message to appear
-      await landingPage.errorMessage.waitFor({ state: "visible" });
-
-      // ASSERT
-      const errorVisible = await landingPage.errorMessage.isVisible();
-      expect(errorVisible).toBe(true);
-
-      const errorText = await landingPage.errorMessage.textContent();
-      expect(errorText).toBeTruthy();
-      expect(errorText?.toLowerCase()).toMatch(/błąd|error/);
-    });
-
-    test("should display UI for 503 service unavailable error", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content for service unavailable test";
-
-      // Mock service unavailable response
-      await page.route("**/api/ai/generate", async (route) => {
-        await route.fulfill({
-          status: 503,
-          contentType: "application/json",
-          body: JSON.stringify({
-            message: "Service temporarily unavailable",
-          }),
-        });
-      });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.page.waitForTimeout(500);
-      await expect(landingPage.generateButton).not.toBeDisabled();
-      await landingPage.generateButton.click();
-
-      // Wait for error message to appear
-      await landingPage.errorMessage.waitFor({ state: "visible" });
-
-      // ASSERT
-      const errorVisible = await landingPage.errorMessage.isVisible();
-      expect(errorVisible).toBe(true);
-
-      const errorText = await landingPage.errorMessage.textContent();
-      expect(errorText).toMatch(/niedostępny|unavailable/);
-    });
+    }
 
     test("should show loading state during generation", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content for loading state test";
-
-      // Mock slow API response
-      await page.route("**/api/ai/generate", async (route) => {
-        // Delay the response
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await route.fulfill({
+      await withAiMock(
+        page,
+        {
           status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            summary_text: "Generated summary",
-            goal_status: "achieved",
-            suggested_tag: {
-              id: "tag-1",
-              name: "Test",
-            },
-          }),
-        });
-      });
+          delayMs: 1000,
+          body: SUCCESS_RESPONSE,
+        },
+        async () => {
+          await landingPage.fillInput(SAMPLE_CONTENT);
+          await landingPage.generateButton.click();
 
-      // ACT
-      await landingPage.fillInput(testContent);
-      // await expect(landingPage.generateButton).not.toBeDisabled();
-      await landingPage.generateButton.click();
-
-      // ASSERT
-      const isLoading = await landingPage.generateButton.textContent();
-      expect(isLoading?.toLowerCase()).toMatch(/generowanie|loading/);
+          await expect(landingPage.generateButton).toHaveText(/Generowanie/i);
+        }
+      );
     });
 
     test("should clear error when retrying after failure", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content for retry test";
-      let callCount = 0;
+      await withAiSequence(
+        page,
+        [
+          { status: 500, body: { message: "Server error" } },
+          { status: 200, body: SUCCESS_RESPONSE },
+        ],
+        async () => {
+          await landingPage.fillInput(SAMPLE_CONTENT);
+          await landingPage.generateButton.click();
+          await expect(landingPage.errorMessage).toBeVisible();
 
-      // Mock API that fails first, then succeeds
-      await page.route("**/api/ai/generate", async (route) => {
-        callCount++;
-        if (callCount === 1) {
-          // First call fails
-          await route.fulfill({
-            status: 500,
-            contentType: "application/json",
-            body: JSON.stringify({
-              message: "Server error",
-            }),
-          });
-        } else {
-          // Second call succeeds
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify({
-              summary_text: "Generated summary",
-              goal_status: "achieved",
-              suggested_tag: {
-                id: "tag-1",
-                name: "Test",
-              },
-            }),
-          });
+          await landingPage.generateButton.click();
+          await expect(landingPage.errorMessage).not.toBeVisible();
+          await expect(page.getByTestId("summary-card")).toBeVisible();
         }
+      );
+    });
+
+    test("should persist pending note and redirect to login from save prompt", async ({ landingPage, page }) => {
+      const pendingResponse = { ...SUCCESS_RESPONSE, summary_text: "Podsumowanie zapisane do sesji" };
+
+      await withAiMock(page, { status: 200, body: pendingResponse }, async () => {
+        await landingPage.fillInput(SAMPLE_CONTENT);
+        await landingPage.generateButton.click();
+        await expect(page.getByTestId("save-prompt-banner")).toBeVisible();
+
+        await page.getByTestId("save-prompt-banner-login-button").click();
+        await page.waitForURL(/\/login$/, { timeout: 10000 });
+
+        const pendingNote = await page.evaluate(() => sessionStorage.getItem("pendingNote"));
+        expect(pendingNote).toBeTruthy();
       });
+    });
 
-      // ACT - First attempt (fails)
-      await landingPage.fillInput(testContent);
+    test("should generate summary using real AI service", async ({ landingPage, page }) => {
+      test.skip(!REAL_AI_FLAG, "Set E2E_ENABLE_REAL_AI=true to run this test against OpenRouter");
+      test.slow();
+
+      await landingPage.fillInput(
+        "Przygotuj krótkie podsumowanie spotkania zespołu produktowego. Omawiano postępy sprintu, zaległe zadania oraz ryzyka."
+      );
       await landingPage.generateButton.click();
-      // Wait for error message to appear
-      await landingPage.errorMessage.waitFor({ state: "visible" });
 
-      // ASSERT - Error is shown
-      let errorVisible = await landingPage.errorMessage.isVisible();
-      expect(errorVisible).toBe(true);
-
-      // ACT - Try again (succeeds)
-      await landingPage.generateButton.click();
-      // Wait for error message to disappear
-      await landingPage.errorMessage.waitFor({ state: "hidden" });
-
-      // ASSERT - Error should be cleared
-      errorVisible = await landingPage.errorMessage.isVisible().catch(() => false);
-      expect(errorVisible).toBe(false);
+      await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 60000 });
+      const summaryText = await page.getByTestId("summary-card-summary-text").textContent();
+      expect(summaryText?.trim().length ?? 0).toBeGreaterThan(0);
     });
   });
 

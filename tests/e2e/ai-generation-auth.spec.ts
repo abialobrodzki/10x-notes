@@ -1,5 +1,7 @@
 import { test, expect } from "./fixtures/base";
+import { mockAiGenerate } from "./helpers/api.mock";
 import { deleteNoteViaAPI } from "./helpers/notes.helpers";
+import type { Page } from "playwright/test";
 
 // Serial execution - tests run in order
 test.describe.serial("Authenticated AI Generation Flow", () => {
@@ -13,10 +15,24 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
     tokens_used: 742,
   };
 
-  test.afterEach(async ({ page }) => {
-    // Only delete after the last test
-    if (!createdNoteId || !page.url().includes("/notes")) return;
-  });
+  async function withSuccessfulAi(page: Page, run: () => Promise<void>) {
+    const dispose = await mockAiGenerate(page, { status: 200, body: mockSummary });
+    try {
+      await run();
+    } finally {
+      await dispose();
+    }
+  }
+
+  const deleteCreatedNote = async (page: Page) => {
+    if (!createdNoteId) return;
+    try {
+      await deleteNoteViaAPI(page, createdNoteId);
+    } catch (error) {
+      console.warn("Cleanup warning after AI generation suite:", error);
+    }
+    createdNoteId = null;
+  };
 
   test("01: should generate and save AI note from navbar flow", async ({
     notesPage,
@@ -29,30 +45,19 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
     await notesPage.goto();
     await notesPage.waitForUserProfileLoaded(user.email);
 
-    await page.route("**/api/ai/generate", async (route) => {
-      if (route.request().method() !== "POST") {
-        await route.continue();
-        return;
-      }
+    await withSuccessfulAi(page, async () => {
+      // ACT - Navigate via navbar to landing page
+      await notesPage.navbarGenerateNoteButton.click();
+      await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
 
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(mockSummary),
-      });
+      await landingPage.fillInput("Omówiono moduł raportowania, zaplanowano wdrożenie oraz działania marketingowe.");
+      await landingPage.generateButton.click();
+      await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 10000 });
+
+      // Save note (authenticated flow shows save button)
+      await expect(page.getByTestId("save-note-button")).toBeVisible();
+      await page.getByTestId("save-note-button-save-button").click();
     });
-
-    // ACT - Navigate via navbar to landing page
-    await notesPage.navbarGenerateNoteButton.click();
-    await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
-
-    await landingPage.fillInput("Omówiono moduł raportowania, zaplanowano wdrożenie oraz działania marketingowe.");
-    await landingPage.generateButton.click();
-    await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 10000 });
-
-    // Save note (authenticated flow shows save button)
-    await expect(page.getByTestId("save-note-button")).toBeVisible();
-    await page.getByTestId("save-note-button-save-button").click();
 
     // ASSERT - Redirects to note details
     await page.waitForURL(/\/notes\/[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{12}$/i, {
@@ -64,16 +69,12 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
     expect(createdNoteId).toBeTruthy();
 
     await noteDetailPage.waitForLoaded();
-
-    // Check that summary text is visible and contains expected content
-    await expect(noteDetailPage.summaryDisplayText).toBeVisible();
     await expect(noteDetailPage.summaryDisplayText).toContainText("modułu raportowania");
-
-    // Check that goal status section is visible
     await expect(noteDetailPage.goalStatusSection).toBeVisible();
   });
 
   test("02: should display note in notes list", async ({ notesPage, page, user }) => {
+    test.skip(!createdNoteId, "Note not generated in previous scenario");
     // ARRANGE - Verify createdNoteId is available from first test
     expect(createdNoteId).toBeTruthy();
 
@@ -91,6 +92,7 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
   });
 
   test("03: should allow editing summary of generated note", async ({ noteDetailPage }) => {
+    test.skip(!createdNoteId, "Note not generated in previous scenario");
     // ARRANGE - Verify createdNoteId is available
     expect(createdNoteId).toBeTruthy();
 
@@ -112,6 +114,7 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
   });
 
   test("04: should display goal status and allow changing it", async ({ noteDetailPage }) => {
+    test.skip(!createdNoteId, "Note not generated in previous scenario");
     // ARRANGE - Verify createdNoteId is available
     expect(createdNoteId).toBeTruthy();
 
@@ -141,6 +144,7 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
   });
 
   test("05: should test tag assignment and search functionality", async ({ noteDetailPage, page }) => {
+    test.skip(!createdNoteId, "Note not generated in previous scenario");
     // ARRANGE - Verify createdNoteId is available
     expect(createdNoteId).toBeTruthy();
 
@@ -170,6 +174,7 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
   });
 
   test("06: should enable and manage public link sharing", async ({ noteDetailPage }) => {
+    test.skip(!createdNoteId, "Note not generated in previous scenario");
     // ARRANGE - Verify createdNoteId is available
     expect(createdNoteId).toBeTruthy();
 
@@ -230,12 +235,6 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
     expect(originalContent).toContain("moduł raportowania");
 
     // Cleanup after last test
-    if (createdNoteId) {
-      try {
-        await deleteNoteViaAPI(page, createdNoteId);
-      } catch (error) {
-        console.warn("Cleanup warning after AI generation flow:", error);
-      }
-    }
+    await deleteCreatedNote(page);
   });
 });
