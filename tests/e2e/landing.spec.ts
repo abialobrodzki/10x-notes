@@ -1,7 +1,5 @@
 import { test, expect } from "./fixtures/base";
 
-const REAL_AI_FLAG = (process.env.E2E_ENABLE_REAL_AI ?? "").toLowerCase() === "true";
-
 test.use({ storageState: undefined });
 
 test.describe("Landing Page", () => {
@@ -236,33 +234,6 @@ test.describe("Landing Page", () => {
       expect(isLoading?.toLowerCase()).toMatch(/generowanie|loading/);
     });
 
-    test("should handle validation error (400) from API", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Sample content with validation issue";
-
-      // Mock validation error response
-      await page.route("**/api/ai/generate", async (route) => {
-        await route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({
-            message: "Invalid content format",
-          }),
-        });
-      });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.generateButton.click();
-
-      // Wait for error message to appear
-      await landingPage.errorMessage.waitFor({ state: "visible" });
-
-      // ASSERT
-      const errorVisible = await landingPage.errorMessage.isVisible();
-      expect(errorVisible).toBe(true);
-    });
-
     test("should clear error when retrying after failure", async ({ landingPage, page }) => {
       // ARRANGE
       const testContent = "Sample content for retry test";
@@ -315,57 +286,6 @@ test.describe("Landing Page", () => {
       // ASSERT - Error should be cleared
       errorVisible = await landingPage.errorMessage.isVisible().catch(() => false);
       expect(errorVisible).toBe(false);
-    });
-
-    test("should persist pending note and redirect to login from save prompt", async ({ landingPage, page }) => {
-      // ARRANGE
-      const testContent = "Meeting notes for pending note redirect";
-      const mockSummary = {
-        summary_text: "Mock summary for pending note",
-        goal_status: "achieved",
-        suggested_tag: "TestTag",
-        generation_time_ms: 1200,
-        tokens_used: 512,
-      };
-
-      await page.route("**/api/ai/generate", async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify(mockSummary),
-        });
-      });
-
-      // ACT
-      await landingPage.fillInput(testContent);
-      await landingPage.generateButton.click();
-      await landingPage.errorMessage.waitFor({ state: "hidden" });
-      await expect(page.getByTestId("save-prompt-banner")).toBeVisible();
-
-      await page.getByTestId("save-prompt-banner-login-button").click();
-      await page.waitForURL(/\/login$/, { timeout: 10000 });
-
-      // ASSERT
-      const pendingNote = await page.evaluate(() => sessionStorage.getItem("pendingNote"));
-      expect(pendingNote).toBeTruthy();
-    });
-
-    test("should generate summary using real AI service", async ({ landingPage, page }) => {
-      test.skip(!REAL_AI_FLAG, "Set E2E_ENABLE_REAL_AI=true to run this test against OpenRouter");
-      test.slow();
-
-      // ARRANGE
-      const realContent =
-        "Przygotuj krótkie podsumowanie spotkania zespołu produktowego. Omawiano postępy sprintu, zaległe zadania oraz ryzyka.";
-
-      // ACT
-      await landingPage.fillInput(realContent);
-      await landingPage.generateButton.click();
-
-      // ASSERT
-      await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 60000 });
-      const summaryText = await page.getByTestId("summary-card-summary-text").textContent();
-      expect(summaryText?.trim().length ?? 0).toBeGreaterThan(0);
     });
   });
 

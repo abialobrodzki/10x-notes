@@ -33,13 +33,9 @@ test.describe("Register Page", () => {
     await registerPage.fillPassword("short");
     await registerPage.fillConfirmPassword("short");
 
-    // Verify all fields have values before submitting
-    const emailValue = await registerPage.emailInput.inputValue();
-    const passwordValue = await registerPage.passwordInput.inputValue();
-    const confirmValue = await registerPage.confirmPasswordInput.inputValue();
-    expect(emailValue).toBe("test@example.com");
-    expect(passwordValue).toBe("short");
-    expect(confirmValue).toBe("short");
+    await expect(registerPage.emailInput).toHaveValue("test@example.com");
+    await expect(registerPage.passwordInput).toHaveValue("short");
+    await expect(registerPage.confirmPasswordInput).toHaveValue("short");
 
     await registerPage.submitForm();
     await expect(registerPage.errorMessage).toBeVisible();

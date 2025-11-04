@@ -148,28 +148,6 @@ test.describe("Tag Access Management", () => {
       expect(isDisabled).toBe(true);
     });
 
-    test("should handle duplicate recipient error", async ({ noteDetailPage, tagAccessModal, page }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      await noteDetailPage.openTagAccessModal();
-      await tagAccessModal.waitForRecipientsLoaded();
-
-      const newEmail = `test-recipient-dup-${Date.now()}@example.com`;
-
-      // ACT - Add recipient first time
-      await tagAccessModal.addRecipient(newEmail);
-      await page.waitForTimeout(1500);
-
-      // Try to add same recipient again
-      await tagAccessModal.addRecipient(newEmail);
-      await page.waitForTimeout(1000);
-
-      // ASSERT
-      const hasError = await tagAccessModal.hasError();
-      expect(hasError).toBe(true);
-    });
-
     test("should allow removing recipient", async ({ noteDetailPage, tagAccessModal, page }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);

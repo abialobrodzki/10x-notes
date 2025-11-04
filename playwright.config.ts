@@ -33,7 +33,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Parallel execution - opt in workers for faster test runs
-  workers: undefined,
+  workers: process.env.CI ? 2 : 2,
 
   // Reporter configuration
   reporter: [["html", { outputFolder: "./tests/e2e/playwright-report", open: "never" }], ["list"]],

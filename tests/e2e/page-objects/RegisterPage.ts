@@ -1,4 +1,4 @@
-import type { Locator, Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 export class RegisterPage {
   readonly page: Page;
@@ -33,51 +33,29 @@ export class RegisterPage {
   }
 
   async fillEmail(email: string) {
-    await this.emailInput.waitFor({ state: "visible" });
-    await this.emailInput.fill("");
-    await this.emailInput.type(email, { delay: 20 });
-    await this.page.waitForFunction(
-      (expectedEmail) => {
-        const input = document.querySelector('[data-testid="register-form-email-input"]') as HTMLInputElement;
-        return input?.value === expectedEmail;
-      },
-      email,
-      { timeout: 5000 }
-    );
+    await expect(this.emailInput).toBeVisible();
+    await this.emailInput.clear();
+    await this.emailInput.fill(email);
+    await expect(this.emailInput).toHaveValue(email);
   }
 
   async fillPassword(password: string) {
-    await this.passwordInput.waitFor({ state: "visible" });
-    await this.passwordInput.fill("");
-    await this.passwordInput.type(password, { delay: 20 });
-    await this.page.waitForFunction(
-      (expectedPassword) => {
-        const input = document.querySelector('[data-testid="register-form-password-input"]') as HTMLInputElement;
-        return input?.value === expectedPassword;
-      },
-      password,
-      { timeout: 5000 }
-    );
+    await expect(this.passwordInput).toBeVisible();
+    await this.passwordInput.clear();
+    await this.passwordInput.fill(password);
+    await expect(this.passwordInput).toHaveValue(password);
   }
 
   async fillConfirmPassword(confirmPassword: string) {
-    await this.confirmPasswordInput.waitFor({ state: "visible" });
-    await this.confirmPasswordInput.fill("");
-    await this.confirmPasswordInput.type(confirmPassword, { delay: 20 });
-    await this.page.waitForFunction(
-      (expectedPassword) => {
-        const input = document.querySelector(
-          '[data-testid="register-form-confirm-password-input"]'
-        ) as HTMLInputElement;
-        return input?.value === expectedPassword;
-      },
-      confirmPassword,
-      { timeout: 5000 }
-    );
+    await expect(this.confirmPasswordInput).toBeVisible();
+    await this.confirmPasswordInput.clear();
+    await this.confirmPasswordInput.fill(confirmPassword);
+    await expect(this.confirmPasswordInput).toHaveValue(confirmPassword);
   }
 
   async submitForm() {
-    await this.submitButton.waitFor({ state: "visible" });
+    await expect(this.submitButton).toBeVisible();
+    await expect(this.submitButton).toBeEnabled();
     const responsePromise = this.page
       .waitForResponse((response) => response.url().includes("/api/auth/register"), { timeout: 10000 })
       .catch(() => undefined);
@@ -95,8 +73,7 @@ export class RegisterPage {
   }
 
   async getErrorMessageText() {
-    await this.errorMessage.waitFor({ state: "visible", timeout: 5000 });
-    await this.page.waitForTimeout(100);
+    await expect(this.errorMessage).toBeVisible();
     const text = await this.errorMessage.textContent();
     return text?.trim() ?? "";
   }

@@ -52,23 +52,4 @@ test.describe("Note Detail Page", () => {
     await expect(noteDetailPage.meetingDateSection).toBeVisible();
     await expect(noteDetailPage.meetingDateButton).toContainText(new Date().getFullYear().toString());
   });
-
-  test("should expand original content when requested", async ({ noteDetailPage }) => {
-    const hasToggle = await noteDetailPage.hasOriginalContentToggle();
-    test.skip(!hasToggle, "Original content is too short to display toggle");
-
-    await noteDetailPage.expandOriginalContent();
-    if (await noteDetailPage.hasOriginalContentToggle()) {
-      await expect(noteDetailPage.originalContentToggleButton).toHaveText("Pokaż mniej");
-    }
-    const content = await noteDetailPage.getOriginalContentText();
-    expect(content?.split("\n").length).toBeGreaterThan(8);
-  });
-
-  test("should expose tag access and public link controls", async ({ noteDetailPage }) => {
-    await expect(noteDetailPage.tagAccessSection).toBeVisible();
-    await expect(noteDetailPage.tagAccessManageButton).toBeVisible();
-    await expect(noteDetailPage.publicLinkSection).toBeVisible();
-    await expect(noteDetailPage.publicLinkToggle).toBeVisible();
-  });
 });

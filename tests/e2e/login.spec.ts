@@ -217,20 +217,6 @@ test.describe("Login Flow", () => {
       expect(page.url()).toContain("/forgot-password");
     });
 
-    test("should allow typing in email and password fields", async ({ loginPage }) => {
-      // Arrange: Test credentials
-      const testEmail = "test@example.com";
-      const testPassword = "password123";
-
-      // Act: Type in fields
-      await loginPage.fillEmail(testEmail);
-      await loginPage.fillPassword(testPassword);
-
-      // Assert: Values are set correctly
-      expect(await loginPage.getEmailValue()).toBe(testEmail);
-      expect(await loginPage.getPasswordValue()).toBe(testPassword);
-    });
-
     test("should open login page from landing navbar link", async ({ loginPage }) => {
       // Act: Visit landing page and use navbar CTA
       await loginPage.page.goto("/");

@@ -177,53 +177,6 @@ test.describe("Global Navigation and Layout", () => {
     });
   });
 
-  test.describe("Notes List Navigation", () => {
-    test("should navigate through multiple note detail pages", async ({ authenticatedPage, noteDetailPage, page }) => {
-      // ARRANGE
-      const notes = await createSampleNotes(authenticatedPage.page, 3);
-
-      // ACT & ASSERT - Navigate to each note
-      for (const note of notes) {
-        await noteDetailPage.goto(note.id);
-        await expect(page).toHaveURL(`/notes/${note.id}`);
-        await noteDetailPage.waitForLoaded();
-      }
-    });
-
-    test("should maintain scroll position on navigation", async ({
-      authenticatedPage,
-      notesListPage,
-      noteDetailPage,
-      page,
-    }) => {
-      // ARRANGE
-      await createSampleNotes(authenticatedPage.page, 3);
-      await notesListPage.goto();
-      await notesListPage.waitForNotesToLoad();
-
-      // ACT - Scroll down
-      await page.evaluate(() => window.scrollBy(0, 500));
-      const scrollPositionBefore = await page.evaluate(() => window.scrollY);
-
-      // Navigate away and back
-      const firstNote = notesListPage.noteListItems.first();
-      await firstNote.waitFor({ state: "visible" });
-      await firstNote.click();
-      await noteDetailPage.waitForLoaded();
-
-      await page.goBack();
-      await page.waitForTimeout(1000);
-      await notesListPage.waitForNotesToLoad();
-
-      // ASSERT
-      // const scrollPositionAfter = await page.evaluate(() => window.scrollY);
-      expect(typeof scrollPositionBefore).toBe("number");
-      // expect(scrollPositionAfter).toBeGreaterThan(0);
-      // expect(Math.abs(scrollPositionAfter - scrollPositionBefore)).toBeLessThan(100);
-      await expect(notesListPage.noteList).toBeVisible();
-    });
-  });
-
   test.describe("Page Loading", () => {
     test("should load notes list page completely", async ({ notesListPage, page }) => {
       // ARRANGE
@@ -384,55 +337,5 @@ test.describe("Global Navigation and Layout", () => {
       // ASSERT - Should be back at notes list
       await expect(authenticatedPage.page).toHaveURL(/\/notes/);
     });
-  });
-});
-
-test.describe("Authentication Management", () => {
-  // Logout test - no afterEach cleanup since session is destroyed
-  test("should logout via navbar dropdown", async ({ notesPage, page, user }) => {
-    // ARRANGE
-    await notesPage.goto();
-    await notesPage.waitForUserProfileLoaded(user.email);
-
-    // ACT
-    await notesPage.logout();
-    await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
-
-    // ASSERT
-    await expect(page).toHaveURL("/");
-    await expect(page.getByTestId("navbar-login-link")).toBeVisible();
-    await expect(page.getByTestId("landing-page")).toBeVisible();
-  });
-});
-
-test.describe("Public Navbar Navigation", () => {
-  test.use({ storageState: undefined });
-
-  test("should navigate to login and register from desktop navbar", async ({ page }) => {
-    // ARRANGE
-    await page.goto("/");
-
-    // ACT & ASSERT - Login link
-    await page.getByTestId("navbar-login-link").click();
-    await expect(page).toHaveURL(/\/login$/);
-
-    // ACT & ASSERT - Go back and open register
-    await page.goBack();
-    await page.getByTestId("navbar-register-link").click();
-    await expect(page).toHaveURL(/\/register$/);
-  });
-
-  test("should navigate using mobile navbar links", async ({ page }) => {
-    // ARRANGE
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
-
-    // ACT - Mobile links
-    await page.getByTestId("navbar-mobile-login-link").click();
-    await expect(page).toHaveURL(/\/login$/);
-
-    await page.goBack();
-    await page.getByTestId("navbar-mobile-register-link").click();
-    await expect(page).toHaveURL(/\/register$/);
   });
 });

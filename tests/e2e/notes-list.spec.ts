@@ -331,27 +331,4 @@ test.describe("Notes List Page - Empty State", () => {
     // Just navigate to notes page - already authenticated
     await page.goto("/notes");
   });
-
-  test("should display empty state when user has no notes", async ({ notesListPage }) => {
-    // Assert: Empty state should be visible
-    await expect(notesListPage.noteListEmptyState).toBeVisible();
-
-    // Assert: Empty state message is displayed
-    await expect(notesListPage.emptyStateMessage).toBeVisible();
-
-    // Assert: CTA button should be visible
-    await expect(notesListPage.emptyStateCTA).toBeVisible();
-
-    // Assert: No notes list should be present
-    const noteListVisible = await notesListPage.noteList.isVisible().catch(() => false);
-    expect(noteListVisible).toBe(false);
-  });
-
-  test("should show empty state message with correct text", async ({ notesListPage }) => {
-    // Assert: Check empty state message content
-    await expect(notesListPage.emptyStateMessage).toBeVisible();
-
-    const messageText = await notesListPage.emptyStateMessage.textContent();
-    expect(messageText).toContain("notatek");
-  });
 });

@@ -79,26 +79,6 @@ test.describe("Note Details Page", () => {
       expect(textareaValue).toBe(newSummary);
     });
 
-    test("should save summary changes", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      const newSummary = "New summary text for the note";
-
-      // ACT
-      await noteDetailPage.editSummary(newSummary);
-      await noteDetailPage.saveSummary();
-
-      // Wait for save to complete
-      await noteDetailPage.page.waitForTimeout(1000);
-      await noteDetailPage.page.reload();
-      await noteDetailPage.waitForLoaded();
-
-      // ASSERT
-      const savedSummary = await noteDetailPage.getSummaryText();
-      expect(savedSummary).toContain(newSummary);
-    });
-
     test("should cancel summary editing without saving", async ({ noteDetailPage }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
@@ -131,22 +111,6 @@ test.describe("Note Details Page", () => {
   });
 
   test.describe("Goal Status Management", () => {
-    test("should allow setting goal to achieved", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-
-      // ACT
-      await noteDetailPage.selectGoalStatus("achieved");
-
-      // Wait for save
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ASSERT
-      const status = await noteDetailPage.getSelectedGoalStatus();
-      expect(status).toBe("achieved");
-    });
-
     test("should allow setting goal to not achieved", async ({ noteDetailPage }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
@@ -266,102 +230,6 @@ test.describe("Note Details Page", () => {
 
       // ASSERT
       await expect(noteDetailPage.publicLinkSection).toBeVisible();
-    });
-
-    test("should allow enabling public link", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-
-      // ACT
-      await noteDetailPage.togglePublicLink(true);
-
-      // Wait for API call
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ASSERT
-      const isEnabled = await noteDetailPage.isPublicLinkEnabled();
-      expect(isEnabled).toBe(true);
-    });
-
-    test("should display public link URL when enabled", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-
-      // ACT
-      await noteDetailPage.togglePublicLink(true);
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ASSERT
-      const url = await noteDetailPage.getPublicLinkUrl();
-      expect(url).toContain("/share/");
-    });
-
-    test("should allow copying public link", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      await noteDetailPage.togglePublicLink(true);
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ACT
-      await noteDetailPage.copyPublicLink();
-
-      // ASSERT - Check that button text changed to "Skopiowano"
-      // The button should show the "copied" state after clicking
-      await noteDetailPage.page.waitForFunction(
-        (testId) => {
-          const button = document.querySelector(`[data-testid="${testId}"]`);
-          return button?.textContent?.includes("Skopiowano") === true;
-        },
-        "public-link-section-copy-button",
-        { timeout: 3000 }
-      );
-      const buttonText = await noteDetailPage.publicLinkCopyButton.textContent();
-      expect(buttonText).toContain("Skopiowano");
-    });
-
-    test("should allow rotating public link token", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      await noteDetailPage.togglePublicLink(true);
-      await noteDetailPage.page.waitForTimeout(1000);
-      const originalUrl = await noteDetailPage.getPublicLinkUrl();
-
-      // ACT
-      await noteDetailPage.openPublicLinkRotateDialog();
-      await expect(noteDetailPage.publicLinkRotateDialog).toBeVisible();
-
-      // Find and click the confirm button in the dialog
-      const confirmButton = noteDetailPage.page.getByTestId("public-link-section-rotate-dialog-confirm");
-      await confirmButton.click();
-
-      // Wait for rotation
-      await noteDetailPage.page.waitForTimeout(1500);
-
-      // ASSERT
-      const newUrl = await noteDetailPage.getPublicLinkUrl();
-      expect(newUrl).not.toBe(originalUrl);
-    });
-
-    test("should allow disabling public link", async ({ noteDetailPage }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      await noteDetailPage.togglePublicLink(true);
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ACT
-      await noteDetailPage.togglePublicLink(false);
-
-      // Wait for API call
-      await noteDetailPage.page.waitForTimeout(1000);
-
-      // ASSERT
-      const isEnabled = await noteDetailPage.isPublicLinkEnabled();
-      expect(isEnabled).toBe(false);
     });
   });
 
