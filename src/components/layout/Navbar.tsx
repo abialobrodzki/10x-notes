@@ -235,7 +235,7 @@ export function Navbar({ isAuthenticated }: NavbarProps) {
                         handleLogout();
                       }}
                       disabled={isLoggingOut}
-                      className="interactive-destructive flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+                      className="flex cursor-pointer items-center gap-2 text-destructive hover:bg-destructive/10! hover:text-destructive! focus:bg-destructive/10! focus:text-destructive! rounded-lg px-3 py-2 text-sm font-medium"
                       data-testid="navbar-mobile-logout-button"
                     >
                       <LogOut className="h-4 w-4" />
