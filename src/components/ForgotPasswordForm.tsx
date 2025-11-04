@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useForgotPasswordMutation } from "@/hooks/mutations/useForgotPasswordMutation";
 import { forgotPasswordSchema, type ForgotPasswordInput } from "@/lib/validators/auth.schemas";
 
 interface ForgotPasswordFormProps {
@@ -13,61 +13,37 @@ interface ForgotPasswordFormProps {
 
 /**
  * ForgotPasswordForm component - password reset request form
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  * Integrates with Supabase Auth to send password reset email
  * Validates email and handles submission flow
  */
 export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswordFormProps) {
-  const [hasSubmitError, setHasSubmitError] = useState(false);
-
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
     mode: "onBlur",
   });
 
-  const handleSubmit = async (data: ForgotPasswordInput) => {
-    onError([]);
-    setHasSubmitError(false);
-
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email.trim(),
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Password reset request failed");
-      }
-
+  const forgotPasswordMutation = useForgotPasswordMutation({
+    onError: (error) => {
+      onError([error.message]);
+    },
+    onSuccess: () => {
       // Success - show confirmation message
       // Note: For security, we don't reveal if email exists
       onSuccess(true);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Password reset request error:", error);
+    },
+  });
 
-      setHasSubmitError(true);
-
-      if (error instanceof Error) {
-        onError([error.message]);
-      } else {
-        onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-      }
-    }
+  const handleSubmit = (data: ForgotPasswordInput) => {
+    onError([]);
+    forgotPasswordMutation.mutate(data);
   };
 
-  const emailError = errors.email || (hasSubmitError ? errors.email : null);
+  const emailError = errors.email;
 
   return (
     <form
@@ -82,7 +58,7 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
         <Input
           type="email"
           placeholder="twoj@email.com"
-          disabled={isSubmitting}
+          disabled={forgotPasswordMutation.isPending}
           autoComplete="email"
           aria-required="true"
           aria-invalid={!!emailError}
@@ -97,11 +73,11 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
       <Button
         type="submit"
         variant="gradient"
-        disabled={isSubmitting}
+        disabled={forgotPasswordMutation.isPending}
         className="w-full"
         data-testid="forgot-password-form-submit-button"
       >
-        {isSubmitting ? "Wysyłanie..." : "Wyślij link resetujący"}
+        {forgotPasswordMutation.isPending ? "Wysyłanie..." : "Wyślij link resetujący"}
       </Button>
     </form>
   );

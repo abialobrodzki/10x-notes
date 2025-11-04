@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import NoteDetailPage from "@/components/notes/NoteDetailPage";
+import NoteDetailPageWithProvider from "@/components/NoteDetailPageWithProvider";
 
 // Dynamic route - get note ID from params
 const { id } = Astro.params;
@@ -15,5 +15,5 @@ export const prerender = false;
 ---
 
 <Layout title={`Notatka - 10xNotes`}>
-  <NoteDetailPage client:load noteId={id} />
+  <NoteDetailPageWithProvider client:load noteId={id} />
 </Layout>

@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -17,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
+import { useDeleteAccountMutation } from "@/hooks/mutations/useDeleteAccountMutation";
 import { deleteAccountFormSchema, type DeleteAccountFormInput } from "@/lib/validators/user.schemas";
 
 interface DeleteAccountWizardProps {
@@ -28,7 +27,7 @@ interface DeleteAccountWizardProps {
 /**
  * DeleteAccountWizard component
  * Multi-step account deletion process with email confirmation and checkbox
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  * Implements GDPR "right to be forgotten"
  */
 export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
@@ -37,8 +36,9 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
+    setError,
   } = useForm<DeleteAccountFormInput>({
     resolver: zodResolver(deleteAccountFormSchema),
     mode: "onBlur",
@@ -52,84 +52,34 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   const emailError = errors.confirmation_email;
   const confirmCheckboxError = errors.isConfirmed;
 
-  const handleDelete = async (data: DeleteAccountFormInput) => {
-    try {
-      // Check if email matches (additional client-side validation)
-      if (data.confirmation_email.toLowerCase() !== userEmail.toLowerCase()) {
-        toast.error("Adres email nie pasuje do Twojego konta");
-        return;
+  const deleteAccountMutation = useDeleteAccountMutation({
+    onError: (error) => {
+      // Handle email mismatch (400) - set field-level error
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).status === 400) {
+        setError("confirmation_email", {
+          type: "server",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          message: (error as any).message || "Adres email nie pasuje do Twojego konta.",
+        });
       }
+    },
+  });
 
-      // Call DELETE /api/user/account
-      const response = await fetch("/api/user/account", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          confirmation_email: data.confirmation_email.trim(),
-        }),
+  const handleDelete = (data: DeleteAccountFormInput) => {
+    // Check if email matches (additional client-side validation)
+    if (data.confirmation_email.toLowerCase() !== userEmail.toLowerCase()) {
+      setError("confirmation_email", {
+        type: "server",
+        message: "Adres email nie pasuje do Twojego konta.",
       });
-
-      // Handle rate limiting (429)
-      if (response.status === 429) {
-        const responseData = await response.json();
-        toast.error(`Za dużo prób. Spróbuj ponownie za ${responseData.retry_after_seconds} sekund`, {
-          duration: 5000,
-        });
-        return;
-      }
-
-      // Handle email mismatch (400)
-      if (response.status === 400) {
-        const responseData = await response.json();
-        toast.error(responseData.message || "Adres email nie pasuje do Twojego konta");
-        return;
-      }
-
-      // Handle authentication errors (401/403)
-      if (response.status === 401 || response.status === 403) {
-        toast.error("Sesja wygasła. Zaloguj się ponownie");
-        setTimeout(() => {
-          // eslint-disable-next-line react-compiler/react-compiler
-          window.location.href = "/login";
-        }, 1500);
-        return;
-      }
-
-      // Handle server errors (5xx)
-      if (response.status >= 500) {
-        toast.error("Błąd serwera. Spróbuj ponownie później", {
-          duration: 5000,
-        });
-        return;
-      }
-
-      // Success (204 No Content)
-      if (response.status === 204) {
-        toast.success("Konto zostało usunięte", {
-          duration: 3000,
-        });
-
-        // Sign out from Supabase
-        await supabaseClient.auth.signOut();
-
-        // Wait for toast and signOut to complete, then redirect
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1500);
-        return;
-      }
-
-      // Unexpected status
-      toast.error("Nieoczekiwany błąd. Spróbuj ponownie");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Delete account error:", error);
-      toast.error("Błąd połączenia. Sprawdź internet i spróbuj ponownie", {
-        duration: 5000,
-      });
+      return;
     }
+
+    deleteAccountMutation.mutate({
+      confirmation_email: data.confirmation_email.trim(),
+      isConfirmed: data.isConfirmed,
+    });
   };
 
   return (
@@ -179,7 +129,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
             <Input
               type="email"
               placeholder="Wpisz swój email"
-              disabled={isSubmitting}
+              disabled={deleteAccountMutation.isPending}
               autoComplete="email"
               aria-required="true"
               aria-invalid={!!emailError}
@@ -203,7 +153,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
           {/* Confirmation checkbox */}
           <div className="flex items-start space-x-3 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-lg p-3">
             <Checkbox
-              disabled={isSubmitting}
+              disabled={deleteAccountMutation.isPending}
               aria-required="true"
               data-testid="delete-account-wizard-confirm-checkbox"
               {...register("isConfirmed")}
@@ -223,17 +173,21 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
 
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button variant="outline" disabled={isSubmitting} data-testid="delete-account-wizard-cancel-button">
+              <Button
+                variant="outline"
+                disabled={deleteAccountMutation.isPending}
+                data-testid="delete-account-wizard-cancel-button"
+              >
                 Anuluj
               </Button>
             </AlertDialogCancel>
             <Button
               type="submit"
               variant="destructive-action"
-              disabled={!isConfirmed || isSubmitting}
+              disabled={!isConfirmed || deleteAccountMutation.isPending}
               data-testid="delete-account-wizard-confirm-button"
             >
-              {isSubmitting ? "Usuwanie..." : "Usuń konto na zawsze"}
+              {deleteAccountMutation.isPending ? "Usuwanie..." : "Usuń konto na zawsze"}
             </Button>
           </AlertDialogFooter>
         </form>

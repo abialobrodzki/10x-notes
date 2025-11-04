@@ -5,7 +5,7 @@ import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
+import { useResetPasswordMutation } from "@/hooks/mutations/useResetPasswordMutation";
 import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/validators/auth.schemas";
 
 interface ResetPasswordFormProps {
@@ -16,20 +16,20 @@ interface ResetPasswordFormProps {
 
 /**
  * ResetPasswordForm component - password reset form
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  * Integrates with Supabase Auth to update user password
  * Validates password strength and confirmation
  * Token from URL automatically authenticates the user
  */
 export default function ResetPasswordForm({ token: _token, onError, onSuccess }: ResetPasswordFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [hasSubmitError, setHasSubmitError] = useState(false);
 
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
+    setError,
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     mode: "onBlur",
@@ -37,42 +37,32 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
 
   const password = watch("password");
 
-  const handleSubmit = async (data: ResetPasswordInput) => {
-    onError([]);
-    setHasSubmitError(false);
-
-    try {
-      const { error } = await supabaseClient.auth.updateUser({
-        password: data.password,
-      });
-
-      if (error) {
-        throw error;
+  const resetPasswordMutation = useResetPasswordMutation({
+    onError: (error) => {
+      // Handle specific Supabase errors - set field-level error
+      if (error.message.includes("New password should be different")) {
+        setError("password", {
+          type: "server",
+          message: "Nowe hasło musi różnić się od starego hasła.",
+        });
+      } else {
+        // Handle other errors with generic toast
+        onError([error.message]);
       }
-
+    },
+    onSuccess: () => {
       // Success - show confirmation message
       onSuccess(true);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Password reset error:", error);
+    },
+  });
 
-      setHasSubmitError(true);
-
-      if (error instanceof Error) {
-        // Handle specific Supabase errors
-        if (error.message.includes("New password should be different")) {
-          onError(["Nowe hasło musi różnić się od starego hasła"]);
-        } else {
-          onError([error.message]);
-        }
-      } else {
-        onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-      }
-    }
+  const handleSubmit = (data: ResetPasswordInput) => {
+    onError([]);
+    resetPasswordMutation.mutate(data);
   };
 
-  const passwordError = errors.password || (hasSubmitError ? errors.password : null);
-  const confirmPasswordError = errors.confirmPassword || (hasSubmitError ? errors.confirmPassword : null);
+  const passwordError = errors.password;
+  const confirmPasswordError = errors.confirmPassword;
 
   return (
     <form
@@ -87,7 +77,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Minimum 8 znaków"
-          disabled={isSubmitting}
+          disabled={resetPasswordMutation.isPending}
           autoComplete="new-password"
           aria-required="true"
           aria-invalid={!!passwordError}
@@ -106,7 +96,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Powtórz hasło"
-          disabled={isSubmitting}
+          disabled={resetPasswordMutation.isPending}
           autoComplete="new-password"
           aria-required="true"
           aria-invalid={!!confirmPasswordError}
@@ -124,7 +114,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
           id="show-password"
           checked={showPassword}
           onChange={(e) => setShowPassword(e.target.checked)}
-          disabled={isSubmitting}
+          disabled={resetPasswordMutation.isPending}
           className="h-4 w-4 rounded border-input-border bg-input-bg text-gradient-button-from focus:ring-2 focus:ring-gradient-button-from"
         />
         <Label htmlFor="show-password" className="text-sm font-normal text-glass-text-muted">
@@ -136,11 +126,11 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
       <Button
         type="submit"
         variant="gradient"
-        disabled={isSubmitting}
+        disabled={resetPasswordMutation.isPending}
         className="w-full"
         data-testid="reset-password-form-submit-button"
       >
-        {isSubmitting ? "Ustawianie hasła..." : "Ustaw nowe hasło"}
+        {resetPasswordMutation.isPending ? "Ustawianie hasła..." : "Ustaw nowe hasło"}
       </Button>
     </form>
   );

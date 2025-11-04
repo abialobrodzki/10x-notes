@@ -1,22 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAddRecipientMutation } from "@/hooks/mutations/useAddRecipientMutation";
 import { addRecipientSchema, type AddRecipientInput } from "@/lib/validators/tags.schemas";
 
 interface AddRecipientFormProps {
-  /** Whether add operation is in progress */
-  isAdding: boolean;
-  /** Callback when new recipient should be added */
-  onAdd: (email: string) => Promise<boolean>;
+  /** Tag ID to add recipient to */
+  tagId: string;
 }
 
 /**
  * AddRecipientForm - Form for adding new recipient by email
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  *
  * Features:
  * - Email input with validation
@@ -24,31 +22,39 @@ interface AddRecipientFormProps {
  * - Success/error toast notifications
  * - Form reset after successful submission
  */
-export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
+export function AddRecipientForm({ tagId }: AddRecipientFormProps) {
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
     formState: { errors },
     reset,
+    setError,
   } = useForm<AddRecipientInput>({
     resolver: zodResolver(addRecipientSchema),
     mode: "onBlur",
   });
 
-  const handleSubmit = async (data: AddRecipientInput) => {
-    const trimmedEmail = data.email.trim();
-    const success = await onAdd(trimmedEmail);
+  const addRecipientMutation = useAddRecipientMutation({
+    onError: (error) => {
+      // Set field-level error for user feedback
+      // The mutation hook maps HTTP status codes to friendly error messages
 
-    if (success) {
-      toast.success("Dodano dostęp", {
-        description: `Użytkownik ${trimmedEmail} ma teraz dostęp do tej etykiety`,
+      setError("email", {
+        type: "server",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        message: (error as any).message || "Użytkownik nie istnieje, ma już dostęp, lub email nie został potwierdzony.",
       });
+    },
+    onSuccess: () => {
       reset();
-    } else {
-      toast.error("Nie udało się dodać dostępu", {
-        description: "Sprawdź czy użytkownik istnieje i ma potwierdzony email",
-      });
-    }
+    },
+  });
+
+  const handleSubmit = (data: AddRecipientInput) => {
+    addRecipientMutation.mutate({
+      tagId,
+      email: data.email.trim(),
+    });
   };
 
   const emailError = errors.email;
@@ -62,7 +68,7 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
             <Input
               type="email"
               placeholder="email@example.com"
-              disabled={isAdding}
+              disabled={addRecipientMutation.isPending}
               aria-invalid={!!emailError}
               aria-describedby={emailError ? "email-error" : undefined}
               className={emailError ? "border-input-border-error" : ""}
@@ -82,12 +88,12 @@ export function AddRecipientForm({ isAdding, onAdd }: AddRecipientFormProps) {
           </div>
           <Button
             type="submit"
-            disabled={isAdding}
+            disabled={addRecipientMutation.isPending}
             size="default"
             aria-label="Dodaj użytkownika"
             data-testid="add-recipient-form-submit-button"
           >
-            {isAdding ? (
+            {addRecipientMutation.isPending ? (
               <>Dodawanie...</>
             ) : (
               <>

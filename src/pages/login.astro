@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import LoginPage from "@/components/LoginPage";
+import LoginPageWithProvider from "@/components/LoginPageWithProvider";
 
 // Disable prerendering - middleware uses request.headers for auth
 export const prerender = false;
@@ -20,5 +20,5 @@ Astro.response.headers.set("Pragma", "no-cache");
 ---
 
 <Layout title="Logowanie - 10xNotes">
-  <LoginPage client:load />
+  <LoginPageWithProvider client:load />
 </Layout>

@@ -25,7 +25,7 @@ interface TagAccessModalProps {
  * - Focus management and ESC key handling
  */
 export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessModalProps) {
-  const { recipients, loading, adding, removing, error, handleAddRecipient, handleRemoveRecipient } = useTagAccess({
+  const { recipients, loading, removing, error, handleRemoveRecipient } = useTagAccess({
     tagId,
     isOpen,
     isOwner,
@@ -65,7 +65,7 @@ export function TagAccessModal({ tagId, isOwner, isOpen, onClose }: TagAccessMod
             onRemove={handleRemoveRecipient}
           />
 
-          <AddRecipientForm isAdding={adding} onAdd={handleAddRecipient} />
+          <AddRecipientForm tagId={tagId} />
         </div>
       </DialogContent>
     </Dialog>

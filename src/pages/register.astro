@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import RegisterPage from "@/components/RegisterPage";
+import RegisterPageWithProvider from "@/components/RegisterPageWithProvider";
 
 // Disable prerendering - middleware uses request.headers for auth
 export const prerender = false;
@@ -20,5 +20,5 @@ Astro.response.headers.set("Pragma", "no-cache");
 ---
 
 <Layout title="Rejestracja - 10xNotes">
-  <RegisterPage client:load />
+  <RegisterPageWithProvider client:load />
 </Layout>

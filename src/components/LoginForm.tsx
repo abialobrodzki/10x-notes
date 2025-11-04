@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getPendingNote } from "@/lib/utils/pending-note.utils";
+import { useLoginMutation } from "@/hooks/mutations/useLoginMutation";
 import { loginSchema, type LoginInput } from "@/lib/validators/auth.schemas";
 
 interface LoginFormProps {
@@ -13,72 +13,47 @@ interface LoginFormProps {
 
 /**
  * LoginForm component - email/password authentication
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  * Integrates with Supabase Auth and handles pending note auto-save flow
  * - Checks sessionStorage for pending notes after successful login
  * - Redirects to /notes?autoSave=true if pending note exists
  */
 export default function LoginForm({ onError }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [hasSubmitError, setHasSubmitError] = useState(false);
 
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
+    setError,
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
   });
 
-  const handleSubmit = async (data: LoginInput) => {
-    onError([]);
-    setHasSubmitError(false);
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email.trim(),
-          password: data.password,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Authentication failed");
-      }
-
-      // Login successful - check for pending note
-      const pendingNote = getPendingNote();
-
-      if (pendingNote) {
-        window.location.replace("/notes?autoSave=true");
-        return;
-      }
-
-      window.location.replace("/notes");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Login error:", error);
-
-      setHasSubmitError(true);
-
-      if (error instanceof Error) {
-        onError([error.message]);
+  const loginMutation = useLoginMutation({
+    onError: (error) => {
+      // Handle specific error types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).status === 401) {
+        setError("email", {
+          type: "server",
+          message: "Nieprawidłowy email lub hasło.",
+        });
       } else {
-        onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
+        // Generic error handling
+        onError([error.message || "Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
       }
-    }
+    },
+  });
+
+  const handleSubmit = (data: LoginInput) => {
+    onError([]);
+    loginMutation.mutate(data);
   };
 
-  const emailError = errors.email || (hasSubmitError ? errors.email : null);
-  const passwordError = errors.password || (hasSubmitError ? errors.password : null);
+  const emailError = errors.email;
+  const passwordError = errors.password;
 
   return (
     <form onSubmit={handleReactHookFormSubmit(handleSubmit)} className="space-y-4" noValidate data-testid="login-form">
@@ -88,7 +63,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
         <Input
           type="email"
           placeholder="twoj@email.com"
-          disabled={isSubmitting}
+          disabled={loginMutation.isPending}
           autoComplete="email"
           aria-required="true"
           aria-invalid={!!emailError}
@@ -105,7 +80,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Twoje hasło"
-          disabled={isSubmitting}
+          disabled={loginMutation.isPending}
           autoComplete="current-password"
           aria-required="true"
           aria-invalid={!!passwordError}
@@ -123,7 +98,7 @@ export default function LoginForm({ onError }: LoginFormProps) {
           id="show-password"
           checked={showPassword}
           onChange={(e) => setShowPassword(e.target.checked)}
-          disabled={isSubmitting}
+          disabled={loginMutation.isPending}
           className="h-4 w-4 rounded border-input-border bg-input-bg text-gradient-button-from focus:ring-2 focus:ring-gradient-button-from"
         />
         <Label htmlFor="show-password" className="text-sm font-normal text-glass-text-muted">
@@ -135,11 +110,11 @@ export default function LoginForm({ onError }: LoginFormProps) {
       <Button
         type="submit"
         variant="gradient"
-        disabled={isSubmitting}
+        disabled={loginMutation.isPending}
         className="w-full"
         data-testid="login-form-submit-button"
       >
-        {isSubmitting ? "Logowanie..." : "Zaloguj się"}
+        {loginMutation.isPending ? "Logowanie..." : "Zaloguj się"}
       </Button>
     </form>
   );

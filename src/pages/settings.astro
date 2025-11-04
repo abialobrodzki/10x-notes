@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { SettingsPage } from "../components/settings/SettingsPage";
+import SettingsPageWithProvider from "../components/SettingsPageWithProvider";
 import { UserService } from "../lib/services/user.service";
 import type { UserProfileDTO, UserStatsDTO } from "../types";
 
@@ -41,5 +41,10 @@ try {
 ---
 
 <Layout title="10xNotes - Ustawienia">
-  <SettingsPage client:only="react" initialProfile={profileData} initialStats={statsData} initialError={error} />
+  <SettingsPageWithProvider
+    client:only="react"
+    initialProfile={profileData}
+    initialStats={statsData}
+    initialError={error}
+  />
 </Layout>

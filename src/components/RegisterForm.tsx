@@ -5,7 +5,7 @@ import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getPendingNote } from "@/lib/utils/pending-note.utils";
+import { useRegisterMutation } from "@/hooks/mutations/useRegisterMutation";
 import { registerSchema, type RegisterInput } from "@/lib/validators/auth.schemas";
 
 interface RegisterFormProps {
@@ -14,20 +14,20 @@ interface RegisterFormProps {
 
 /**
  * RegisterForm component - email/password registration
- * Uses React Hook Form for state management and Zod for validation
+ * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
  * Integrates with Supabase Auth and handles pending note auto-save flow
  * - Checks sessionStorage for pending notes after successful registration
  * - Redirects to /notes?autoSave=true if pending note exists
  */
 export default function RegisterForm({ onError }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [hasSubmitError, setHasSubmitError] = useState(false);
 
   const {
     register,
     handleSubmit: handleReactHookFormSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     watch,
+    setError,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
@@ -35,64 +35,40 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
 
   const password = watch("password");
 
-  const handleSubmit = async (data: RegisterInput) => {
-    onError([]);
-    setHasSubmitError(false);
-
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: data.email.trim(),
-          password: data.password,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Registration failed");
+  const registerMutation = useRegisterMutation({
+    onError: (error) => {
+      // Handle email already exists error (409 Conflict)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any).status === 409) {
+        setError("email", {
+          type: "server",
+          message: "Użytkownik o tym adresie email już istnieje.",
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } else if ((error as any).status !== 0) {
+        // Handle other API errors with generic toast (skip if status is 0, handled in mutation)
+        onError([error.message || "Rejestracja nie powiodła się. Spróbuj ponownie."]);
       }
-
+    },
+    onSuccess: (data) => {
       // Check if email confirmation is required
-      if (responseData.requiresConfirmation || !responseData.session) {
+      if (data.requiresConfirmation || !data.session) {
         onError([
-          responseData.message ||
+          data.message ||
             "Rejestracja udana! Sprawdź swoją skrzynkę email i kliknij link potwierdzający, aby aktywować konto.",
         ]);
-        return;
       }
+    },
+  });
 
-      // Registration successful with immediate session
-      const pendingNote = getPendingNote();
-
-      if (pendingNote) {
-        window.location.replace("/notes?autoSave=true");
-        return;
-      }
-
-      window.location.replace("/notes");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Registration error:", error);
-
-      setHasSubmitError(true);
-
-      if (error instanceof Error) {
-        onError([error.message]);
-      } else {
-        onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-      }
-    }
+  const handleSubmit = (data: RegisterInput) => {
+    onError([]);
+    registerMutation.mutate(data);
   };
 
-  const emailError = errors.email || (hasSubmitError ? errors.email : null);
-  const passwordError = errors.password || (hasSubmitError ? errors.password : null);
-  const confirmPasswordError = errors.confirmPassword || (hasSubmitError ? errors.confirmPassword : null);
+  const emailError = errors.email;
+  const passwordError = errors.password;
+  const confirmPasswordError = errors.confirmPassword;
 
   return (
     <form
@@ -107,7 +83,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         <Input
           type="email"
           placeholder="twoj@email.com"
-          disabled={isSubmitting}
+          disabled={registerMutation.isPending}
           autoComplete="email"
           aria-required="true"
           aria-invalid={!!emailError}
@@ -124,7 +100,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Co najmniej 8 znaków"
-          disabled={isSubmitting}
+          disabled={registerMutation.isPending}
           autoComplete="new-password"
           aria-required="true"
           aria-invalid={!!passwordError}
@@ -143,7 +119,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Powtórz hasło"
-          disabled={isSubmitting}
+          disabled={registerMutation.isPending}
           autoComplete="new-password"
           aria-required="true"
           aria-invalid={!!confirmPasswordError}
@@ -161,7 +137,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
           id="show-password"
           checked={showPassword}
           onChange={(e) => setShowPassword(e.target.checked)}
-          disabled={isSubmitting}
+          disabled={registerMutation.isPending}
           className="h-4 w-4 rounded border-input-border bg-input-bg text-gradient-button-from focus:ring-2 focus:ring-gradient-button-from"
         />
         <Label htmlFor="show-password" className="text-sm font-normal text-glass-text-muted">
@@ -173,11 +149,11 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
       <Button
         type="submit"
         variant="gradient"
-        disabled={isSubmitting}
+        disabled={registerMutation.isPending}
         className="w-full"
         data-testid="register-form-submit-button"
       >
-        {isSubmitting ? "Rejestracja..." : "Zarejestruj się"}
+        {registerMutation.isPending ? "Rejestracja..." : "Zarejestruj się"}
       </Button>
     </form>
   );
