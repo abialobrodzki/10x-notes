@@ -1,9 +1,8 @@
-import { useState, useCallback, useId } from "react";
+import { useId } from "react";
+import { useLoginForm } from "@/components/hooks/useLoginForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getPendingNote } from "@/lib/utils/pending-note.utils";
-import { validateEmail, validatePasswordLogin } from "@/lib/validators/auth.validators";
 
 interface LoginFormProps {
   onError: (errors: string[]) => void;
@@ -16,111 +15,25 @@ interface LoginFormProps {
  * - Redirects to /notes?autoSave=true if pending note exists
  */
 export default function LoginForm({ onError }: LoginFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({ email: false, password: false });
-  const [hasSubmitError, setHasSubmitError] = useState(false);
+  const {
+    email,
+    password,
+    showPassword,
+    isSubmitting,
+    hasSubmitError,
+    emailHasError,
+    passwordHasError,
+    setEmail,
+    setPassword,
+    setShowPassword,
+    setHasSubmitError,
+    handleBlur,
+    handleSubmit,
+  } = useLoginForm({ onError });
 
   const emailId = useId();
   const passwordId = useId();
   const showPasswordId = useId();
-
-  /**
-   * Validates form inputs
-   * @returns Array of validation errors (empty if valid)
-   */
-  const validateForm = useCallback((): string[] => {
-    const errors: string[] = [];
-    errors.push(...validateEmail(email));
-    errors.push(...validatePasswordLogin(password));
-    return errors;
-  }, [email, password]);
-
-  /**
-   * Mark field as touched when user leaves it
-   */
-  const handleBlur = useCallback((field: "email" | "password") => {
-    setTouchedFields((prev) => ({ ...prev, [field]: true }));
-  }, []);
-
-  // Check if email has validation error OR submit failed
-  const emailHasError = (touchedFields.email && validateEmail(email).length > 0) || hasSubmitError;
-  const passwordHasError = (touchedFields.password && validatePasswordLogin(password).length > 0) || hasSubmitError;
-
-  /**
-   * Handles form submission with Supabase Auth
-   */
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Clear previous errors
-      onError([]);
-
-      // Mark all fields as touched on submit
-      setTouchedFields({ email: true, password: true });
-
-      // Validate form
-      const validationErrors = validateForm();
-      if (validationErrors.length > 0) {
-        onError(validationErrors);
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      try {
-        // Call server-side login endpoint
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          credentials: "include", // Include cookies for server-side session management
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.trim(),
-            password,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // Handle API errors
-          throw new Error(data.message || "Authentication failed");
-        }
-
-        // Login successful - check for pending note
-        const pendingNote = getPendingNote();
-
-        if (pendingNote) {
-          // Replace current history entry to prevent going back to login page
-          window.location.replace("/notes?autoSave=true");
-          return;
-        }
-
-        // No pending note or expired - replace current history entry
-        window.location.replace("/notes");
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Login error:", error);
-
-        // Mark submit as failed - show red borders
-        setHasSubmitError(true);
-
-        if (error instanceof Error) {
-          onError([error.message]);
-        } else {
-          onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-        }
-
-        setIsSubmitting(false);
-      }
-    },
-    [email, password, onError, validateForm]
-  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="login-form">

@@ -1,10 +1,9 @@
-import { useState, useCallback, useId } from "react";
+import { useId } from "react";
+import { useResetPasswordForm } from "@/components/hooks/useResetPasswordForm";
 import PasswordStrengthIndicator from "@/components/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabaseClient } from "@/db/supabase.client";
-import { validatePasswordRegister, validatePasswordConfirm } from "@/lib/validators/auth.validators";
 
 interface ResetPasswordFormProps {
   token: string;
@@ -19,98 +18,25 @@ interface ResetPasswordFormProps {
  * Token from URL automatically authenticates the user
  */
 export default function ResetPasswordForm({ token: _token, onError, onSuccess }: ResetPasswordFormProps) {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({ password: false, confirmPassword: false });
-  const [hasSubmitError, setHasSubmitError] = useState(false);
+  const {
+    password,
+    confirmPassword,
+    showPassword,
+    isSubmitting,
+    hasSubmitError,
+    passwordHasError,
+    confirmPasswordHasError,
+    setPassword,
+    setConfirmPassword,
+    setShowPassword,
+    setHasSubmitError,
+    handleBlur,
+    handleSubmit,
+  } = useResetPasswordForm({ onError, onSuccess });
 
   const passwordId = useId();
   const confirmPasswordId = useId();
   const showPasswordId = useId();
-
-  /**
-   * Validates form inputs
-   * @returns Array of validation errors (empty if valid)
-   */
-  const validateForm = useCallback((): string[] => {
-    const errors: string[] = [];
-    errors.push(...validatePasswordRegister(password));
-    errors.push(...validatePasswordConfirm(password, confirmPassword));
-    return errors;
-  }, [password, confirmPassword]);
-
-  /**
-   * Mark field as touched when user leaves it
-   */
-  const handleBlur = useCallback((field: "password" | "confirmPassword") => {
-    setTouchedFields((prev) => ({ ...prev, [field]: true }));
-  }, []);
-
-  // Check if password fields have validation errors OR submit failed
-  const passwordHasError = (touchedFields.password && validatePasswordRegister(password).length > 0) || hasSubmitError;
-  const confirmPasswordHasError =
-    (touchedFields.confirmPassword && validatePasswordConfirm(password, confirmPassword).length > 0) || hasSubmitError;
-
-  /**
-   * Handles form submission with Supabase Auth
-   */
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Clear previous errors
-      onError([]);
-
-      // Mark all fields as touched on submit
-      setTouchedFields({ password: true, confirmPassword: true });
-
-      // Validate form
-      const validationErrors = validateForm();
-      if (validationErrors.length > 0) {
-        onError(validationErrors);
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      try {
-        // Update user password with Supabase
-        // Token from URL automatically authenticates the user
-        const { error } = await supabaseClient.auth.updateUser({
-          password,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        // Success - show confirmation message
-        onSuccess(true);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Password reset error:", error);
-
-        // Mark submit as failed - show red borders
-        setHasSubmitError(true);
-
-        if (error instanceof Error) {
-          // Handle specific Supabase errors
-          if (error.message.includes("New password should be different")) {
-            onError(["Nowe hasło musi różnić się od starego hasła"]);
-          } else {
-            onError([error.message]);
-          }
-        } else {
-          onError(["Wystąpił nieoczekiwany błąd. Spróbuj ponownie."]);
-        }
-
-        setIsSubmitting(false);
-      }
-    },
-    [password, onError, onSuccess, validateForm]
-  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate data-testid="reset-password-form">

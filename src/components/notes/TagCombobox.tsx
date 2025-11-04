@@ -1,10 +1,9 @@
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
-import { useState, useMemo } from "react";
-import useSWR from "swr";
+import { useTagCombobox } from "@/components/hooks/useTagCombobox";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { TagsListDTO, NoteDetailDTO } from "@/types";
+import type { NoteDetailDTO } from "@/types";
 
 interface TagComboboxProps {
   currentTag: NoteDetailDTO["tag"];
@@ -13,21 +12,6 @@ interface TagComboboxProps {
   onCreateTag: (name: string) => Promise<void>;
   isSaving: boolean;
 }
-
-/**
- * Fetcher for tags list
- */
-const tagsFetcher = async (url: string): Promise<TagsListDTO> => {
-  const response = await fetch(url, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch tags");
-  }
-
-  return response.json();
-};
 
 /**
  * TagCombobox - Select existing tag or create new one
@@ -39,62 +23,22 @@ const tagsFetcher = async (url: string): Promise<TagsListDTO> => {
  * - Disabled for non-owners
  */
 export default function TagCombobox({ currentTag, isOwner, onSelectTag, onCreateTag, isSaving }: TagComboboxProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Fetch tags list (only owned tags)
-  const { data: tagsData, isLoading } = useSWR<TagsListDTO>("/api/tags?include_shared=false", tagsFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
+  const {
+    isOpen,
+    searchQuery,
+    filteredTags,
+    showCreateOption,
+    isLoading,
+    setIsOpen,
+    setSearchQuery,
+    handleSelectTag,
+    handleCreateTag,
+  } = useTagCombobox({
+    currentTag,
+    onSelectTag,
+    onCreateTag,
+    isSaving,
   });
-
-  // Memoize tags array to prevent exhaustive-deps warnings
-  const tags = useMemo(() => tagsData?.tags || [], [tagsData]);
-
-  // Filter tags based on search query
-  const filteredTags = useMemo(() => {
-    if (!searchQuery) return tags;
-
-    const query = searchQuery.toLowerCase();
-    return tags.filter((tag) => tag.name.toLowerCase().includes(query));
-  }, [tags, searchQuery]);
-
-  // Check if search query matches existing tag exactly
-  const exactMatch = useMemo(() => {
-    return tags.find((tag) => tag.name.toLowerCase() === searchQuery.toLowerCase());
-  }, [tags, searchQuery]);
-
-  // Show "Create new" option only if:
-  // 1. There's a search query
-  // 2. No exact match exists
-  // 3. Query is not empty after trim
-  const showCreateOption = searchQuery.trim() && !exactMatch;
-
-  const handleSelectTag = async (tagId: string) => {
-    if (!isOwner || isSaving) return;
-
-    try {
-      await onSelectTag(tagId);
-      setIsOpen(false);
-      setSearchQuery("");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to select tag:", error);
-    }
-  };
-
-  const handleCreateTag = async () => {
-    if (!isOwner || isSaving || !searchQuery.trim()) return;
-
-    try {
-      await onCreateTag(searchQuery.trim());
-      setIsOpen(false);
-      setSearchQuery("");
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to create tag:", error);
-    }
-  };
 
   return (
     <div className="space-y-4" data-testid="tag-combobox">
