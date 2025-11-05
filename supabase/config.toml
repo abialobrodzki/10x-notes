@@ -179,9 +179,14 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Email templates - customize signup confirmation and password reset emails
+[auth.email.template.confirm_signup]
+subject = "Potwierdź rejestrację - 10xNotes"
+content_path = "./supabase/templates/confirm_signup.html"
+
+[auth.email.template.reset_password]
+subject = "Resetuj swoje hasło - 10xNotes"
+content_path = "./supabase/templates/reset_password.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
