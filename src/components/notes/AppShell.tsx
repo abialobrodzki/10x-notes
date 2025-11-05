@@ -71,7 +71,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
       {/* Mobile Header + Content */}
       <div className="flex flex-1 flex-col">
         {/* Mobile Header */}
-        <header className="flex h-14 items-center gap-4 border-b border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to px-4 backdrop-blur-xl md:hidden">
+        <header className="flex h-14 items-center gap-4 border-b border-white/20 bg-linear-to-r from-gradient-from/85 via-gradient-via/85 to-gradient-to/85 px-4 shadow-lg backdrop-blur-xl md:hidden">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
@@ -86,7 +86,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-64 border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to p-0 backdrop-blur-xl"
+              className="w-64 border-r border-glass-border bg-linear-to-br from-gradient-from via-gradient-via to-gradient-to p-0 backdrop-blur-xl"
               data-testid="app-shell-mobile-menu-content"
             >
               <TagSidebar
@@ -105,7 +105,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-auto p-4 md:p-6" data-testid="app-shell-main-content">
+        <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6" data-testid="app-shell-main-content">
           {error && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-linear-to-b from-glass-bg-from to-glass-bg-to p-4 backdrop-blur-xl">
               <p className="text-sm font-medium text-destructive outline-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">

@@ -21,9 +21,10 @@ interface FiltersPanelProps {
  * - Sort by field and order
  * - Reset all filters button
  * - Syncs with URL on change
+ * - Collapsed by default (expandable on all screens)
  */
 export function FiltersPanel({ filters, onChange }: FiltersPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const hasActiveFilters =
     filters.date_from ||

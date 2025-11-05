@@ -1,4 +1,4 @@
-import { LogOut, Menu, Plus, Settings } from "lucide-react";
+import { BookOpen, LogOut, Menu, Plus, Settings } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -43,6 +43,7 @@ export function MobileMenu({ userProfile, isLoggingOut, onLogout }: MobileMenuPr
               onClick={() => setIsMobileMenuOpen(false)}
               data-testid="navbar-mobile-notes-link"
             >
+              <BookOpen className="h-4 w-4" />
               Moje notatki
             </a>
 

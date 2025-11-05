@@ -2,6 +2,7 @@
 import { ViewTransitions } from "astro:transitions";
 import "../styles/global.css";
 import { Navbar } from "../components/layout/Navbar";
+import { MobileBottomNav } from "../components/layout/MobileBottomNav";
 import { ToasterProvider } from "../components/ToasterProvider";
 import { optionalAuth } from "../lib/middleware/auth.middleware";
 
@@ -32,10 +33,15 @@ const isAuthenticated = !!userId;
     <main
       id="main-content"
       data-scroll="content"
-      class:list={["main-content", "overflow-hidden", { "with-navbar": showNavbar }]}
+      class:list={[
+        "main-content",
+        "overflow-hidden",
+        { "with-navbar": showNavbar, "with-mobile-nav": isAuthenticated },
+      ]}
     >
       <slot />
     </main>
+    {isAuthenticated && <MobileBottomNav transition:persist client:load />}
     <ToasterProvider transition:persist client:load />
 
     <script is:inline>
@@ -87,6 +93,27 @@ const isAuthenticated = !!userId;
 
   #main-content.with-navbar {
     height: calc(100vh - 57px); /* 57px = navbar height (56px) + border (1px) */
+  }
+
+  #main-content.with-mobile-nav {
+    height: calc(100vh - 64px); /* 64px = mobile bottom nav height on mobile screens */
+  }
+
+  @media (min-width: 768px) {
+    /* Reset mobile nav padding on desktop */
+    #main-content.with-mobile-nav {
+      height: 100vh;
+    }
+  }
+
+  #main-content.with-navbar.with-mobile-nav {
+    height: calc(100vh - 57px - 64px); /* navbar + mobile bottom nav */
+  }
+
+  @media (min-width: 768px) {
+    #main-content.with-navbar.with-mobile-nav {
+      height: calc(100vh - 57px); /* only navbar on desktop */
+    }
   }
 
   /* Scrollbar styles moved to global.css for better specificity */

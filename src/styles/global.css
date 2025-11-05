@@ -493,6 +493,8 @@
     @apply disabled:pointer-events-none;
     @apply ring-offset-background data-[state=open]:bg-secondary;
     @apply focus-visible:ring-offset-2;
+    color: var(--gradient-heading-from);
+    @apply hidden md:block;
   }
 
   /* ========================================================================
