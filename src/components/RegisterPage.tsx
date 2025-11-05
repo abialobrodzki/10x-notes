@@ -11,6 +11,7 @@ import { supabaseClient } from "@/db/supabase.client";
  */
 export default function RegisterPage() {
   const [errors, setErrors] = useState<string[]>([]);
+  const [successMessages, setSuccessMessages] = useState<string[]>([]);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Redirect authenticated users to home page
@@ -69,8 +70,9 @@ export default function RegisterPage() {
 
           {/* Content */}
           <div className="space-y-6">
-            <AlertArea messages={errors} />
-            <RegisterForm onError={setErrors} />
+            <AlertArea messages={successMessages} variant="success" />
+            <AlertArea messages={errors} variant="error" />
+            <RegisterForm onError={setErrors} onSuccess={setSuccessMessages} />
             {/* RedirectHint - link to login */}
             <p className="text-center text-sm text-glass-text-muted">
               Masz już konto?{" "}

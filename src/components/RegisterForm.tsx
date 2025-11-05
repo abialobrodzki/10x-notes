@@ -10,6 +10,7 @@ import { registerSchema, type RegisterInput } from "@/lib/validators/auth.schema
 
 interface RegisterFormProps {
   onError: (errors: string[]) => void;
+  onSuccess?: (messages: string[]) => void;
 }
 
 /**
@@ -19,7 +20,7 @@ interface RegisterFormProps {
  * - Checks sessionStorage for pending notes after successful registration
  * - Redirects to /notes?autoSave=true if pending note exists
  */
-export default function RegisterForm({ onError }: RegisterFormProps) {
+export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -53,7 +54,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
     onSuccess: (data) => {
       // Check if email confirmation is required
       if (data.requiresConfirmation || !data.session) {
-        onError([
+        onSuccess?.([
           data.message ||
             "Rejestracja udana! Sprawdź swoją skrzynkę email i kliknij link potwierdzający, aby aktywować konto.",
         ]);
@@ -63,6 +64,7 @@ export default function RegisterForm({ onError }: RegisterFormProps) {
 
   const handleSubmit = (data: RegisterInput) => {
     onError([]);
+    onSuccess?.([]);
     registerMutation.mutate(data);
   };
 

@@ -72,8 +72,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const supabase = createSupabaseServerClient(request, cookies);
 
     // Step 4: Request password reset email from Supabase
+    // Use PUBLIC_APP_URL environment variable for redirect URL
+    // Fallback to request origin if not configured (for development)
+    const appUrl = import.meta.env.PUBLIC_APP_URL || new URL(request.url).origin;
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${new URL(request.url).origin}/reset-password`,
+      redirectTo: `${appUrl}/reset-password`,
     });
 
     // Step 5: Handle errors
