@@ -163,7 +163,6 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
               name="isConfirmed"
               render={({ field }) => (
                 <Checkbox
-                  ref={field.ref}
                   disabled={deleteAccountMutation.isPending}
                   aria-required="true"
                   data-testid="delete-account-wizard-confirm-checkbox"
