@@ -4,6 +4,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Tag Access Service
+ * @deprecated This service has been replaced by the DDD implementation in src/domains/sharing/
+ * Use the following instead:
+ * - SupabaseTagRepository: src/domains/sharing/infrastructure/supabase-tag.repository.ts
+ * - GetAccessListUseCase: src/domains/sharing/application/get-access-list.use-case.ts
+ * - GrantAccessUseCase: src/domains/sharing/application/grant-access.use-case.ts
+ * - RevokeAccessUseCase: src/domains/sharing/application/revoke-access.use-case.ts
+ *
  * Handles business logic for tag access management
  */
 export class TagAccessService {

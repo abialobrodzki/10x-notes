@@ -1,5 +1,6 @@
+import { RevokeAccessUseCase } from "../../../../../domains/sharing/application/revoke-access.use-case";
+import { SupabaseTagRepository } from "../../../../../domains/sharing/infrastructure/supabase-tag.repository";
 import { requireAuth } from "../../../../../lib/middleware/auth.middleware";
-import { TagAccessService } from "../../../../../lib/services/tag-access.service";
 import { uuidSchema } from "../../../../../lib/validators/shared.schemas";
 import { tagIdParamSchema } from "../../../../../lib/validators/tags.schemas";
 import type { APIRoute } from "astro";
@@ -97,11 +98,12 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Step 4: Revoke tag access via service
-    const tagAccessService = new TagAccessService(locals.supabase);
+    // Step 4: Revoke tag access via DDD use case
+    const tagRepository = new SupabaseTagRepository(locals.supabase);
+    const revokeAccessUseCase = new RevokeAccessUseCase(tagRepository, locals.supabase);
 
     try {
-      await tagAccessService.revokeTagAccess(userId, tagId, recipientId);
+      await revokeAccessUseCase.execute(tagId, recipientId, userId);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
@@ -134,7 +136,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
         );
       }
 
-      if (errorMessage === "ACCESS_NOT_FOUND") {
+      if (errorMessage === "ACCESS_NOT_FOUND" || errorMessage === "UNAUTHORIZED") {
         return new Response(
           JSON.stringify({
             error: "Not found",
@@ -150,7 +152,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
       // Generic service error
       // eslint-disable-next-line no-console
-      console.error("TagAccessService.revokeTagAccess error:", {
+      console.error("RevokeAccessUseCase.execute error:", {
         userId,
         tagId,
         recipientId,

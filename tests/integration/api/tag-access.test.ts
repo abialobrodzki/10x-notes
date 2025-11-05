@@ -2,21 +2,40 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { requireAuth } from "@/lib/middleware/auth.middleware";
 import { DELETE } from "@/pages/api/tags/[id]/access/[recipient_id]";
 import { GET, POST } from "@/pages/api/tags/[id]/access/index";
-import type { TagAccessListDTO, TagAccessGrantedDTO } from "@/types";
+import type { TagAccessGrantedDTO } from "@/types";
 import type { APIContext } from "astro";
 
 // Define mock functions in the module scope
-const getTagAccessMock = vi.fn();
-const grantTagAccessMock = vi.fn();
-const revokeTagAccessMock = vi.fn();
+const getAccessListExecuteMock = vi.fn();
+const grantAccessExecuteMock = vi.fn();
+const revokeAccessExecuteMock = vi.fn();
 
-// Mock the service module with a proper class constructor
-vi.mock("@/lib/services/tag-access.service", () => {
+// Mock the DDD infrastructure module
+vi.mock("@/domains/sharing/infrastructure/supabase-tag.repository", () => ({
+  SupabaseTagRepository: vi.fn(),
+}));
+
+// Mock the DDD application services (use cases)
+vi.mock("@/domains/sharing/application/get-access-list.use-case", () => {
   return {
-    TagAccessService: class MockTagAccessService {
-      getTagAccess = getTagAccessMock;
-      grantTagAccess = grantTagAccessMock;
-      revokeTagAccess = revokeTagAccessMock;
+    GetAccessListUseCase: class {
+      execute = getAccessListExecuteMock;
+    },
+  };
+});
+
+vi.mock("@/domains/sharing/application/grant-access.use-case", () => {
+  return {
+    GrantAccessUseCase: class {
+      execute = grantAccessExecuteMock;
+    },
+  };
+});
+
+vi.mock("@/domains/sharing/application/revoke-access.use-case", () => {
+  return {
+    RevokeAccessUseCase: class {
+      execute = revokeAccessExecuteMock;
     },
   };
 });
@@ -49,22 +68,20 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
 
     it("should return 200 OK with a list of recipients for a tag owner", async () => {
       // Arrange
-      const mockAccessList: TagAccessListDTO = {
-        recipients: [
-          {
-            recipient_id: "user-456",
-            email: "colleague1@example.com",
-            granted_at: "2025-10-20T10:00:00Z",
-          },
-          {
-            recipient_id: "user-789",
-            email: "colleague2@example.com",
-            granted_at: "2025-10-21T14:30:00Z",
-          },
-        ],
-      };
+      const mockAccessList = [
+        {
+          recipient_id: "user-456",
+          email: "colleague1@example.com",
+          granted_at: "2025-10-20T10:00:00Z",
+        },
+        {
+          recipient_id: "user-789",
+          email: "colleague2@example.com",
+          granted_at: "2025-10-21T14:30:00Z",
+        },
+      ];
 
-      getTagAccessMock.mockResolvedValue(mockAccessList);
+      getAccessListExecuteMock.mockResolvedValue(mockAccessList);
 
       // Act
       const response = await GET(mockContext);
@@ -77,16 +94,14 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
       expect(data.recipients[0].email).toBe("colleague1@example.com");
       expect(data.recipients[0].recipient_id).toBe("user-456");
       expect(data.recipients[1].email).toBe("colleague2@example.com");
-      expect(getTagAccessMock).toHaveBeenCalledWith("user-123", "550e8400-e29b-41d4-a716-446655440001");
+      expect(getAccessListExecuteMock).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440001", "user-123");
     });
 
     it("should return 200 OK with empty recipients array when no one has access", async () => {
       // Arrange
-      const mockAccessList: TagAccessListDTO = {
-        recipients: [],
-      };
+      const mockAccessList: { recipient_id: string; email: string; granted_at: string }[] = [];
 
-      getTagAccessMock.mockResolvedValue(mockAccessList);
+      getAccessListExecuteMock.mockResolvedValue(mockAccessList);
 
       // Act
       const response = await GET(mockContext);
@@ -99,7 +114,7 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
 
     it("should return 404 Not Found if the tag does not exist", async () => {
       // Arrange
-      getTagAccessMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
+      getAccessListExecuteMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
 
       // Act
       const response = await GET(mockContext);
@@ -113,7 +128,7 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
 
     it("should return 403 Forbidden if the user is not the owner of the tag", async () => {
       // Arrange
-      getTagAccessMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
+      getAccessListExecuteMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
 
       // Act
       const response = await GET(mockContext);
@@ -128,7 +143,7 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
 
     it("should return 500 if the service throws an unexpected error", async () => {
       // Arrange
-      getTagAccessMock.mockRejectedValue(new Error("Database connection failed"));
+      getAccessListExecuteMock.mockRejectedValue(new Error("Database connection failed"));
 
       // Act
       const response = await GET(mockContext);
@@ -186,7 +201,7 @@ describe("GET /api/tags/[id]/access - Fetch Tag Access List", () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe("Bad request");
       expect(data.message).toBe("Invalid tag ID format");
-      expect(getTagAccessMock).not.toHaveBeenCalled();
+      expect(getAccessListExecuteMock).not.toHaveBeenCalled();
     });
 
     it("should return 400 Bad Request if tag ID parameter is missing", async () => {
@@ -245,7 +260,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockResolvedValue(mockGrantedAccess);
+      grantAccessExecuteMock.mockResolvedValue(mockGrantedAccess);
 
       // Act
       const response = await POST(mockContext);
@@ -256,10 +271,10 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       expect(response.headers.get("Content-Type")).toBe("application/json");
       expect(data.recipient_id).toBe("user-456");
       expect(data.email).toBe("colleague@example.com");
-      expect(grantTagAccessMock).toHaveBeenCalledWith(
-        "user-123",
+      expect(grantAccessExecuteMock).toHaveBeenCalledWith(
         "550e8400-e29b-41d4-a716-446655440001",
-        "colleague@example.com"
+        "colleague@example.com",
+        "user-123"
       );
     });
 
@@ -279,7 +294,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe("Validation failed");
       expect(data.message).toBe("Invalid request body");
-      expect(grantTagAccessMock).not.toHaveBeenCalled();
+      expect(grantAccessExecuteMock).not.toHaveBeenCalled();
     });
 
     it("should return 409 Conflict if the recipient already has access", async () => {
@@ -289,7 +304,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("DUPLICATE_ACCESS"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("DUPLICATE_ACCESS"));
 
       // Act
       const response = await POST(mockContext);
@@ -308,7 +323,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("CANNOT_SHARE_WITH_SELF"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("CANNOT_SHARE_WITH_SELF"));
 
       // Act
       const response = await POST(mockContext);
@@ -327,7 +342,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
 
       // Act
       const response = await POST(mockContext);
@@ -346,7 +361,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
 
       // Act
       const response = await POST(mockContext);
@@ -365,7 +380,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("USER_NOT_FOUND"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("USER_NOT_FOUND"));
 
       // Act
       const response = await POST(mockContext);
@@ -384,7 +399,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("USER_EMAIL_NOT_CONFIRMED"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("USER_EMAIL_NOT_CONFIRMED"));
 
       // Act
       const response = await POST(mockContext);
@@ -403,7 +418,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       };
 
       mockContext.request.json = vi.fn().mockResolvedValue(grantAccessPayload);
-      grantTagAccessMock.mockRejectedValue(new Error("Database connection failed"));
+      grantAccessExecuteMock.mockRejectedValue(new Error("Database connection failed"));
 
       // Act
       const response = await POST(mockContext);
@@ -449,7 +464,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
-      expect(grantTagAccessMock).not.toHaveBeenCalled();
+      expect(grantAccessExecuteMock).not.toHaveBeenCalled();
     });
   });
 
@@ -468,7 +483,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       expect(response.status).toBe(500);
       expect(data.error).toBe("Internal server error");
       expect(data.message).toBe("An unexpected error occurred");
-      expect(grantTagAccessMock).not.toHaveBeenCalled();
+      expect(grantAccessExecuteMock).not.toHaveBeenCalled();
     });
   });
 
@@ -492,7 +507,7 @@ describe("POST /api/tags/[id]/access - Grant Tag Access", () => {
       expect(response.status).toBe(400);
       expect(data.error).toBe("Bad request");
       expect(data.message).toBe("Invalid tag ID format");
-      expect(grantTagAccessMock).not.toHaveBeenCalled();
+      expect(grantAccessExecuteMock).not.toHaveBeenCalled();
     });
 
     it("should return 400 Bad Request if tag ID parameter is missing", async () => {
@@ -552,23 +567,23 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
 
     it("should return 204 No Content on successful access revocation", async () => {
       // Arrange
-      revokeTagAccessMock.mockResolvedValue(undefined);
+      revokeAccessExecuteMock.mockResolvedValue(undefined);
 
       // Act
       const response = await DELETE(mockContext);
 
       // Assert
       expect(response.status).toBe(204);
-      expect(revokeTagAccessMock).toHaveBeenCalledWith(
-        "user-123",
+      expect(revokeAccessExecuteMock).toHaveBeenCalledWith(
         "550e8400-e29b-41d4-a716-446655440001",
-        "550e8400-e29b-41d4-a716-446655440002"
+        "550e8400-e29b-41d4-a716-446655440002",
+        "user-123"
       );
     });
 
     it("should return 403 Forbidden if the user is not the owner of the tag", async () => {
       // Arrange
-      revokeTagAccessMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
+      revokeAccessExecuteMock.mockRejectedValue(new Error("TAG_NOT_OWNED"));
 
       // Act
       const response = await DELETE(mockContext);
@@ -595,7 +610,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
 
     it("should return 404 Not Found if the tag does not exist", async () => {
       // Arrange
-      revokeTagAccessMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
+      revokeAccessExecuteMock.mockRejectedValue(new Error("TAG_NOT_FOUND"));
 
       // Act
       const response = await DELETE(mockContext);
@@ -609,7 +624,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
 
     it("should return 404 Not Found if recipient does not have access", async () => {
       // Arrange
-      revokeTagAccessMock.mockRejectedValue(new Error("ACCESS_NOT_FOUND"));
+      revokeAccessExecuteMock.mockRejectedValue(new Error("ACCESS_NOT_FOUND"));
 
       // Act
       const response = await DELETE(mockContext);
@@ -623,7 +638,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
 
     it("should return 500 if the service throws an unexpected error", async () => {
       // Arrange
-      revokeTagAccessMock.mockRejectedValue(new Error("Database connection failed"));
+      revokeAccessExecuteMock.mockRejectedValue(new Error("Database connection failed"));
 
       // Act
       const response = await DELETE(mockContext);
@@ -650,7 +665,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
       // Assert
       expect(response.status).toBe(401);
       expect(responseBody.error).toBe("Unauthorized");
-      expect(revokeTagAccessMock).not.toHaveBeenCalled();
+      expect(revokeAccessExecuteMock).not.toHaveBeenCalled();
     });
   });
 
@@ -664,7 +679,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
       expect(response.status).toBe(500);
       expect(data.error).toBe("Internal server error");
       expect(data.message).toBe("An unexpected error occurred");
-      expect(revokeTagAccessMock).not.toHaveBeenCalled();
+      expect(revokeAccessExecuteMock).not.toHaveBeenCalled();
     });
   });
 
@@ -683,7 +698,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
       expect(response.status).toBe(400);
       expect(data.error).toBe("Bad request");
       expect(data.message).toBe("Invalid tag ID format");
-      expect(revokeTagAccessMock).not.toHaveBeenCalled();
+      expect(revokeAccessExecuteMock).not.toHaveBeenCalled();
     });
 
     it("should return 400 Bad Request for invalid recipient ID format", async () => {
@@ -700,7 +715,7 @@ describe("DELETE /api/tags/[id]/access/[recipient_id] - Revoke Tag Access", () =
       expect(response.status).toBe(400);
       expect(data.error).toBe("Bad request");
       expect(data.message).toBe("Invalid recipient ID format");
-      expect(revokeTagAccessMock).not.toHaveBeenCalled();
+      expect(revokeAccessExecuteMock).not.toHaveBeenCalled();
     });
 
     it("should return 400 Bad Request if tag ID parameter is missing", async () => {

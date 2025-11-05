@@ -1,5 +1,7 @@
+import { GetAccessListUseCase } from "../../../../../domains/sharing/application/get-access-list.use-case";
+import { GrantAccessUseCase } from "../../../../../domains/sharing/application/grant-access.use-case";
+import { SupabaseTagRepository } from "../../../../../domains/sharing/infrastructure/supabase-tag.repository";
 import { requireAuth } from "../../../../../lib/middleware/auth.middleware";
-import { TagAccessService } from "../../../../../lib/services/tag-access.service";
 import {
   tagIdParamSchema,
   grantTagAccessSchema,
@@ -68,12 +70,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Step 3: Get tag access list via service
-    const tagAccessService = new TagAccessService(locals.supabase);
-    let result: TagAccessListDTO;
+    // Step 3: Get tag access list via DDD use case
+    const tagRepository = new SupabaseTagRepository(locals.supabase);
+    const getAccessListUseCase = new GetAccessListUseCase(tagRepository, locals.supabase);
+    let recipients: { recipient_id: string; email: string; granted_at: string }[];
 
     try {
-      result = await tagAccessService.getTagAccess(userId, tagId);
+      recipients = await getAccessListUseCase.execute(tagId, userId);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
@@ -108,7 +111,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
       // Generic service error
       // eslint-disable-next-line no-console
-      console.error("TagAccessService.getTagAccess error:", {
+      console.error("GetAccessListUseCase.execute error:", {
         userId,
         tagId,
         error: errorMessage,
@@ -127,7 +130,15 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Step 4: Return 200 OK with access list
+    // Step 4: Transform to DTO and return 200 OK with access list
+    const result: TagAccessListDTO = {
+      recipients: recipients.map((r) => ({
+        recipient_id: r.recipient_id,
+        email: r.email,
+        granted_at: r.granted_at,
+      })),
+    };
+
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
@@ -258,12 +269,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     const validatedInput: GrantTagAccessInput = bodyValidation.data;
 
-    // Step 4: Grant tag access via service
-    const tagAccessService = new TagAccessService(locals.supabase);
+    // Step 4: Grant tag access via DDD use case
+    const tagRepository = new SupabaseTagRepository(locals.supabase);
+    const grantAccessUseCase = new GrantAccessUseCase(tagRepository, locals.supabase);
     let result: TagAccessGrantedDTO;
 
     try {
-      result = await tagAccessService.grantTagAccess(userId, tagId, validatedInput.recipient_email);
+      const grantResult = await grantAccessUseCase.execute(tagId, validatedInput.recipient_email, userId);
+      result = {
+        recipient_id: grantResult.recipient_id,
+        email: grantResult.email,
+        granted_at: grantResult.granted_at,
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
@@ -352,9 +369,23 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
         );
       }
 
+      if (errorMessage.startsWith("INVALID_EMAIL")) {
+        return new Response(
+          JSON.stringify({
+            error: "Validation failed",
+            message: "Invalid email format",
+            details: errorMessage,
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+
       // Generic service error
       // eslint-disable-next-line no-console
-      console.error("TagAccessService.grantTagAccess error:", {
+      console.error("GrantAccessUseCase.execute error:", {
         userId,
         tagId,
         recipientEmail: validatedInput.recipient_email,
