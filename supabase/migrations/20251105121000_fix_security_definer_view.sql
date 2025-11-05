@@ -1,0 +1,22 @@
+-- ===========================================================================
+-- Migration: Fix Security Definer View
+-- ===========================================================================
+--
+-- Description:
+--   This migration addresses a security linter warning (`security_definer_view`)
+--   for the `public.user_generation_stats` view.
+--
+-- Issue:
+--   The view was implicitly created with `SECURITY DEFINER` properties, which
+--   causes it to execute with the permissions of the view's owner, bypassing
+--   the Row Level Security (RLS) policies of the querying user.
+--
+-- Fix:
+--   The view is altered to explicitly use `SECURITY INVOKER`. This ensures that
+--   any queries against the view are executed with the permissions of the
+--   current user, correctly applying the RLS policy on the underlying
+--   `llm_generations` table.
+--
+-- ===========================================================================
+
+alter view public.user_generation_stats set (security_invoker = true);
