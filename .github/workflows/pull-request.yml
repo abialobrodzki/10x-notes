@@ -1,0 +1,179 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript type check
+        run: npm run tsc:check
+
+      - name: Check code formatting
+        run: npm run format:check
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 30
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [lint]
+    environment: production
+    env:
+      PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+      PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
+      E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: e2e-test-results
+          path: tests/e2e/test-results/
+          retention-days: 30
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 30
+
+  status-comment:
+    name: PR Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, unit-test, e2e-test]
+    if: always()
+    steps:
+      - name: Check job statuses
+        id: check-status
+        run: |
+          if [[ "${{ needs.lint.result }}" == "success" && "${{ needs.unit-test.result }}" == "success" && "${{ needs.e2e-test.result }}" == "success" ]]; then
+            {
+              echo "status=success"
+              echo "message=✅ All checks passed successfully!"
+              echo "color=28a745"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "status=failure"
+              echo "message=❌ Some checks failed. Please review the results."
+              echo "color=d73a4a"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment PR
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('PR CI Status')
+            );
+
+            const output = `## PR CI Status
+
+            ${{ steps.check-status.outputs.message }}
+
+            ### Job Results
+            - **Lint**: ${{ needs.lint.result }}
+            - **Unit Tests**: ${{ needs.unit-test.result }}
+            - **E2E Tests**: ${{ needs.e2e-test.result }}
+
+            ---
+            *Last updated: ${new Date().toUTCString()}*
+            `;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: output
+              });
+            }

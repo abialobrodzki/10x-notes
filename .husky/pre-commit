@@ -25,5 +25,8 @@ npm run test:unit
 # Tailwind CSS validation (deprecated classes check)
 npm run tailwind:check
 
+# GitHub Actions workflow validation
+npm run workflow:check
+
 # Database schema linting with strict mode
 npm run db:lint:strict
