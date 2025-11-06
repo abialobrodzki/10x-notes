@@ -72,7 +72,7 @@ export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdat
             checked={isEnabled}
             onCheckedChange={toggleLink}
             disabled={isSaving}
-            className="data-[state=checked]:bg-linear-to-r data-[state=checked]:from-gradient-button-from data-[state=checked]:to-gradient-button-to data-[state=unchecked]:bg-glass-bg-from data-[state=unchecked]:border-glass-border"
+            className="data-state=checked:bg-linear-to-r data-state=checked:from-gradient-button-from data-state=checked:to-gradient-button-to data-state=unchecked:bg-glass-bg-from data-state=unchecked:border-glass-border"
             data-testid="public-link-section-toggle-switch"
           />
         </div>

@@ -28,7 +28,7 @@ function SelectTrigger({
   const variantStyles =
     variant === "glass"
       ? "glass-select dropdown-glass-base hover-glass"
-      : "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 bg-transparent shadow-xs";
+      : "border-input data-placeholder:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 bg-transparent shadow-xs";
 
   return (
     <SelectPrimitive.Trigger
@@ -36,7 +36,7 @@ function SelectTrigger({
       data-size={size}
       data-variant={variant}
       className={cn(
-        "inline-flex w-full items-center justify-between gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none shadow-xs data-[size=default]:h-9 data-[size=sm]:h-8 has-[>svg]:px-3 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 *:data-[slot=select-value]:truncate [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "inline-flex w-full items-center justify-between gap-2 rounded-md border px-4 py-2 text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none shadow-xs data-size=default:h-9 data-size=sm:h-8 has-[>svg]:px-3 *:data-slot=select-value:line-clamp-1 *:data-slot=select-value:flex *:data-slot=select-value:items-center *:data-slot=select-value:gap-2 *:data-slot=select-value:truncate [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         variant === "default" && "focus-visible:ring-[3px]",
         variantStyles,
         className
@@ -63,9 +63,9 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "dropdown-content-glass data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md shadow-md outline-none",
+          "dropdown-content-glass data-state=open:animate-in data-state=closed:animate-out data-state=closed:fade-out-0 data-state=open:fade-in-0 data-state=closed:zoom-out-95 data-state=open:zoom-in-95 data-side=bottom:slide-in-from-top-2 data-side=left:slide-in-from-right-2 data-side=right:slide-in-from-left-2 data-side=top:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-32 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md shadow-md outline-none",
           position === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+            "data-side=bottom:translate-y-1 data-side=left:-translate-x-1 data-side=right:translate-x-1 data-side=top:-translate-y-1",
           className
         )}
         position={position}
@@ -77,7 +77,7 @@ function SelectContent({
           className={cn(
             "p-1 will-change-auto",
             position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+              "h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width) scroll-my-1"
           )}
         >
           {children}

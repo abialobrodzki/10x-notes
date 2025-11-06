@@ -93,7 +93,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-linear-to-b from-glass-bg-from to-glass-bg-to border border-glass-border backdrop-blur-lg p-1 h-auto">
               <TabsTrigger
                 value="profile"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-state=active:text-glass-text data-state=active:bg-linear-to-b data-state=active:from-glass-bg-from data-state=active:to-glass-bg-to data-state=active:border-glass-border data-state=active:shadow-lg transition-all"
                 data-testid="settings-page-profile-tab"
               >
                 <User className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               </TabsTrigger>
               <TabsTrigger
                 value="stats"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-state=active:text-glass-text data-state=active:bg-linear-to-b data-state=active:from-glass-bg-from data-state=active:to-glass-bg-to data-state=active:border-glass-border data-state=active:shadow-lg transition-all"
                 data-testid="settings-page-stats-tab"
               >
                 <BarChart3 className="h-4 w-4" />
@@ -109,7 +109,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="flex items-center gap-2 text-glass-text-muted data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all opacity-50"
+                className="flex items-center gap-2 text-glass-text-muted data-state=active:text-glass-text data-state=active:bg-linear-to-b data-state=active:from-glass-bg-from data-state=active:to-glass-bg-to data-state=active:border-glass-border data-state=active:shadow-lg transition-all opacity-50"
                 disabled
                 data-testid="settings-page-security-tab"
               >
@@ -118,7 +118,7 @@ export function SettingsPage({ initialProfile, initialStats, initialError }: Set
               </TabsTrigger>
               <TabsTrigger
                 value="danger"
-                className="flex items-center gap-2 text-glass-text-muted hover-nav data-[state=active]:text-glass-text data-[state=active]:bg-linear-to-b data-[state=active]:from-glass-bg-from data-[state=active]:to-glass-bg-to data-[state=active]:border-glass-border data-[state=active]:shadow-lg transition-all"
+                className="flex items-center gap-2 text-glass-text-muted hover-nav data-state=active:text-glass-text data-state=active:bg-linear-to-b data-state=active:from-glass-bg-from data-state=active:to-glass-bg-to data-state=active:border-glass-border data-state=active:shadow-lg transition-all"
                 data-testid="settings-page-danger-tab"
               >
                 <AlertTriangle className="h-4 w-4" />

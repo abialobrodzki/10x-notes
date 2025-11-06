@@ -23,7 +23,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-background group/calendar p-3 [--cell-size:--spacing(8)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -88,7 +88,7 @@ function Calendar({
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("rounded-r-md bg-linear-to-br from-glass-bg-from to-glass-bg-to", defaultClassNames.range_end),
         today: cn(
-          "bg-linear-to-br from-glass-bg-from to-glass-bg-to text-glass-text rounded-md data-[selected=true]:rounded-none",
+          "bg-linear-to-br from-glass-bg-from to-glass-bg-to text-glass-text rounded-md data-selected=true:rounded-none",
           defaultClassNames.today
         ),
         outside: cn("text-muted-foreground aria-selected:text-muted-foreground", defaultClassNames.outside),
@@ -151,7 +151,7 @@ function CalendarDayButton({ className, day, modifiers, ...props }: React.Compon
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "hover:bg-white/5! hover:text-glass-text! data-[selected-single=true]:bg-linear-to-r data-[selected-single=true]:from-gradient-button-from data-[selected-single=true]:to-gradient-button-to data-[selected-single=true]:text-white data-[range-middle=true]:bg-linear-to-br data-[range-middle=true]:from-glass-bg-from data-[range-middle=true]:to-glass-bg-to data-[range-middle=true]:text-glass-text data-[range-start=true]:bg-linear-to-r data-[range-start=true]:from-gradient-button-from data-[range-start=true]:to-gradient-button-to data-[range-start=true]:text-white data-[range-end=true]:bg-linear-to-r data-[range-end=true]:from-gradient-button-from data-[range-end=true]:to-gradient-button-to data-[range-end=true]:text-white group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
+        "hover:bg-white/5! hover:text-glass-text! data-selected-single=true:bg-linear-to-r data-selected-single=true:from-gradient-button-from data-selected-single=true:to-gradient-button-to data-selected-single=true:text-white data-range-middle=true:bg-linear-to-br data-range-middle=true:from-glass-bg-from data-range-middle=true:to-glass-bg-to data-range-middle=true:text-glass-text data-range-start=true:bg-linear-to-r data-range-start=true:from-gradient-button-from data-range-start=true:to-gradient-button-to data-range-start=true:text-white data-range-end=true:bg-linear-to-r data-range-end=true:from-gradient-button-from data-range-end=true:to-gradient-button-to data-range-end=true:text-white group-data-focused=true/day:border-ring group-data-focused=true/day:ring-ring/50 flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none font-normal group-data-focused=true/day:relative group-data-focused=true/day:z-10 group-data-focused=true/day:ring-[3px] data-range-end=true:rounded-md data-range-end=true:rounded-r-md data-range-middle=true:rounded-none data-range-start=true:rounded-md data-range-start=true:rounded-l-md [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className
       )}
