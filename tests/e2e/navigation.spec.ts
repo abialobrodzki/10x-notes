@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { createSampleNotes, deleteAllNotesViaAPI } from "./helpers/notes.helpers";
 
 test.describe("Global Navigation and Layout", () => {

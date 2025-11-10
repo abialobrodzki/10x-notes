@@ -66,12 +66,14 @@ export class NoteDetailPage {
   readonly errorPage404ReturnLink: Locator;
   readonly genericErrorPage: Locator;
   readonly genericErrorRetryButton: Locator;
+  readonly loadingSkeleton: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
     // Main container
     this.container = page.getByTestId("note-detail-page");
+    this.loadingSkeleton = page.getByTestId("note-detail-skeleton");
 
     // Header section
     this.header = page.getByTestId("note-header");
@@ -146,7 +148,10 @@ export class NoteDetailPage {
   }
 
   async waitForLoaded() {
-    await this.container.waitFor({ state: "visible" });
+    // Wait for the loading skeleton to disappear, which indicates data has been fetched.
+    await this.loadingSkeleton.waitFor({ state: "hidden", timeout: 15000 });
+    // Then, wait for the main content container to be visible.
+    await this.container.waitFor({ state: "visible", timeout: 5000 });
   }
 
   async waitForPageNotFound() {

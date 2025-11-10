@@ -1,4 +1,4 @@
-import { type Locator, type Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 /**
  * Page Object Model for Notes List Page (/notes)
@@ -27,6 +27,8 @@ export class NotesListPage {
   readonly filtersToggleButton: Locator;
   readonly filtersClearButton: Locator;
   readonly dateRangePicker: Locator;
+  readonly dateRangePickerFromButton: Locator;
+  readonly dateRangePickerToButton: Locator;
   readonly goalStatusFilter: Locator;
   readonly sortSelect: Locator;
 
@@ -46,6 +48,7 @@ export class NotesListPage {
   // Infinite loader (mobile)
   readonly infiniteLoader: Locator;
   readonly infiniteLoaderNoMoreNotes: Locator;
+  readonly pageContainer: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -53,6 +56,7 @@ export class NotesListPage {
     // Main content
     this.mainContent = page.getByTestId("app-shell-main-content");
     this.pageTitle = page.getByRole("heading", { name: /Moje notatki/i });
+    this.pageContainer = page.getByTestId("app-shell");
 
     // Search
     this.searchInput = page.getByTestId("search-input");
@@ -64,6 +68,8 @@ export class NotesListPage {
     this.filtersToggleButton = page.getByTestId("filters-panel-toggle-button");
     this.filtersClearButton = page.getByTestId("filters-panel-clear-button");
     this.dateRangePicker = page.getByTestId("date-range-picker");
+    this.dateRangePickerFromButton = page.getByTestId("date-range-picker-from-button");
+    this.dateRangePickerToButton = page.getByTestId("date-range-picker-to-button");
     this.goalStatusFilter = page.getByTestId("goal-status-multi-select-trigger");
     this.sortSelect = page.getByTestId("sort-select-trigger");
 
@@ -105,7 +111,10 @@ export class NotesListPage {
    * @param query - Search query
    */
   async search(query: string) {
+    await expect(this.searchInputField).toBeInViewport();
     await this.searchInputField.fill(query);
+    // Wait for the 300ms debounce in SearchInput and the subsequent React re-render
+    await this.page.waitForTimeout(500);
   }
 
   /**
@@ -138,9 +147,6 @@ export class NotesListPage {
 
     // Click the note
     await noteItem.click();
-
-    // Wait a bit for click to register
-    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -187,13 +193,13 @@ export class NotesListPage {
    * Wait for notes to load
    */
   async waitForNotesToLoad() {
-    try {
-      await this.noteList.waitFor({ state: "visible", timeout: 5000 });
-    } catch (error) {
-      // Fallback to empty state visibility when there are no notes to display
-      await this.noteListEmptyState.waitFor({ state: "visible", timeout: 5000 }).catch(() => {
-        throw error;
-      });
+    // Wait for the main list container OR the empty state to appear first.
+    await expect(this.noteList.or(this.noteListEmptyState)).toBeVisible({ timeout: 10000 });
+
+    // If the list container appeared, also wait for at least one item to be rendered inside it.
+    const isListVisible = await this.noteList.isVisible();
+    if (isListVisible) {
+      await this.noteListItems.first().waitFor({ state: "visible", timeout: 5000 });
     }
   }
 
@@ -269,18 +275,25 @@ export class NotesListPage {
    * Toggle filters panel (expand/collapse)
    */
   async toggleFilters() {
+    await expect(this.filtersToggleButton).toBeVisible();
+    await expect(this.filtersToggleButton).toBeEnabled();
     await this.filtersToggleButton.click();
   }
 
   /**
-   * Ensure filters panel is expanded so controls are rendered
+   * Ensure filters panel is expanded so controls are rendered.
+   * If the panel is collapsed, this method will expand it and wait for the
+   * content to become visible.
    */
   async ensureFiltersExpanded() {
-    const controlsRendered = (await this.dateRangePicker.count()) > 0;
-    if (!controlsRendered) {
-      await this.filtersToggleButton.click();
-      await this.dateRangePicker.first().waitFor({ state: "visible" });
+    // If the date picker is not in the DOM, expand the filters panel.
+    if ((await this.dateRangePicker.count()) === 0) {
+      await this.toggleFilters();
+      // Wait for the element to be added to the DOM.
+      await expect(this.dateRangePicker).toHaveCount(1, { timeout: 5000 });
     }
+    // Ensure the element is also visible (it might be in the DOM but hidden during animation).
+    await expect(this.dateRangePicker).toBeVisible({ timeout: 5000 });
   }
 
   /**

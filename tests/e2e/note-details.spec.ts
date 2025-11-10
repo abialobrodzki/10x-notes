@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { createSampleNotes, deleteAllNotesViaAPI } from "./helpers/notes.helpers";
 
 test.describe("Note Details Page", () => {

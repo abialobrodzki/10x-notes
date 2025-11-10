@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { mockAiGenerate } from "./helpers/api.mock";
 import { deleteNoteViaAPI } from "./helpers/notes.helpers";
 import type { Page } from "playwright/test";

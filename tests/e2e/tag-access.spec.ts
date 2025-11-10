@@ -1,25 +1,21 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { createSampleNotes, deleteAllNotesViaAPI } from "./helpers/notes.helpers";
 
 test.describe("Tag Access Management", () => {
   let noteId: string;
 
   test.beforeEach(async ({ authenticatedPage, notesListPage }) => {
-    // Create a sample note for testing
+    // ARRANGE
     await notesListPage.goto();
     const notes = await createSampleNotes(authenticatedPage.page, 1);
     noteId = notes[0].id;
   });
 
   test.afterEach(async ({ authenticatedPage }) => {
-    // Cleanup: delete all notes
-    // Don't unrouteAll as it interferes with test route handlers
-    // Route handlers will be cleaned up automatically between tests
+    // CLEANUP
     try {
       await deleteAllNotesViaAPI(authenticatedPage.page);
     } catch (error) {
-      // Cleanup failed (e.g., page closed, route already handled)
-      // Log but don't fail the test
       console.warn("Cleanup warning:", error);
     }
   });
@@ -35,7 +31,6 @@ test.describe("Tag Access Management", () => {
 
       // ASSERT
       await expect(tagAccessModal.modal).toBeVisible();
-      // Wait for recipients to load
       await tagAccessModal.waitForRecipientsLoaded();
     });
 
@@ -45,7 +40,6 @@ test.describe("Tag Access Management", () => {
       await noteDetailPage.waitForLoaded();
 
       // ACT
-      // Intercept and delay the API response to capture loading state
       let routeIntercepted = false;
       await noteDetailPage.page.route("**/api/tags/*/access", async (route) => {
         if (!routeIntercepted) {
@@ -53,16 +47,15 @@ test.describe("Tag Access Management", () => {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
         await route.continue().catch(() => {
-          // Route already handled, ignore
+          /* Ignore errors if route is already handled */
         });
       });
 
       await noteDetailPage.openTagAccessModal();
 
       // ASSERT
-      // Either loading state should be visible or immediate load
       const isLoading = await tagAccessModal.isLoading();
-      expect([true, false]).toContain(isLoading); // Either is fine
+      expect([true, false]).toContain(isLoading);
     });
 
     test("should display empty state when no recipients exist", async ({ noteDetailPage, tagAccessModal }) => {
@@ -76,30 +69,29 @@ test.describe("Tag Access Management", () => {
 
       // ASSERT
       const isEmpty = await tagAccessModal.isEmptyState();
-      // Should either be empty or have recipients (depends on test data)
       expect(typeof isEmpty).toBe("boolean");
     });
   });
 
   test.describe("Recipient Management", () => {
-    test("should allow adding new recipient by email", async ({ noteDetailPage, tagAccessModal, page }) => {
+    test("should display error when adding non-existent recipient", async ({
+      noteDetailPage,
+      tagAccessModal,
+      page,
+    }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
-
-      // ACT
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
+      const nonExistentEmail = `test-recipient-${Date.now()}@example.com`;
 
-      const newEmail = `test-recipient-${Date.now()}@example.com`;
-      await tagAccessModal.addRecipient(newEmail);
+      // ACT
+      await tagAccessModal.addRecipient(nonExistentEmail);
 
-      // Wait for submission and UI update
-      await page.waitForTimeout(2000);
-
-      // ASSERT - Check that submit button is no longer in loading state (successful submission)
-      const isLoading = await tagAccessModal.isSubmitButtonLoading();
-      expect(isLoading).toBe(false);
+      // ASSERT
+      const fieldError = page.getByTestId("add-recipient-form-validation-error");
+      await expect(fieldError).toContainText("Użytkownik nie istnieje");
     });
 
     test("should validate email format before submission", async ({ noteDetailPage, page }) => {
@@ -108,29 +100,16 @@ test.describe("Tag Access Management", () => {
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
 
-      // ACT - Fill with invalid email and submit
+      // ACT
       const emailInput = page.getByTestId("add-recipient-form-email-input");
       await emailInput.fill("invalid-email");
-      await page.waitForTimeout(300);
-
-      // Try to submit with invalid email
       const submitButton = page.getByTestId("add-recipient-form-submit-button");
       await submitButton.click();
-      await page.waitForTimeout(500);
 
-      // ASSERT - After submission attempt, error should appear
-      // Component shows validation error for non-email format
-      const errorAlert = page.getByTestId("tag-access-modal-error");
-      const hasError = await errorAlert.isVisible().catch(() => false);
-
-      // If no error alert, check if input is still focused (waiting for valid input)
-      if (!hasError) {
-        const currentValue = await emailInput.inputValue();
-        // Input should still contain the invalid email (not cleared on error)
-        expect(currentValue).toBe("invalid-email");
-      } else {
-        expect(hasError).toBe(true);
-      }
+      // ASSERT
+      const validationError = page.getByTestId("add-recipient-form-validation-error");
+      await expect(validationError).toBeVisible();
+      await expect(validationError).toContainText("Podaj poprawny adres email");
     });
 
     test("should require email input", async ({ noteDetailPage, tagAccessModal }) => {
@@ -140,50 +119,22 @@ test.describe("Tag Access Management", () => {
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // ACT
-      // Try to submit empty form
-      const isDisabled = await tagAccessModal.isSubmitButtonDisabled();
-
       // ASSERT
-      expect(isDisabled).toBe(true);
+      await expect(tagAccessModal.submitButton).toBeDisabled();
     });
 
-    test("should allow removing recipient", async ({ noteDetailPage, tagAccessModal, page }) => {
+    test("should allow removing recipient", async ({ noteDetailPage, tagAccessModal }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // Mock the API to allow adding test recipients
-      await page.route("**/api/tags/*/access", async (route) => {
-        if (route.request().method() === "POST") {
-          // Return success for POST requests
-          await route.abort("failed");
-          return;
-        }
-
-        // Continue with other requests
-        await route.continue();
-      });
-
-      // const testEmail = "test-e2e-recipient@example.com";
-
-      // ACT - Mock successful add
-      // For this test, we'll verify the remove button exists and can be clicked
-      // In a real scenario, you'd need a test account to actually add
-
-      // Get initial count
+      // ACT & ASSERT
       const beforeCount = await tagAccessModal.getRecipientCount();
-
-      // ASSERT - Verify remove capability exists
-      // Since we can't add test recipients without registered accounts,
-      // we verify the modal supports removal by checking the functionality is wired
+      expect(typeof beforeCount).toBe("number");
       const hasRemoveFunctionality = typeof tagAccessModal.removeRecipient === "function";
       expect(hasRemoveFunctionality).toBe(true);
-
-      // Verify recipient count reflects actual state
-      expect(typeof beforeCount).toBe("number");
     });
 
     test("should show loading state while adding recipient", async ({ noteDetailPage, tagAccessModal }) => {
@@ -194,94 +145,56 @@ test.describe("Tag Access Management", () => {
       await tagAccessModal.waitForRecipientsLoaded();
 
       // ACT
-      // Delay the API response
       await noteDetailPage.page.route("**/api/tags/*/access", async (route) => {
         if (route.request().method() === "POST") {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
         await route.continue().catch(() => {
-          // Route already handled, ignore
+          /* Ignore errors if route is already handled */
         });
       });
-
       const newEmail = `test-recipient-loading-${Date.now()}@example.com`;
       await tagAccessModal.emailInput.fill(newEmail);
       await tagAccessModal.submitButton.click();
 
       // ASSERT
-      const isLoading = await tagAccessModal.isSubmitButtonLoading();
-      // Either should be loading or already done
-      expect(typeof isLoading).toBe("boolean");
-    });
-
-    test("should clear email input after successful submission", async ({ noteDetailPage, tagAccessModal, page }) => {
-      // ARRANGE
-      await noteDetailPage.goto(noteId);
-      await noteDetailPage.waitForLoaded();
-      await noteDetailPage.openTagAccessModal();
-      await tagAccessModal.waitForRecipientsLoaded();
-
-      const newEmail = `test-recipient-clear-${Date.now()}@example.com`;
-
-      // ACT
-      await tagAccessModal.addRecipient(newEmail);
-      await page.waitForTimeout(1500);
-
-      // Clear input manually (component may or may not auto-clear)
-      await tagAccessModal.clearEmailInput();
-      await page.waitForTimeout(300);
-
-      // ASSERT - Verify input is now empty
-      const emailValue = await tagAccessModal.emailInput.inputValue();
-      expect(emailValue).toBe("");
+      await expect(tagAccessModal.submitButton).toBeDisabled();
     });
   });
 
   test.describe("Error Handling", () => {
-    test("should display error message on API failure", async ({ noteDetailPage, page }) => {
+    test("should display error message on API failure", async ({ noteDetailPage, page, tagAccessModal }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
+
+      // Intercept the API call to simulate a failure when fetching recipients
+      await page.route("**/api/tags/*/access", (route) => route.abort("failed"));
+
+      // ACT
       await noteDetailPage.openTagAccessModal();
-
-      // ACT - Mock API failure
-      await page.route("**/api/tags/*/access", async (route) => {
-        await route.abort("failed");
-      });
-
-      // Close and reopen modal to trigger fresh fetch
-      await page.keyboard.press("Escape");
-      await page.waitForTimeout(500);
 
       // ASSERT
-      // Error handling should occur (implementation dependent)
-      expect(true).toBe(true); // Placeholder
+      // The modal should show a generic error message
+      await expect(tagAccessModal.errorAlert).toBeVisible();
     });
 
-    test("should handle non-existent user error", async ({ noteDetailPage, tagAccessModal, page }) => {
+    test("should handle non-existent user error", async ({ noteDetailPage, page }) => {
       // ARRANGE
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
-      await tagAccessModal.waitForRecipientsLoaded();
+      await page.getByTestId("tag-access-modal").waitFor();
 
-      // ACT - Try to add non-existent email
-      const emailInput = noteDetailPage.page.getByTestId("add-recipient-form-email-input");
-      const submitButton = noteDetailPage.page.getByTestId("add-recipient-form-submit-button");
-
+      // ACT
+      const emailInput = page.getByTestId("add-recipient-form-email-input");
+      const submitButton = page.getByTestId("add-recipient-form-submit-button");
       await emailInput.fill("truly-nonexistent-user-xyz@example.com");
-      await emailInput.blur();
-      await page.waitForTimeout(100);
       await submitButton.click();
-      await page.waitForTimeout(100);
 
-      // ASSERT - Wait for error message to appear with longer timeout
+      // ASSERT
       const fieldError = page.getByTestId("add-recipient-form-validation-error");
-
-      // Use waitFor to check if error appears
-      await fieldError.isVisible({ timeout: 5000 });
-      const errorText = await fieldError.textContent();
-      expect(errorText).toContain("Użytkownik nie istnieje");
+      await expect(fieldError).toContainText("Użytkownik nie istnieje");
     });
   });
 
@@ -291,17 +204,14 @@ test.describe("Tag Access Management", () => {
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
+      const modal = page.getByTestId("tag-access-modal");
+      await expect(modal).toBeVisible();
 
-      // ACT - Press Escape key
+      // ACT
       await page.keyboard.press("Escape");
 
-      // Wait for modal to close
-      await page.waitForTimeout(300);
-
-      // ASSERT - Modal should be closed (either not visible or not in DOM)
-      const modal = page.getByTestId("tag-access-modal");
-      const isClosed = await modal.isVisible().catch(() => true);
-      expect(isClosed).toBe(false);
+      // ASSERT
+      await expect(modal).not.toBeVisible();
     });
 
     test("should display modal with proper accessibility", async ({ noteDetailPage, tagAccessModal }) => {
@@ -313,9 +223,7 @@ test.describe("Tag Access Management", () => {
       await noteDetailPage.openTagAccessModal();
 
       // ASSERT
-      const modal = tagAccessModal.modal;
-      const isVisible = await modal.isVisible();
-      expect(isVisible).toBe(true);
+      await expect(tagAccessModal.modal).toBeVisible();
     });
   });
 });

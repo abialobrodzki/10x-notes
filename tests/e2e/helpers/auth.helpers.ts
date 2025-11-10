@@ -58,16 +58,23 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
  * @param timeout - Maximum wait time in ms (default: 5000)
  */
 export async function waitForAuth(page: Page, timeout = 5000) {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    if (await isAuthenticated(page)) {
-      return;
-    }
-    await page.waitForTimeout(100);
-  }
-
-  throw new Error(`Authentication did not complete within ${timeout}ms`);
+  await page.waitForFunction(
+    () => {
+      const keys = Object.keys(localStorage);
+      const supabaseKey = keys.find((key) => key.startsWith("sb-") && key.endsWith("-auth-token"));
+      if (!supabaseKey) return false;
+      const data = localStorage.getItem(supabaseKey);
+      if (!data) return false;
+      try {
+        const parsed = JSON.parse(data);
+        return !!parsed.access_token;
+      } catch {
+        return false;
+      }
+    },
+    null,
+    { timeout }
+  );
 }
 
 /**

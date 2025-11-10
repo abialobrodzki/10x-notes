@@ -1,4 +1,4 @@
-import type { Locator, Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 export class ResetPasswordPage {
   readonly page: Page;
@@ -135,5 +135,9 @@ export class ResetPasswordPage {
   async hasConfirmPasswordError() {
     const errorText = await this.getConfirmPasswordErrorText();
     return errorText !== null && errorText.trim().length > 0;
+  }
+
+  async waitForSuccessMessage() {
+    await expect(this.successMessage).toBeVisible({ timeout: 10000 });
   }
 }

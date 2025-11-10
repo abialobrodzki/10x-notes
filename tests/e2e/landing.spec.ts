@@ -1,8 +1,7 @@
-import { test, expect } from "./fixtures/base";
+import { unauthedTest as test, expect } from "./fixtures/index";
 import { mockAiGenerate, mockAiGenerateSequence, type AiGenerateMockOptions } from "./helpers/api.mock";
 import type { Page } from "playwright/test";
 
-const REAL_AI_FLAG = (process.env.E2E_ENABLE_REAL_AI ?? "").toLowerCase() === "true";
 const SAMPLE_CONTENT = "Spotkanie zespołu o planie sprintu oraz zadaniach zaległych.";
 const SUCCESS_RESPONSE = {
   summary_text: "Zespół omówił plan sprintu i ustalił kroki dla zaległych zadań.",
@@ -57,7 +56,7 @@ test.describe("Landing Page", () => {
       await landingPage.fillInput("Sample text for testing");
 
       // ASSERT
-      await expect(landingPage.generateButton).not.toBeDisabled();
+      await expect(landingPage.generateButton).toBeEnabled();
     });
 
     test("should display character count correctly", async ({ landingPage }) => {
@@ -135,6 +134,7 @@ test.describe("Landing Page", () => {
       test(scenario.title, async ({ landingPage, page }) => {
         await withAiMock(page, scenario.config, async () => {
           await landingPage.fillInput(SAMPLE_CONTENT);
+          await expect(landingPage.generateButton).toBeEnabled();
           await landingPage.generateButton.click();
 
           await expect(landingPage.errorMessage).toBeVisible();
@@ -196,7 +196,6 @@ test.describe("Landing Page", () => {
     });
 
     test("should generate summary using real AI service", async ({ landingPage, page }) => {
-      test.skip(!REAL_AI_FLAG, "Set E2E_ENABLE_REAL_AI=true to run this test against OpenRouter");
       test.slow();
 
       await landingPage.fillInput(

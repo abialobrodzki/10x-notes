@@ -58,23 +58,7 @@ export class RegisterPage {
   async submitForm() {
     await expect(this.submitButton).toBeVisible();
     await expect(this.submitButton).toBeEnabled();
-    const responsePromise = this.page
-      .waitForResponse((response) => response.url().includes("/api/auth/register"), { timeout: 10000 })
-      .catch(() => undefined);
-
     await this.submitButton.click();
-
-    await Promise.race([responsePromise, this.page.waitForTimeout(1500)]);
-
-    // Wait for either field-level errors or successful redirect
-    await Promise.race([
-      this.page
-        .waitForFunction(() => Boolean(document.querySelector("p.text-destructive")), undefined, { timeout: 3000 })
-        .catch(() => undefined),
-      this.page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => undefined),
-    ]);
-
-    await this.page.waitForTimeout(150);
   }
 
   async getErrorMessageText() {

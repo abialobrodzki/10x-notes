@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { createNoteViaAPI, createPublicLinkViaAPI, updatePublicLinkViaAPI } from "./helpers/notes.helpers";
 
 test.describe("Public Note Page", () => {

@@ -7,6 +7,7 @@ import { expect, type Locator, type Page } from "playwright/test";
  */
 export class LandingPage {
   readonly page: Page;
+  #hydrationHookInstalled = false;
 
   readonly container: Locator;
   readonly contentArea: Locator;
@@ -33,7 +34,9 @@ export class LandingPage {
   }
 
   async goto() {
+    await this.ensureHydrationHook();
     await this.page.goto("/", { waitUntil: "domcontentloaded" });
+    await this.waitForHydration();
     await this.container.waitFor({ state: "visible" });
     await this.contentArea.waitFor({ state: "visible" });
     await this.charCounter.waitFor({ state: "visible" });
@@ -45,18 +48,40 @@ export class LandingPage {
 
     await this.textarea.clear();
     await this.textarea.fill(value);
-    await expect(this.textarea).toContainText(value);
-    await this.textarea.dispatchEvent("change");
-    await this.textarea.dispatchEvent("blur");
-
-    // Wait for button to become enabled when there's valid input
-    if (value.trim().length > 0 && value.length <= 5000) {
-      await expect(this.generateButton).toBeEnabled({ timeout: 10000 });
-    }
+    await expect(this.textarea).toHaveValue(value);
   }
 
   async clickGenerate() {
     await this.generateButton.waitFor({ state: "visible" });
     await this.generateButton.click();
+  }
+
+  private async ensureHydrationHook() {
+    if (this.#hydrationHookInstalled) return;
+    await this.page.addInitScript(() => {
+      const globalWindow = window as unknown as { __landingHydrated?: boolean };
+      globalWindow.__landingHydrated = false;
+      window.addEventListener(
+        "astro:page-load",
+        () => {
+          globalWindow.__landingHydrated = true;
+        },
+        { once: true }
+      );
+    });
+    this.#hydrationHookInstalled = true;
+  }
+
+  private async waitForHydration() {
+    try {
+      await this.page.waitForFunction(
+        () => (window as unknown as { __landingHydrated?: boolean }).__landingHydrated === true,
+        {},
+        { timeout: 15000 }
+      );
+    } catch {
+      // In case the event was missed, give Astro a moment to finish hydrating.
+      await this.page.waitForTimeout(1000);
+    }
   }
 }

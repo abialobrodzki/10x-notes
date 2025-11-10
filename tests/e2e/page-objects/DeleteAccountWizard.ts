@@ -17,6 +17,7 @@ export class DeleteAccountWizardPOM {
   readonly cancelButton: Locator;
   readonly confirmButton: Locator;
   readonly dangerTab: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -30,6 +31,7 @@ export class DeleteAccountWizardPOM {
     this.cancelButton = page.getByTestId("delete-account-wizard-cancel-button");
     this.confirmButton = page.getByTestId("delete-account-wizard-confirm-button");
     this.dangerTab = page.getByTestId("settings-page-danger-tab");
+    this.errorMessage = page.getByTestId("delete-account-wizard-error-message");
   }
 
   async openDialog() {
@@ -41,7 +43,7 @@ export class DeleteAccountWizardPOM {
     }
 
     await this.triggerButton.click();
-    await this.dialog.waitFor({ state: "visible" });
+    await expect(this.dialog).toBeVisible();
   }
 
   async fillEmail(email: string) {

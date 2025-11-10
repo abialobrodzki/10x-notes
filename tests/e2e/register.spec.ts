@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { unauthedTest as test, expect } from "./fixtures/index";
 
 test.describe("Register Page", () => {
   test.beforeEach(async ({ registerPage }) => {
@@ -14,17 +14,7 @@ test.describe("Register Page", () => {
     await registerPage.fillEmail("invalid-email");
     await registerPage.fillPassword("Password123!");
     await registerPage.fillConfirmPassword("Password123!");
-
-    // Verify all fields have values before submitting
-    const emailValue = await registerPage.emailInput.inputValue();
-    const passwordValue = await registerPage.passwordInput.inputValue();
-    const confirmValue = await registerPage.confirmPasswordInput.inputValue();
-    expect(emailValue).toBe("invalid-email");
-    expect(passwordValue).toBe("Password123!");
-    expect(confirmValue).toBe("Password123!");
-
-    await registerPage.submitForm();
-    expect(await registerPage.hasEmailError()).toBe(true);
+    await registerPage.submitButton.click();
     const emailError = await registerPage.getEmailErrorText();
     expect(emailError).toContain("Podaj poprawny adres email");
   });
@@ -33,13 +23,7 @@ test.describe("Register Page", () => {
     await registerPage.fillEmail("test@example.com");
     await registerPage.fillPassword("short");
     await registerPage.fillConfirmPassword("short");
-
-    await expect(registerPage.emailInput).toHaveValue("test@example.com");
-    await expect(registerPage.passwordInput).toHaveValue("short");
-    await expect(registerPage.confirmPasswordInput).toHaveValue("short");
-
-    await registerPage.submitForm();
-    expect(await registerPage.hasPasswordError()).toBe(true);
+    await registerPage.submitButton.click();
     const passwordError = await registerPage.getPasswordErrorText();
     expect(passwordError).toContain("Hasło musi mieć co najmniej 8 znaków");
   });
@@ -48,8 +32,7 @@ test.describe("Register Page", () => {
     await registerPage.fillEmail("test@example.com");
     await registerPage.fillPassword("Password123!");
     await registerPage.fillConfirmPassword("Password123");
-    await registerPage.submitForm();
-    expect(await registerPage.hasConfirmPasswordError()).toBe(true);
+    await registerPage.submitButton.click();
     const confirmError = await registerPage.getConfirmPasswordErrorText();
     expect(confirmError).toContain("Hasła muszą być identyczne");
   });

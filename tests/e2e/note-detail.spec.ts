@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { authedTest as test, expect } from "./fixtures/index";
 import { createNoteViaAPI, deleteNoteViaAPI } from "./helpers/notes.helpers";
 
 test.describe.configure({ mode: "serial" });
@@ -7,9 +7,9 @@ test.describe("Note Detail Page", () => {
   let noteId: string;
   const multilineContent = Array.from({ length: 12 }, (_, index) => `Linia ${index + 1} spotkania`).join("\n");
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser, authStorageState }) => {
     const context = await browser.newContext({
-      storageState: "./tests/e2e/.auth/user.json",
+      storageState: authStorageState,
     });
     const page = await context.newPage();
 
@@ -26,10 +26,10 @@ test.describe("Note Detail Page", () => {
     await context.close();
   });
 
-  test.afterAll(async ({ browser }) => {
+  test.afterAll(async ({ browser, authStorageState }) => {
     if (!noteId) return;
     const context = await browser.newContext({
-      storageState: "./tests/e2e/.auth/user.json",
+      storageState: authStorageState,
     });
     const page = await context.newPage();
     await deleteNoteViaAPI(page, noteId);

@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/base";
+import { unauthedTest as test, expect } from "./fixtures/index";
 
 test.describe("Reset Password Page", () => {
   test.beforeEach(async ({ resetPasswordPage, page }) => {

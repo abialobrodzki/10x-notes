@@ -309,7 +309,7 @@ OPENROUTER_API_KEY=xxx  # For AI text generation
 
 - Environment variables are validated at startup (see `src/db/supabase.client.ts`)
 - Missing variables throw clear error messages
-- Note: `SUPABASE_SERVICE_ROLE_KEY` is NOT used (removed in refactoring for security)
+- Note: `SUPABASE_SERVICE_ROLE_KEY` is optional and should only be provided locally (e.g., `.env.test`) for E2E fixtures that need to create isolated users via the Supabase admin API. Never expose it to client runtime.
 
 ### Error Handling Patterns
 

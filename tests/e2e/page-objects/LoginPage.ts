@@ -1,4 +1,4 @@
-import { type Locator, type Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 /**
  * Page Object Model for Login Page
@@ -20,6 +20,7 @@ export class LoginPage {
   readonly passwordInput: Locator;
   readonly submitButton: Locator;
   readonly forgotPasswordLink: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -31,6 +32,7 @@ export class LoginPage {
     this.passwordInput = page.getByTestId("login-form-password-input");
     this.submitButton = page.getByTestId("login-form-submit-button");
     this.forgotPasswordLink = page.getByTestId("login-page-forgot-password-link");
+    this.errorMessage = page.getByTestId("alert-area-error");
   }
 
   /**
@@ -45,16 +47,8 @@ export class LoginPage {
    * @param email - Email address
    */
   async fillEmail(email: string) {
-    await this.emailInput.waitFor({ state: "visible" });
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      await this.emailInput.fill(email);
-      await this.page.waitForTimeout(200);
-      const current = (await this.emailInput.inputValue()).trim();
-      if (current === email) {
-        return;
-      }
-    }
-    throw new Error(`Unable to set login email input to "${email}"`);
+    await this.emailInput.fill(email);
+    await expect(this.emailInput).toHaveValue(email);
   }
 
   /**
@@ -62,16 +56,8 @@ export class LoginPage {
    * @param password - Password
    */
   async fillPassword(password: string) {
-    await this.passwordInput.waitFor({ state: "visible" });
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      await this.passwordInput.fill(password);
-      await this.page.waitForTimeout(200);
-      const current = await this.passwordInput.inputValue();
-      if (current === password) {
-        return;
-      }
-    }
-    throw new Error("Unable to set login password input");
+    await this.passwordInput.fill(password);
+    await expect(this.passwordInput).toHaveValue(password);
   }
 
   /**

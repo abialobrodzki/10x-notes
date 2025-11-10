@@ -33,10 +33,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Parallel execution - opt in workers for faster test runs
-  workers: process.env.CI ? 2 : 2,
+  workers: process.env.CI ? 5 : undefined,
 
   // Reporter configuration
   reporter: [["html", { outputFolder: "./tests/e2e/playwright-report", open: "never" }], ["list"]],
+
+  // Global teardown for cleaning up test users
+  globalTeardown: "./tests/e2e/global-teardown.ts",
 
   // Shared settings for all projects
   use: {
@@ -50,44 +53,11 @@ export default defineConfig({
 
   projects: [
     {
-      name: "setup-auth",
-      testMatch: ["**/setup/auth.setup.ts"],
-    },
-    {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
         headless: process.env.PLAYWRIGHT_HEADLESS !== "false",
-        storageState: "./tests/e2e/.auth/user.json",
       },
-      dependencies: ["setup-auth"],
-      testIgnore: [
-        "**/login.spec.ts",
-        "**/register.spec.ts",
-        "**/forgot-password.spec.ts",
-        "**/reset-password.spec.ts",
-        "**/landing.spec.ts",
-      ],
-    },
-    {
-      name: "setup-login",
-      testMatch: ["**/setup/login.setup.ts"],
-    },
-    {
-      name: "chromium-login",
-      use: {
-        ...devices["Desktop Chrome"],
-        headless: process.env.PLAYWRIGHT_HEADLESS !== "false",
-        storageState: undefined,
-      },
-      dependencies: ["setup-login"],
-      testMatch: [
-        "**/login.spec.ts",
-        "**/register.spec.ts",
-        "**/forgot-password.spec.ts",
-        "**/reset-password.spec.ts",
-        "**/landing.spec.ts",
-      ],
     },
   ],
 

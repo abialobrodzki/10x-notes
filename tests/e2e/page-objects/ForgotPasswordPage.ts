@@ -1,4 +1,4 @@
-import type { Locator, Page } from "playwright/test";
+import { expect, type Locator, type Page } from "playwright/test";
 
 export class ForgotPasswordPage {
   readonly page: Page;
@@ -26,9 +26,7 @@ export class ForgotPasswordPage {
   }
 
   async goto() {
-    // Clear any previous route handlers to avoid mock interference
     await this.page.unroute("**/api/auth/**");
-
     await this.page.context().clearCookies();
     await this.page.goto("/forgot-password", { waitUntil: "domcontentloaded" });
     await this.container.waitFor({ state: "visible" });
@@ -36,94 +34,29 @@ export class ForgotPasswordPage {
   }
 
   async fillEmail(email: string) {
-    await this.emailInput.waitFor({ state: "visible" });
-
-    await this.emailInput.fill("");
-
-    await this.emailInput.type(email, { delay: 25 });
-
-    await this.page.waitForFunction(
-      (expectedEmail) => {
-        const input = document.querySelector('[data-testid="forgot-password-form-email-input"]') as HTMLInputElement;
-        return input?.value === expectedEmail;
-      },
-      email,
-      { timeout: 5000 }
-    );
+    await this.emailInput.fill(email);
+    await expect(this.emailInput).toHaveValue(email);
   }
 
   async submitForm() {
-    await this.submitButton.waitFor({ state: "visible" });
-
-    const responsePromise = this.page
-      .waitForResponse((response) => response.url().includes("/api/auth/forgot-password"), { timeout: 10000 })
-      .catch(() => undefined);
-
     await this.submitButton.click();
-
-    await Promise.race([responsePromise, this.page.waitForTimeout(1500)]);
-
-    // Wait for either error or success (inline or success message)
-    await Promise.race([
-      this.page
-        .waitForFunction(
-          () =>
-            Boolean(
-              document
-                .querySelector('[data-testid="forgot-password-form-email-input"]')
-                ?.nextElementSibling?.querySelector("p.text-destructive")
-            ),
-          undefined,
-          { timeout: 3000 }
-        )
-        .catch(() => undefined),
-      this.successMessage.waitFor({ state: "visible", timeout: 3000 }).catch(() => undefined),
-    ]);
-
-    await this.page.waitForTimeout(150);
   }
 
   async getErrorMessageText() {
     await this.errorMessage.waitFor({ state: "visible", timeout: 15000 });
-    await this.page.waitForTimeout(100);
-
     const text = await this.errorMessage.textContent();
     return text?.trim() ?? "";
   }
 
   async waitForAlert(timeout = 8000) {
-    await this.alerts
-      .first()
-      .waitFor({ state: "attached", timeout })
-      .catch(async () => {
-        await this.page.waitForFunction(
-          () =>
-            Boolean(document.querySelector('[data-testid="alert-area-success"]')) ||
-            Boolean(document.querySelector('[data-testid="alert-area-error"]')),
-          undefined,
-          { timeout }
-        );
-      });
+    await this.alerts.first().waitFor({ state: "attached", timeout });
   }
 
-  /**
-   * Get email field error message
-   * @returns Error message text or null if no error
-   */
   async getEmailErrorText() {
-    // Error is rendered as <p> after the email input within the same div
     const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
-    try {
-      return await errorElement.textContent();
-    } catch {
-      return null;
-    }
+    return errorElement.textContent();
   }
 
-  /**
-   * Check if email error is visible
-   * @returns True if email error message is displayed
-   */
   async hasEmailError() {
     const errorText = await this.getEmailErrorText();
     return errorText !== null && errorText.trim().length > 0;

@@ -1,20 +1,17 @@
-import { test, expect } from "./fixtures/base";
-import { requireE2EUserCredentials } from "./helpers/env.helpers";
+import { authedTest as test, expect } from "./fixtures/index";
 
 test.describe("Settings Page", () => {
-  const { email } = requireE2EUserCredentials();
-
-  test.beforeEach(async ({ notesPage, settingsPage }) => {
+  test.beforeEach(async ({ notesPage, settingsPage, user }) => {
     await notesPage.goto();
-    await notesPage.waitForUserProfileLoaded(email);
+    await notesPage.waitForUserProfileLoaded(user.email);
     await notesPage.goToSettings();
     await settingsPage.waitForLoaded();
   });
 
-  test("should display profile information", async ({ settingsPage }) => {
+  test("should display profile information", async ({ settingsPage, user }) => {
     await expect(settingsPage.container).toBeVisible();
     await expect(settingsPage.profileSection).toBeVisible();
-    await expect(settingsPage.profileEmail).toHaveText(email);
+    await expect(settingsPage.profileEmail).toHaveText(user.email);
   });
 
   test("should switch between tabs and reveal sections", async ({ settingsPage }) => {

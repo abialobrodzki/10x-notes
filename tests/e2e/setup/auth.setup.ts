@@ -1,66 +1,58 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
 import { test as setup } from "playwright/test";
-import { requireEnvVars, requireE2EUserCredentials } from "../helpers/env.helpers";
-import { LoginPage } from "../page-objects/LoginPage";
+import { createTestUser } from "../helpers/test-user.helpers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure test env variables are available during setup execution
-dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
-
-const authFile = path.resolve(__dirname, "../.auth/user.json");
-const REQUIRED_ENV_VARS = ["E2E_USERNAME", "E2E_PASSWORD", "PUBLIC_SUPABASE_URL", "PUBLIC_SUPABASE_KEY"] as const;
+const authDir = path.resolve(__dirname, "../.auth");
+const usersFile = path.resolve(authDir, "test-users.json");
 
 setup("authenticate test user", async ({ page }) => {
-  requireEnvVars(REQUIRED_ENV_VARS);
-  const { email: username, password } = requireE2EUserCredentials();
+  const workerIndex = process.env.PLAYWRIGHT_WORKER_INDEX;
+  if (workerIndex === undefined) {
+    throw new Error("PLAYWRIGHT_WORKER_INDEX environment variable is not set.");
+  }
 
-  // Ensure auth directory exists
-  await fs.mkdir(path.dirname(authFile), { recursive: true });
+  const authFile = path.resolve(authDir, `user-${workerIndex}.json`);
 
-  // Clear any stale auth state before logging in
-  await fs.rm(authFile, { force: true });
+  // Create auth directory if it doesn't exist
+  await fs.mkdir(authDir, { recursive: true });
 
-  // Ensure we start from a clean auth state (no lingering cookies)
-  await page.context().clearCookies();
+  // Create a new unique user for this worker
+  const testUser = await createTestUser();
 
-  // Open login page and authenticate using shared page object
-  const loginPage = new LoginPage(page);
-  await loginPage.goto();
-  await page.waitForLoadState("networkidle");
-  await loginPage.fillEmail(username);
-  await loginPage.fillPassword(password);
-  await loginPage.submit();
+  // Store user details for global teardown
+  try {
+    const users = JSON.parse(await fs.readFile(usersFile, "utf-8"));
+    users.push(testUser);
+    await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
+  } catch {
+    // File might not exist on first run
+    await fs.writeFile(usersFile, JSON.stringify([testUser], null, 2));
+  }
 
-  // Wait for redirect to /notes
-  await page.waitForURL((url) => url.pathname === "/notes", { timeout: 30_000 });
+  // Perform login
+  await page.goto("/login");
+  await page.fill('input[name="email"]', testUser.email);
+  await page.fill('input[name="password"]', testUser.password);
+  await page.click('button[type="submit"]');
 
-  // Wait until navbar displays authenticated email
+  // Wait for successful login and redirection
+  await page.waitForURL("**/notes");
+
+  // Verify login by checking for the user's email in the navbar
   await page.waitForFunction(
     (email) => {
       const emailDisplay = document.querySelector('[data-testid="navbar-user-email-display"]');
-      return emailDisplay?.textContent?.includes(email) === true;
+      return emailDisplay?.textContent === email;
     },
-    username,
-    { timeout: 10_000 }
+    testUser.email,
+    { timeout: 10000 }
   );
 
-  // Persist storage state for dependent projects
+  // Save authentication state
   await page.context().storageState({ path: authFile });
-
-  // Cleanup: Clear any test-specific data to prevent polluting the storage state
-  // This ensures clean state for dependent tests
-  await page.evaluate(() => {
-    // Remove any test-specific items from localStorage
-    const keys = Array.from(Object.keys(localStorage));
-    keys.forEach((key) => {
-      if (key.includes("test") || key.includes("pending")) {
-        localStorage.removeItem(key);
-      }
-    });
-  });
 });
