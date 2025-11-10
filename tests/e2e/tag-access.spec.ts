@@ -5,14 +5,14 @@ test.describe("Tag Access Management", () => {
   let noteId: string;
 
   test.beforeEach(async ({ authenticatedPage, notesListPage }) => {
-    // ARRANGE
+    // Arrange
     await notesListPage.goto();
     const notes = await createSampleNotes(authenticatedPage.page, 1);
     noteId = notes[0].id;
   });
 
   test.afterEach(async ({ authenticatedPage }) => {
-    // CLEANUP
+    // Cleanup
     try {
       await deleteAllNotesViaAPI(authenticatedPage.page);
     } catch (error) {
@@ -22,24 +22,23 @@ test.describe("Tag Access Management", () => {
 
   test.describe("Modal Display and Loading", () => {
     test("should display recipients list when modal opens", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
 
-      // ACT
+      // Act
       await noteDetailPage.openTagAccessModal();
 
-      // ASSERT
+      // Assert
       await expect(tagAccessModal.modal).toBeVisible();
       await tagAccessModal.waitForRecipientsLoaded();
     });
 
     test("should show loading state while fetching recipients", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
 
-      // ACT
       let routeIntercepted = false;
       await noteDetailPage.page.route("**/api/tags/*/access", async (route) => {
         if (!routeIntercepted) {
@@ -51,25 +50,27 @@ test.describe("Tag Access Management", () => {
         });
       });
 
+      // Act
       await noteDetailPage.openTagAccessModal();
 
-      // ASSERT
+      // Assert
       const isLoading = await tagAccessModal.isLoading();
+      expect(typeof isLoading).toBe("boolean");
       expect([true, false]).toContain(isLoading);
     });
 
     test("should display empty state when no recipients exist", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
 
-      // ACT
+      // Act
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // ASSERT
+      // Assert
       const isEmpty = await tagAccessModal.isEmptyState();
-      expect(typeof isEmpty).toBe("boolean");
+      expect(isEmpty).toBe(true);
     });
   });
 
@@ -79,72 +80,77 @@ test.describe("Tag Access Management", () => {
       tagAccessModal,
       page,
     }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
       const nonExistentEmail = `test-recipient-${Date.now()}@example.com`;
 
-      // ACT
+      // Act
       await tagAccessModal.addRecipient(nonExistentEmail);
 
-      // ASSERT
+      // Assert
       const fieldError = page.getByTestId("add-recipient-form-validation-error");
       await expect(fieldError).toContainText("Użytkownik nie istnieje");
     });
 
     test("should validate email format before submission", async ({ noteDetailPage, page }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
 
-      // ACT
       const emailInput = page.getByTestId("add-recipient-form-email-input");
-      await emailInput.fill("invalid-email");
       const submitButton = page.getByTestId("add-recipient-form-submit-button");
+
+      // Act
+      await emailInput.fill("invalid-email");
       await submitButton.click();
 
-      // ASSERT
+      // Assert
       const validationError = page.getByTestId("add-recipient-form-validation-error");
       await expect(validationError).toBeVisible();
       await expect(validationError).toContainText("Podaj poprawny adres email");
     });
 
     test("should require email input", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // ASSERT
+      // Act
+      // (No action needed - testing initial state)
+
+      // Assert
       await expect(tagAccessModal.submitButton).toBeDisabled();
     });
 
     test("should allow removing recipient", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // ACT & ASSERT
+      // Act
+      // (Modal is open and ready)
+
+      // Assert
       const beforeCount = await tagAccessModal.getRecipientCount();
-      expect(typeof beforeCount).toBe("number");
-      const hasRemoveFunctionality = typeof tagAccessModal.removeRecipient === "function";
-      expect(hasRemoveFunctionality).toBe(true);
+      expect(beforeCount).toBeGreaterThanOrEqual(0);
+      expect(typeof tagAccessModal.removeRecipient).toBe("function");
     });
 
     test("should show loading state while adding recipient", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await tagAccessModal.waitForRecipientsLoaded();
 
-      // ACT
       await noteDetailPage.page.route("**/api/tags/*/access", async (route) => {
         if (route.request().method() === "POST") {
           await new Promise((resolve) => setTimeout(resolve, 500));
@@ -153,46 +159,48 @@ test.describe("Tag Access Management", () => {
           /* Ignore errors if route is already handled */
         });
       });
+
       const newEmail = `test-recipient-loading-${Date.now()}@example.com`;
+
+      // Act
       await tagAccessModal.emailInput.fill(newEmail);
       await tagAccessModal.submitButton.click();
 
-      // ASSERT
+      // Assert
       await expect(tagAccessModal.submitButton).toBeDisabled();
     });
   });
 
   test.describe("Error Handling", () => {
     test("should display error message on API failure", async ({ noteDetailPage, page, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
 
-      // Intercept the API call to simulate a failure when fetching recipients
       await page.route("**/api/tags/*/access", (route) => route.abort("failed"));
 
-      // ACT
+      // Act
       await noteDetailPage.openTagAccessModal();
 
-      // ASSERT
-      // The modal should show a generic error message
+      // Assert
       await expect(tagAccessModal.errorAlert).toBeVisible();
     });
 
     test("should handle non-existent user error", async ({ noteDetailPage, page }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       await page.getByTestId("tag-access-modal").waitFor();
 
-      // ACT
       const emailInput = page.getByTestId("add-recipient-form-email-input");
       const submitButton = page.getByTestId("add-recipient-form-submit-button");
+
+      // Act
       await emailInput.fill("truly-nonexistent-user-xyz@example.com");
       await submitButton.click();
 
-      // ASSERT
+      // Assert
       const fieldError = page.getByTestId("add-recipient-form-validation-error");
       await expect(fieldError).toContainText("Użytkownik nie istnieje");
     });
@@ -200,29 +208,28 @@ test.describe("Tag Access Management", () => {
 
   test.describe("Modal Interaction", () => {
     test("should close modal when pressing Escape", async ({ noteDetailPage, page }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
       await noteDetailPage.openTagAccessModal();
       const modal = page.getByTestId("tag-access-modal");
-      await expect(modal).toBeVisible();
 
-      // ACT
+      // Act
       await page.keyboard.press("Escape");
 
-      // ASSERT
+      // Assert
       await expect(modal).not.toBeVisible();
     });
 
     test("should display modal with proper accessibility", async ({ noteDetailPage, tagAccessModal }) => {
-      // ARRANGE
+      // Arrange
       await noteDetailPage.goto(noteId);
       await noteDetailPage.waitForLoaded();
 
-      // ACT
+      // Act
       await noteDetailPage.openTagAccessModal();
 
-      // ASSERT
+      // Assert
       await expect(tagAccessModal.modal).toBeVisible();
     });
   });

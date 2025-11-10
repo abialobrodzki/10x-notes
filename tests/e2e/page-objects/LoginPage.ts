@@ -114,8 +114,7 @@ export class LoginPage {
    * @returns Error message text or null if no error
    */
   async getEmailErrorText() {
-    // Error is rendered as <p> after the email input within the same div
-    const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("login-form-email-error");
     try {
       return await errorElement.textContent();
     } catch {
@@ -128,8 +127,7 @@ export class LoginPage {
    * @returns Error message text or null if no error
    */
   async getPasswordErrorText() {
-    // Error is rendered as <p> after the password input within the same div
-    const errorElement = this.form.locator("div").filter({ has: this.passwordInput }).locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("login-form-password-error");
     try {
       return await errorElement.textContent();
     } catch {

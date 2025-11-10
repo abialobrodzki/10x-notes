@@ -71,7 +71,11 @@ export default function LoginForm({ onError }: LoginFormProps) {
           data-testid="login-form-email-input"
           {...register("email")}
         />
-        {emailError && <p className="text-sm text-destructive">{emailError.message}</p>}
+        {emailError && (
+          <p className="text-sm text-destructive" data-testid="login-form-email-error">
+            {emailError.message}
+          </p>
+        )}
       </div>
 
       {/* Password input */}
@@ -88,7 +92,11 @@ export default function LoginForm({ onError }: LoginFormProps) {
           data-testid="login-form-password-input"
           {...register("password")}
         />
-        {passwordError && <p className="text-sm text-destructive">{passwordError.message}</p>}
+        {passwordError && (
+          <p className="text-sm text-destructive" data-testid="login-form-password-error">
+            {passwordError.message}
+          </p>
+        )}
       </div>
 
       {/* Show password checkbox */}

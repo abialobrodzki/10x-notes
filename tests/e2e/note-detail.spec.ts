@@ -42,6 +42,7 @@ test.describe("Note Detail Page", () => {
   });
 
   test("should display note metadata and summary section", async ({ noteDetailPage }) => {
+    // Assert
     await expect(noteDetailPage.header).toBeVisible();
     await expect(noteDetailPage.tagBadge).toBeVisible();
     await expect(noteDetailPage.ownerBadge).toBeVisible();

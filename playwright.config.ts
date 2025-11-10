@@ -51,6 +51,9 @@ export default defineConfig({
     navigationTimeout: 30 * 1000,
   },
 
+  // Visual comparison snapshots directory
+  snapshotDir: "./tests/e2e/snapshots",
+
   projects: [
     {
       name: "chromium",

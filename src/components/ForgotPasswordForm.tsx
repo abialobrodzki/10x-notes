@@ -66,7 +66,11 @@ export default function ForgotPasswordForm({ onError, onSuccess }: ForgotPasswor
           data-testid="forgot-password-form-email-input"
           {...register("email")}
         />
-        {emailError && <p className="text-sm text-destructive">{emailError.message}</p>}
+        {emailError && (
+          <p className="text-sm text-destructive" data-testid="forgot-password-form-email-error">
+            {emailError.message}
+          </p>
+        )}
       </div>
 
       {/* Submit button */}

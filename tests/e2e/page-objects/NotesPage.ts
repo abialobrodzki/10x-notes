@@ -109,4 +109,15 @@ export class NotesPage {
     await this.navbarUserEmailDisplay.click();
     await this.navbarLogoutButton.click();
   }
+
+  /**
+   * Find a note in the list by its text content
+   * Useful for finding notes by summary or other text content
+   *
+   * @param textContent - The text to search for in note items
+   * @returns Locator for the note element
+   */
+  getNoteByText(textContent: string): Locator {
+    return this.page.locator(`text=${textContent}`).first();
+  }
 }

@@ -93,7 +93,11 @@ export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) 
           data-testid="register-form-email-input"
           {...register("email")}
         />
-        {emailError && <p className="text-sm text-destructive">{emailError.message}</p>}
+        {emailError && (
+          <p className="text-sm text-destructive" data-testid="register-form-email-error">
+            {emailError.message}
+          </p>
+        )}
       </div>
 
       {/* Password input */}
@@ -110,7 +114,11 @@ export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) 
           data-testid="register-form-password-input"
           {...register("password")}
         />
-        {passwordError && <p className="text-sm text-destructive">{passwordError.message}</p>}
+        {passwordError && (
+          <p className="text-sm text-destructive" data-testid="register-form-password-error">
+            {passwordError.message}
+          </p>
+        )}
         {/* Password strength indicator */}
         <PasswordStrengthIndicator password={password} />
       </div>
@@ -129,7 +137,11 @@ export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) 
           data-testid="register-form-confirm-password-input"
           {...register("confirmPassword")}
         />
-        {confirmPasswordError && <p className="text-sm text-destructive">{confirmPasswordError.message}</p>}
+        {confirmPasswordError && (
+          <p className="text-sm text-destructive" data-testid="register-form-confirm-password-error">
+            {confirmPasswordError.message}
+          </p>
+        )}
       </div>
 
       {/* Show password checkbox */}

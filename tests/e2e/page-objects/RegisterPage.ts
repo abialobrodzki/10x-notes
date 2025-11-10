@@ -20,7 +20,7 @@ export class RegisterPage {
     this.passwordInput = page.getByTestId("register-form-password-input");
     this.confirmPasswordInput = page.getByTestId("register-form-confirm-password-input");
     this.submitButton = page.getByTestId("register-form-submit-button");
-    this.alerts = page.locator('[data-testid^="alert-area-"]');
+    this.alerts = page.locator('[data-testid*="alert-area-"]');
     this.errorMessage = page.getByTestId("alert-area-error");
     this.signInLink = page.getByTestId("register-page-signin-link");
   }
@@ -87,8 +87,7 @@ export class RegisterPage {
    * @returns Error message text or null if no error
    */
   async getEmailErrorText() {
-    // Error is rendered as <p> after the email input within the same div
-    const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("register-form-email-error");
     try {
       return await errorElement.textContent();
     } catch {
@@ -101,8 +100,7 @@ export class RegisterPage {
    * @returns Error message text or null if no error
    */
   async getPasswordErrorText() {
-    // Error is rendered as <p> after the password input within the same div
-    const errorElement = this.form.locator("div").filter({ has: this.passwordInput }).locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("register-form-password-error");
     try {
       return await errorElement.textContent();
     } catch {
@@ -115,11 +113,7 @@ export class RegisterPage {
    * @returns Error message text or null if no error
    */
   async getConfirmPasswordErrorText() {
-    // Error is rendered as <p> after the confirm password input within the same div
-    const errorElement = this.form
-      .locator("div")
-      .filter({ has: this.confirmPasswordInput })
-      .locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("register-form-confirm-password-error");
     try {
       return await errorElement.textContent();
     } catch {

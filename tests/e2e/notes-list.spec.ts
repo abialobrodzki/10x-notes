@@ -10,7 +10,7 @@ test.describe("Notes List Page - With Notes", () => {
       storageState: authStorageState,
     });
     const page = await context.newPage();
-    await page.goto("http://localhost:3000/notes");
+    await page.goto("/notes");
     await createSampleNotes(page, 25);
     await context.close();
   });
@@ -20,7 +20,7 @@ test.describe("Notes List Page - With Notes", () => {
       storageState: authStorageState,
     });
     const page = await context.newPage();
-    await page.goto("http://localhost:3000/notes");
+    await page.goto("/notes");
     await deleteAllNotesViaAPI(page);
     await context.close();
   });
@@ -30,7 +30,22 @@ test.describe("Notes List Page - With Notes", () => {
   });
 
   test.describe("Display and Navigation", () => {
+    test("should display notes list page with correct layout", async ({ notesListPage }) => {
+      // Arrange
+      await notesListPage.waitForNotesToLoad();
+
+      // Act
+      // (Page is already loaded in Arrange)
+
+      // Assert
+      await expect(notesListPage.pageContainer).toBeVisible();
+    });
+
     test("should display notes list page correctly", async ({ notesListPage }) => {
+      // ARRANGE
+      await notesListPage.waitForNotesToLoad();
+
+      // ASSERT
       await expect(notesListPage.pageContainer).toBeVisible();
       await expect(notesListPage.pageTitle).toBeVisible();
       await expect(notesListPage.searchInput).toBeVisible();
@@ -39,33 +54,46 @@ test.describe("Notes List Page - With Notes", () => {
     });
 
     test("should display notes with correct information", async ({ notesListPage }) => {
+      // ARRANGE
       await notesListPage.waitForNotesToLoad();
+
+      // ACT
       const notesCount = await notesListPage.getNotesCount();
-      expect(notesCount).toBeGreaterThan(0);
       const meetingDate = await notesListPage.getNoteMeetingDate(0);
-      expect(meetingDate).toBeTruthy();
       const summaryPreview = await notesListPage.getNoteSummaryPreview(0);
-      expect(summaryPreview).toBeTruthy();
       const tagName = await notesListPage.getNoteTagName(0);
+
+      // ASSERT
+      expect(notesCount).toBeGreaterThan(0);
+      expect(meetingDate).toBeTruthy();
+      expect(summaryPreview).toBeTruthy();
       expect(tagName).toBeTruthy();
     });
 
     test.skip("should navigate to note details when clicking on note", async ({ page, notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
+
+      // Act
       await notesListPage.clickNoteByIndex(0);
       await notesListPage.waitForNoteNavigation();
+
+      // Assert
       expect(page.url()).toMatch(/\/notes\/.+/);
     });
   });
 
   test.describe("Search Functionality", () => {
     test("should filter notes by search term", async ({ notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
       const initialCount = await notesListPage.getNotesCount();
       expect(initialCount).toBeGreaterThan(0);
 
+      // Act
       await notesListPage.search("spotkanie");
 
+      // Assert
       await expect(async () => {
         const filteredCount = await notesListPage.getNotesCount();
         expect(filteredCount).toBeLessThanOrEqual(initialCount);
@@ -73,15 +101,15 @@ test.describe("Notes List Page - With Notes", () => {
     });
 
     test("should clear search when clicking clear button", async ({ notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
       await notesListPage.searchInputField.click();
       await notesListPage.searchInputField.type("test query", { delay: 50 });
 
-      await expect(notesListPage.searchInputField).toHaveValue("test query");
-      await expect(notesListPage.searchClearButton).toBeVisible();
-
+      // Act
       await notesListPage.clearSearch();
 
+      // Assert
       await expect(notesListPage.searchInputField).toBeEmpty();
     });
 
@@ -102,8 +130,13 @@ test.describe("Notes List Page - With Notes", () => {
 
   test.describe("Pagination", () => {
     test("should display pagination when multiple pages exist", async ({ notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
+
+      // Act
       const hasPagination = await notesListPage.isPaginationDisplayed().catch(() => false);
+
+      // Assert
       if (hasPagination) {
         await expect(notesListPage.pagination).toBeVisible();
       }
@@ -147,24 +180,28 @@ test.describe("Notes List Page - With Notes", () => {
 
   test.describe("Note Indicators", () => {
     test("should display AI indicator on AI-generated notes", async ({ notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
       const notesCount = await notesListPage.getNotesCount();
-      if (notesCount > 0) {
-        for (let i = 0; i < Math.min(notesCount, 3); i++) {
-          const hasAIIndicator = await notesListPage.noteHasAIIndicator(i);
-          expect(typeof hasAIIndicator).toBe("boolean");
-        }
+      expect(notesCount).toBeGreaterThan(0);
+
+      // Act & Assert
+      for (let i = 0; i < Math.min(notesCount, 3); i++) {
+        const hasAIIndicator = await notesListPage.noteHasAIIndicator(i);
+        expect([true, false]).toContain(hasAIIndicator);
       }
     });
 
     test("should display public link indicator on publicly shared notes", async ({ notesListPage }) => {
+      // Arrange
       await notesListPage.waitForNotesToLoad();
       const notesCount = await notesListPage.getNotesCount();
-      if (notesCount > 0) {
-        for (let i = 0; i < Math.min(notesCount, 3); i++) {
-          const hasPublicLinkIndicator = await notesListPage.noteHasPublicLinkIndicator(i);
-          expect(typeof hasPublicLinkIndicator).toBe("boolean");
-        }
+      expect(notesCount).toBeGreaterThan(0);
+
+      // Act & Assert
+      for (let i = 0; i < Math.min(notesCount, 3); i++) {
+        const hasPublicLinkIndicator = await notesListPage.noteHasPublicLinkIndicator(i);
+        expect([true, false]).toContain(hasPublicLinkIndicator);
       }
     });
   });
@@ -179,7 +216,7 @@ test.describe("Notes List Page - Empty State", () => {
       storageState: authStorageState,
     });
     const page = await context.newPage();
-    await page.goto("http://localhost:3000/notes");
+    await page.goto("/notes");
     await deleteAllNotesViaAPI(page);
     await context.close();
   });

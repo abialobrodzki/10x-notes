@@ -229,11 +229,8 @@ export class NoteDetailPage {
 
   async selectMeetingDate(dateText: string) {
     await this.openMeetingDatePicker();
-    // Find and click the date option (assumes date text is visible)
-    await this.page
-      .locator("text=" + dateText)
-      .first()
-      .click();
+    // Find and click the date option in the calendar
+    await this.page.getByTestId(`calendar-date-option-${dateText}`).click();
   }
 
   // Tag combobox methods
@@ -248,7 +245,7 @@ export class NoteDetailPage {
   async selectExistingTag(tagName: string) {
     await this.openTagCombobox();
     await this.page
-      .getByTestId(new RegExp(`tag-combobox-existing-tag-item-`))
+      .locator('[data-testid*="tag-combobox-existing-tag-item-"]')
       .filter({ hasText: tagName })
       .first()
       .click();

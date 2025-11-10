@@ -18,7 +18,7 @@ export class ForgotPasswordPage {
     this.form = page.getByTestId("forgot-password-form");
     this.emailInput = page.getByTestId("forgot-password-form-email-input");
     this.submitButton = page.getByTestId("forgot-password-form-submit-button");
-    this.alerts = page.locator('[data-testid^="alert-area-"]');
+    this.alerts = page.locator('[data-testid*="alert-area-"]');
     this.successMessage = page.getByTestId("alert-area-success");
     this.errorMessage = page.getByTestId("alert-area-error");
     this.returnToLoginLink = page.getByTestId("forgot-password-page-return-to-login-link");
@@ -53,7 +53,7 @@ export class ForgotPasswordPage {
   }
 
   async getEmailErrorText() {
-    const errorElement = this.form.locator("div").filter({ has: this.emailInput }).locator("p.text-destructive");
+    const errorElement = this.page.getByTestId("forgot-password-form-email-error");
     return errorElement.textContent();
   }
 

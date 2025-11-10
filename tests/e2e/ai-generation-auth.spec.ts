@@ -41,198 +41,161 @@ test.describe.serial("Authenticated AI Generation Flow", () => {
     page,
     user,
   }) => {
-    // ARRANGE
+    // Arrange
     await notesPage.goto();
     await notesPage.waitForUserProfileLoaded(user.email);
 
+    // Act
     await withSuccessfulAi(page, async () => {
-      // ACT - Navigate via navbar to landing page
       await notesPage.navbarGenerateNoteButton.click();
       await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
-
       await landingPage.fillInput("Omówiono moduł raportowania, zaplanowano wdrożenie oraz działania marketingowe.");
       await landingPage.generateButton.click();
-      await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 10000 });
-
-      // Save note (authenticated flow shows save button)
-      await expect(page.getByTestId("save-note-button")).toBeVisible();
+      await page.waitForSelector("[data-testid='summary-card']", { state: "visible", timeout: 10000 });
       await page.getByTestId("save-note-button-save-button").click();
     });
 
-    // ASSERT - Redirects to note details
     await page.waitForURL(/\/notes\/[0-9a-f-]{8}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{4}-[0-9a-f-]{12}$/i, {
       timeout: 15000,
     });
-
     const noteUrl = new URL(page.url());
     createdNoteId = noteUrl.pathname.split("/").pop() ?? null;
-    expect(createdNoteId).toBeTruthy();
-
     await noteDetailPage.waitForLoaded();
+
+    // Assert
+    expect(createdNoteId).toBeTruthy();
     await expect(noteDetailPage.summaryDisplayText).toContainText("modułu raportowania");
     await expect(noteDetailPage.goalStatusSection).toBeVisible();
   });
 
-  test("02: should display note in notes list", async ({ notesPage, page, user }) => {
+  test("02: should display note in notes list", async ({ notesPage, user }) => {
     test.skip(!createdNoteId, "Note not generated in previous scenario");
-    // ARRANGE - Verify createdNoteId is available from first test
-    expect(createdNoteId).toBeTruthy();
 
-    // Navigate to notes list
+    // Arrange
+    expect(createdNoteId).toBeTruthy();
     await notesPage.goto();
     await notesPage.waitForUserProfileLoaded(user.email);
 
-    // ASSERT - Note should be visible in the list with expected content
-    // Look for the note by searching for the summary text
-    await expect(page.locator("text=modułu raportowania").first()).toBeVisible();
+    // Act
+    const noteElement = notesPage.getNoteByText("modułu raportowania");
 
-    // Verify the note row is clickable
-    const noteElement = page.locator("text=modułu raportowania").first();
+    // Assert
+    await expect(noteElement).toBeVisible();
     await noteElement.waitFor({ state: "visible" });
   });
 
   test("03: should allow editing summary of generated note", async ({ noteDetailPage }) => {
     test.skip(!createdNoteId, "Note not generated in previous scenario");
-    // ARRANGE - Verify createdNoteId is available
-    expect(createdNoteId).toBeTruthy();
 
-    // Navigate to the note
+    // Arrange
+    expect(createdNoteId).toBeTruthy();
     if (!createdNoteId) return;
     await noteDetailPage.goto(createdNoteId);
     await noteDetailPage.waitForLoaded();
-
-    // ACT - Edit summary
     const editedSummary = "Nowe podsumowanie po edycji - moduł raportowania został wdrożony";
+
+    // Act
     await noteDetailPage.editSummary(editedSummary);
-
-    // ASSERT - Check that textarea shows new text
-    await expect(noteDetailPage.summaryTextarea).toHaveValue(editedSummary);
-
-    // Save and verify
     await noteDetailPage.saveSummary();
+
+    // Assert
+    await expect(noteDetailPage.summaryTextarea).toHaveValue(editedSummary);
     await expect(noteDetailPage.summaryDisplayText).toContainText(editedSummary);
   });
 
   test("04: should display goal status and allow changing it", async ({ noteDetailPage }) => {
     test.skip(!createdNoteId, "Note not generated in previous scenario");
-    // ARRANGE - Verify createdNoteId is available
-    expect(createdNoteId).toBeTruthy();
 
-    // Navigate to the note
+    // Arrange
+    expect(createdNoteId).toBeTruthy();
     if (!createdNoteId) return;
     await noteDetailPage.goto(createdNoteId);
     await noteDetailPage.waitForLoaded();
 
-    // ACT & ASSERT - Goal status section is visible
+    // Act
+    const initialStatus = await noteDetailPage.getSelectedGoalStatus();
+    await noteDetailPage.selectGoalStatus("not_achieved");
+    await noteDetailPage.waitForGoalStatus("not_achieved");
+    const statusAfterFirstChange = await noteDetailPage.getSelectedGoalStatus();
+    await noteDetailPage.selectGoalStatus("achieved");
+    await noteDetailPage.waitForGoalStatus("achieved");
+    const statusAfterSecondChange = await noteDetailPage.getSelectedGoalStatus();
+
+    // Assert
     await expect(noteDetailPage.goalStatusSection).toBeVisible();
     await expect(noteDetailPage.goalStatusAchievedOption).toBeVisible();
     await expect(noteDetailPage.goalStatusNotAchievedOption).toBeVisible();
-
-    // Verify initial status (should be achieved based on mock)
-    const initialStatus = await noteDetailPage.getSelectedGoalStatus();
     expect(initialStatus).toBe("achieved");
-
-    // Change to not_achieved
-    await noteDetailPage.selectGoalStatus("not_achieved");
-    await noteDetailPage.waitForGoalStatus("not_achieved");
-    let updatedStatus = await noteDetailPage.getSelectedGoalStatus();
-    expect(updatedStatus).toBe("not_achieved");
-
-    // Change back to achieved
-    await noteDetailPage.selectGoalStatus("achieved");
-    await noteDetailPage.waitForGoalStatus("achieved");
-    updatedStatus = await noteDetailPage.getSelectedGoalStatus();
-    expect(updatedStatus).toBe("achieved");
+    expect(statusAfterFirstChange).toBe("not_achieved");
+    expect(statusAfterSecondChange).toBe("achieved");
   });
 
   test("05: should test tag assignment and search functionality", async ({ noteDetailPage, page }) => {
     test.skip(!createdNoteId, "Note not generated in previous scenario");
-    // ARRANGE - Verify createdNoteId is available
-    expect(createdNoteId).toBeTruthy();
 
-    // Navigate to the note
+    // Arrange
+    expect(createdNoteId).toBeTruthy();
     if (!createdNoteId) return;
     await noteDetailPage.goto(createdNoteId);
     await noteDetailPage.waitForLoaded();
 
-    // ACT & ASSERT - Verify suggested tag from AI is assigned
-    await expect(noteDetailPage.tagCombobox).toBeVisible();
-
-    // Verify the suggested tag from AI generation is already assigned
+    // Act
     const currentTag = await noteDetailPage.getCurrentTagName();
-    expect(currentTag).toContain("Moduł raportowania");
-
-    // Test that tag combobox is functional - can search and open
     await noteDetailPage.openTagCombobox();
-    await expect(noteDetailPage.tagComboboxSearchInput).toBeVisible();
-
-    // Test searching for tags
     await noteDetailPage.searchTags("test");
-    await expect(noteDetailPage.tagComboboxSearchInput).toHaveValue("test");
-
-    // Clear search and close
+    const searchValue = await noteDetailPage.tagComboboxSearchInput.inputValue();
     await noteDetailPage.tagComboboxSearchInput.clear();
     await page.keyboard.press("Escape");
+
+    // Assert
+    await expect(noteDetailPage.tagCombobox).toBeVisible();
+    expect(currentTag).toContain("Moduł raportowania");
+    expect(searchValue).toBe("test");
   });
 
   test("06: should enable and manage public link sharing", async ({ noteDetailPage }) => {
     test.skip(!createdNoteId, "Note not generated in previous scenario");
-    // ARRANGE - Verify createdNoteId is available
-    expect(createdNoteId).toBeTruthy();
 
-    // Navigate to the note
+    // Arrange
+    expect(createdNoteId).toBeTruthy();
     if (!createdNoteId) return;
     await noteDetailPage.goto(createdNoteId);
     await noteDetailPage.waitForLoaded();
 
-    // ACT - Enable public link
-    await expect(noteDetailPage.publicLinkSection).toBeVisible();
-    await expect(noteDetailPage.publicLinkToggle).toBeVisible();
-
+    // Act
     const isInitiallyEnabled = await noteDetailPage.isPublicLinkEnabled();
     await noteDetailPage.togglePublicLink(!isInitiallyEnabled);
-
-    // Wait for URL input to be visible after toggle
     await expect(noteDetailPage.publicLinkUrlInput).toBeVisible({ timeout: 5000 });
-
-    // ASSERT - Public link should be visible with generated URL
     const publicLinkUrl = await noteDetailPage.getPublicLinkUrl();
-    expect(publicLinkUrl).toBeTruthy();
-    expect(publicLinkUrl).toContain("share");
-
-    // Verify copy button exists
-    await expect(noteDetailPage.publicLinkCopyButton).toBeVisible();
-
-    // Verify toggle is now in enabled state
     const isNowEnabled = await noteDetailPage.isPublicLinkEnabled();
-    expect(isNowEnabled).toBe(!isInitiallyEnabled);
-
-    // Toggle back to original state for other tests
     await noteDetailPage.togglePublicLink(isInitiallyEnabled);
     const isFinalState = await noteDetailPage.isPublicLinkEnabled();
+
+    // Assert
+    await expect(noteDetailPage.publicLinkSection).toBeVisible();
+    await expect(noteDetailPage.publicLinkToggle).toBeVisible();
+    expect(publicLinkUrl).toBeTruthy();
+    expect(publicLinkUrl).toContain("share");
+    expect(isNowEnabled).toBe(!isInitiallyEnabled);
     expect(isFinalState).toBe(isInitiallyEnabled);
   });
 
   test("07: should display original content section", async ({ noteDetailPage, page }) => {
-    // ARRANGE - Verify createdNoteId is available
+    // Arrange
     expect(createdNoteId).toBeTruthy();
-
-    // Navigate to the note
     if (!createdNoteId) return;
     await noteDetailPage.goto(createdNoteId);
     await noteDetailPage.waitForLoaded();
 
-    // ACT & ASSERT - Original content section should be present
-    await expect(noteDetailPage.originalContentSection).toBeVisible();
-
-    // Expand original content if not already visible
+    // Act
     const hasToggle = await noteDetailPage.hasOriginalContentToggle();
     if (hasToggle) {
       await noteDetailPage.expandOriginalContent();
     }
-
-    // Verify original text is visible (should contain content from AI generation input)
     const originalContent = await noteDetailPage.getOriginalContentText();
+
+    // Assert
+    await expect(noteDetailPage.originalContentSection).toBeVisible();
     expect(originalContent).toBeTruthy();
     expect(originalContent).toContain("moduł raportowania");
 

@@ -14,38 +14,39 @@ test.describe("Global Navigation and Layout", () => {
 
   test.describe("Main Navigation", () => {
     test("should navigate from home to notes list", async ({ notesPage, user, page }) => {
-      // ARRANGE
+      // Arrange
+      // (No explicit setup needed)
 
-      // ACT
+      // Act
       await notesPage.goto();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes/);
       await notesPage.waitForUserProfileLoaded(user.email);
     });
 
     test("should navigate from notes to settings via navbar", async ({ notesPage, settingsPage, page, user }) => {
-      // ARRANGE
+      // Arrange
       await notesPage.goto();
       await notesPage.waitForUserProfileLoaded(user.email);
 
-      // ACT
+      // Act
       await notesPage.goToSettings();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/settings/);
       await settingsPage.waitForLoaded();
     });
 
     test("should navigate from settings back to notes", async ({ settingsPage, page }) => {
-      // ARRANGE
+      // Arrange
       await settingsPage.goto();
       await settingsPage.waitForLoaded();
 
-      // ACT
+      // Act
       await page.getByTestId("navbar-notes-link").click();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes/);
     });
 
@@ -55,15 +56,15 @@ test.describe("Global Navigation and Layout", () => {
       noteDetailPage,
       page,
     }) => {
-      // ARRANGE
+      // Arrange
       const notes = await createSampleNotes(authenticatedPage.page, 1);
       const noteId = notes[0].id;
       await notesListPage.goto();
 
-      // ACT
+      // Act
       await noteDetailPage.goto(noteId);
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(`/notes/${noteId}`);
       await noteDetailPage.waitForLoaded();
     });
@@ -73,60 +74,58 @@ test.describe("Global Navigation and Layout", () => {
       noteDetailPage,
       page,
     }) => {
-      // ARRANGE
+      // Arrange
       const notes = await createSampleNotes(authenticatedPage.page, 1);
       const noteId = notes[0].id;
       await noteDetailPage.goto(noteId);
 
-      // ACT
-      // Click breadcrumb to return to notes list
+      // Act
       const breadcrumb = noteDetailPage.page.getByTestId("note-header-notes-breadcrumb");
       await breadcrumb.click();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes$/);
     });
   });
 
   test.describe("Navigation Consistency", () => {
     test("should maintain navigation state across pages", async ({ notesPage, settingsPage, page }) => {
-      // ACT - Navigate through multiple pages
+      // Arrange
+      // (No explicit setup needed)
+
+      // Act
       await notesPage.goto();
-      await expect(page).toHaveURL(/\/notes$/);
       const firstNotesUrl = page.url();
-
       await settingsPage.goto();
-      await expect(page).toHaveURL(/\/settings$/);
-
       await notesPage.goto();
-      await expect(page).toHaveURL(firstNotesUrl);
 
-      // ASSERT
+      // Assert
+      await expect(page).toHaveURL(/\/notes$/);
       expect(firstNotesUrl).toMatch(/\/notes$/);
     });
 
     test("should open landing page from navbar generate button", async ({ notesPage, page, user }) => {
-      // ARRANGE
+      // Arrange
       await notesPage.goto();
       await notesPage.waitForUserProfileLoaded(user.email);
 
-      // ACT
+      // Act
       await notesPage.navbarGenerateNoteButton.click();
       await page.waitForURL((url) => url.pathname === "/", { timeout: 10000 });
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL("/");
       await expect(page.getByTestId("landing-page")).toBeVisible();
     });
 
     test("should handle direct URL navigation", async ({ page }) => {
-      // ARRANGE
+      // Arrange
       const targetUrl = "/notes";
 
-      // ACT
+      // Act
       await page.goto(targetUrl);
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes/);
     });
 
@@ -155,37 +154,32 @@ test.describe("Global Navigation and Layout", () => {
 
   test.describe("Mobile Navigation", () => {
     test("should open and use mobile menu links", async ({ notesPage, settingsPage, page, user }) => {
-      // ARRANGE
+      // Arrange
       await page.setViewportSize({ width: 390, height: 844 });
       await notesPage.goto();
       await notesPage.waitForUserProfileLoaded(user.email);
 
-      // ACT - Open mobile menu and navigate to settings
+      // Act
       await page.getByTestId("navbar-mobile-menu-button").click();
       await page.getByTestId("navbar-mobile-settings-link").click();
-
-      // ASSERT
-      await expect(page).toHaveURL(/\/settings/);
       await settingsPage.waitForLoaded();
-
-      // ACT - Return to notes via mobile menu
       await page.getByTestId("navbar-mobile-menu-button").click();
       await page.getByTestId("navbar-mobile-notes-link").click();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes$/);
     });
   });
 
   test.describe("Page Loading", () => {
     test("should load notes list page completely", async ({ notesListPage, page }) => {
-      // ARRANGE
+      // Arrange
       await notesListPage.goto();
 
-      // ACT
+      // Act
       await notesListPage.waitForNotesToLoad();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes$/);
       const listVisible = await notesListPage.noteList.isVisible().catch(() => false);
       const emptyVisible = await notesListPage.noteListEmptyState.isVisible().catch(() => false);
@@ -193,40 +187,39 @@ test.describe("Global Navigation and Layout", () => {
     });
 
     test("should load settings page completely", async ({ settingsPage }) => {
-      // ARRANGE
+      // Arrange
       await settingsPage.goto();
 
-      // ACT
+      // Act
       await settingsPage.waitForLoaded();
 
-      // ASSERT
+      // Assert
       await expect(settingsPage.container).toBeVisible();
     });
 
     test("should load note detail page completely", async ({ authenticatedPage, noteDetailPage }) => {
-      // ARRANGE
+      // Arrange
       const notes = await createSampleNotes(authenticatedPage.page, 1);
       await noteDetailPage.goto(notes[0].id);
 
-      // ACT
+      // Act
       await noteDetailPage.waitForLoaded();
 
-      // ASSERT
+      // Assert
       await expect(noteDetailPage.container).toBeVisible();
     });
   });
 
   test.describe("Error Handling During Navigation", () => {
     test("should handle navigation to non-existent note gracefully", async ({ noteDetailPage }) => {
-      // ARRANGE
+      // Arrange
       const nonExistentId = "00000000-0000-0000-0000-000000000000";
 
-      // ACT
+      // Act
       await noteDetailPage.goto(nonExistentId);
       await noteDetailPage.page.waitForLoadState("networkidle");
 
-      // ASSERT
-      // The page should either show a 404 error or redirect to the notes list.
+      // Assert
       await expect(async () => {
         const is404 = await noteDetailPage.isNotFoundError();
         const redirectedToList = /\/notes$/.test(noteDetailPage.page.url());
@@ -248,17 +241,16 @@ test.describe("Global Navigation and Layout", () => {
 
   test.describe("Header/Footer Consistency", () => {
     test("should display consistent header across all pages", async ({ notesPage, settingsPage, page }) => {
-      // ARRANGE & ACT - Check header presence on different pages
+      // Arrange
+      // (No explicit setup needed)
 
-      // On notes page
+      // Act
       await notesPage.goto();
       const notesPageTitle = await page.title();
-
-      // On settings page
       await settingsPage.goto();
       const settingsPageTitle = await page.title();
 
-      // ASSERT - Both should have valid titles
+      // Assert
       expect(notesPageTitle).toBeTruthy();
       expect(settingsPageTitle).toBeTruthy();
     });
@@ -270,23 +262,22 @@ test.describe("Global Navigation and Layout", () => {
       noteDetailPage,
       authenticatedPage,
     }) => {
-      // ARRANGE
+      // Arrange
       const notes = await createSampleNotes(authenticatedPage.page, 1);
-
-      // ACT & ASSERT - Check viewport on different pages
       const viewportSizes: Record<string, { width: number; height: number }> = {};
 
+      // Act
       await notesPage.goto();
       viewportSizes.notes = page.viewportSize() || { width: 0, height: 0 };
-
       await settingsPage.goto();
       viewportSizes.settings = page.viewportSize() || { width: 0, height: 0 };
-
       if (notes.length > 0) {
         await noteDetailPage.goto(notes[0].id);
         viewportSizes.detail = page.viewportSize() || { width: 0, height: 0 };
+      }
 
-        // All pages should have same viewport
+      // Assert
+      if (notes.length > 0) {
         expect(viewportSizes.notes).toEqual(viewportSizes.settings);
         expect(viewportSizes.settings).toEqual(viewportSizes.detail);
       }
@@ -295,27 +286,27 @@ test.describe("Global Navigation and Layout", () => {
 
   test.describe("Browser Back/Forward", () => {
     test("should support browser back navigation", async ({ page, notesPage, settingsPage }) => {
-      // ARRANGE
+      // Arrange
       await notesPage.goto();
       await settingsPage.goto();
 
-      // ACT
+      // Act
       await page.goBack();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/notes/);
     });
 
     test("should support browser forward navigation", async ({ page, notesPage, settingsPage }) => {
-      // ARRANGE
+      // Arrange
       await notesPage.goto();
       await settingsPage.goto();
       await page.goBack();
 
-      // ACT
+      // Act
       await page.goForward();
 
-      // ASSERT
+      // Assert
       await expect(page).toHaveURL(/\/settings/);
     });
 
@@ -324,17 +315,15 @@ test.describe("Global Navigation and Layout", () => {
       notesListPage,
       noteDetailPage,
     }) => {
-      // ARRANGE
+      // Arrange
       const notes = await createSampleNotes(authenticatedPage.page, 1);
 
-      // ACT - Navigate forward
+      // Act
       await notesListPage.goto();
       await noteDetailPage.goto(notes[0].id);
-
-      // Navigate back
       await authenticatedPage.page.goBack();
 
-      // ASSERT - Should be back at notes list
+      // Assert
       await expect(authenticatedPage.page).toHaveURL(/\/notes/);
     });
   });

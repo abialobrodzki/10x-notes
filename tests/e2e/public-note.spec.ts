@@ -3,7 +3,7 @@ import { createNoteViaAPI, createPublicLinkViaAPI, updatePublicLinkViaAPI } from
 
 test.describe("Public Note Page", () => {
   test("should display a public note correctly for a valid token", async ({ page }) => {
-    // Step 1: Create a test note as authenticated user
+    // Arrange
     const testNote = await createNoteViaAPI(page, {
       original_content: "This is a test note for public link testing.",
       summary_text: "Public note test summary.",
@@ -12,45 +12,40 @@ test.describe("Public Note Page", () => {
       tag_name: "Public Link Tests",
       is_ai_generated: false,
     });
-
-    // Step 2: Create a public link for the note
     const publicLink = await createPublicLinkViaAPI(page, testNote.id);
-
-    // Step 3: Navigate to the public page using the actual token in a new anonymous context
     const browser = page.context().browser();
     if (!browser) throw new Error("Browser not available");
-
     const anonContext = await browser.newContext();
     const anonPage = await anonContext.newPage();
+
+    // Act
     await anonPage.goto(`http://localhost:3000/share/${publicLink.token}`, { waitUntil: "domcontentloaded" });
 
-    // Step 4: Verify all expected elements are visible
+    // Assert
     await expect(anonPage.getByTestId("public-note-page")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-page-title")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-goal-status-badge")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-meeting-date")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-summary-display")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-page-cta-link")).toBeVisible();
-
-    // Step 5: Verify content
     await expect(anonPage.getByTestId("public-note-summary-display")).toContainText("Public note test summary.");
 
-    // Step 6: Cleanup
+    // Cleanup
     await anonContext.close();
   });
 
   test("should display 404 error for an invalid token", async ({ page }) => {
-    // Use a valid UUID format that doesn't exist in the database
+    // Arrange
     const nonExistentToken = "00000000-0000-0000-0000-000000000000";
-
     const browser = page.context().browser();
     if (!browser) throw new Error("Browser not available");
-
     const anonContext = await browser.newContext();
     const anonPage = await anonContext.newPage();
+
+    // Act
     await anonPage.goto(`http://localhost:3000/share/${nonExistentToken}`, { waitUntil: "domcontentloaded" });
 
-    // Verify error state is shown
+    // Assert
     await expect(anonPage.getByTestId("public-note-error-state")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-error-title")).toHaveText("Nie znaleziono");
     await expect(anonPage.getByTestId("public-note-error-description")).toHaveText(
@@ -63,7 +58,7 @@ test.describe("Public Note Page", () => {
   });
 
   test("should display 404 error when public link is disabled", async ({ page }) => {
-    // Step 1: Create a test note
+    // Arrange
     const testNote = await createNoteViaAPI(page, {
       original_content: "This note will have its public link disabled.",
       summary_text: "Disabled link test.",
@@ -72,22 +67,17 @@ test.describe("Public Note Page", () => {
       tag_name: "Link Disabled Tests",
       is_ai_generated: false,
     });
-
-    // Step 2: Create a public link
     const publicLink = await createPublicLinkViaAPI(page, testNote.id);
-
-    // Step 3: Disable the public link
     await updatePublicLinkViaAPI(page, testNote.id, { is_enabled: false });
-
-    // Step 4: Try to access the disabled link in an anonymous context
     const browser = page.context().browser();
     if (!browser) throw new Error("Browser not available");
-
     const anonContext = await browser.newContext();
     const anonPage = await anonContext.newPage();
+
+    // Act
     await anonPage.goto(`http://localhost:3000/share/${publicLink.token}`, { waitUntil: "domcontentloaded" });
 
-    // Step 5: Verify error state
+    // Assert
     await expect(anonPage.getByTestId("public-note-error-state")).toBeVisible();
     await expect(anonPage.getByTestId("public-note-error-title")).toHaveText("Nie znaleziono");
     await expect(anonPage.getByTestId("public-note-error-description")).toHaveText(
@@ -95,7 +85,7 @@ test.describe("Public Note Page", () => {
     );
     await expect(anonPage.getByTestId("public-note-error-cta-link")).toBeVisible();
 
-    // Step 6: Cleanup
+    // Cleanup
     await anonContext.close();
   });
 });

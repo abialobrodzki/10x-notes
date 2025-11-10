@@ -37,54 +37,68 @@ test.describe("Landing Page", () => {
   });
 
   test("should render hero content and controls", async ({ landingPage }) => {
+    // Arrange
+    // (Page already loaded in beforeEach)
+
+    // Act
+    // (No user action needed - testing initial state)
+
+    // Assert
     await expect(landingPage.container).toBeVisible();
     await expect(landingPage.contentArea).toBeVisible();
     await expect(landingPage.charCounter).toHaveText("0/5000");
     await expect(landingPage.generateButton).toBeDisabled();
+    await expect(landingPage.page).toHaveScreenshot("landing-page-layout.png");
   });
 
   test("should keep generate disabled when input is empty", async ({ landingPage }) => {
+    // Arrange
+    // (Page already loaded in beforeEach with empty input)
+
+    // Act
+    // (No user action needed - testing initial state)
+
+    // Assert
     await expect(landingPage.generateButton).toBeDisabled();
     await expect(landingPage.errorMessage).not.toBeVisible();
   });
 
   test.describe("AI Summary Generation", () => {
     test("should enable generate button when text is entered", async ({ landingPage }) => {
-      // ARRANGE
+      // Arrange
+      // (Page already loaded in beforeEach)
 
-      // ACT
+      // Act
       await landingPage.fillInput("Sample text for testing");
 
-      // ASSERT
+      // Assert
       await expect(landingPage.generateButton).toBeEnabled();
     });
 
     test("should display character count correctly", async ({ landingPage }) => {
-      // ARRANGE
+      // Arrange
       const testText = "Hello World";
 
-      // ACT
+      // Act
       await landingPage.fillInput(testText);
+
+      // Assert
       await expect(landingPage.charCounter).toHaveText(`${testText.length}/5000`);
     });
 
     test("should enforce character limit", async ({ landingPage }) => {
-      // ARRANGE
+      // Arrange
       const longText = "a".repeat(5001);
 
-      // ACT
+      // Act
       await landingPage.textarea.fill(longText);
 
-      // ASSERT
-      // Check if the textarea content is truncated to the max length
+      // Assert
       const actualText = await landingPage.textarea.inputValue();
       expect(actualText.length).toBe(5000);
 
       const counterText = await landingPage.charCounter.textContent();
       expect(counterText).toMatch(/\d+\/5000/);
-
-      // Generate button should be disabled
-      // await expect(landingPage.generateButton).toBeDisabled();
     });
 
     test("should show deterministic summary content on successful generation", async ({ landingPage, page }) => {
@@ -95,9 +109,14 @@ test.describe("Landing Page", () => {
           body: SUCCESS_RESPONSE,
         },
         async () => {
+          // Arrange
+          // (AI mock configured above)
+
+          // Act
           await landingPage.fillInput(SAMPLE_CONTENT);
           await landingPage.generateButton.click();
 
+          // Assert
           await expect(page.getByTestId("summary-card")).toBeVisible();
           await expect(page.getByTestId("summary-card-summary-text")).toHaveText(SUCCESS_RESPONSE.summary_text);
           const generationTime = await page.getByTestId("summary-card-generation-time").textContent();
@@ -133,10 +152,15 @@ test.describe("Landing Page", () => {
     for (const scenario of errorScenarios) {
       test(scenario.title, async ({ landingPage, page }) => {
         await withAiMock(page, scenario.config, async () => {
+          // Arrange
+          // (AI mock configured with error response above)
+
+          // Act
           await landingPage.fillInput(SAMPLE_CONTENT);
           await expect(landingPage.generateButton).toBeEnabled();
           await landingPage.generateButton.click();
 
+          // Assert
           await expect(landingPage.errorMessage).toBeVisible();
           await expect(landingPage.errorMessage).toContainText(scenario.expected);
         });
@@ -152,9 +176,14 @@ test.describe("Landing Page", () => {
           body: SUCCESS_RESPONSE,
         },
         async () => {
+          // Arrange
+          // (AI mock configured with delay above)
+
+          // Act
           await landingPage.fillInput(SAMPLE_CONTENT);
           await landingPage.generateButton.click();
 
+          // Assert
           await expect(landingPage.generateButton).toHaveText(/Generowanie/i);
         }
       );
@@ -168,11 +197,17 @@ test.describe("Landing Page", () => {
           { status: 200, body: SUCCESS_RESPONSE },
         ],
         async () => {
+          // Arrange
+          // (AI mock sequence configured: first error, then success)
+
+          // Act
           await landingPage.fillInput(SAMPLE_CONTENT);
           await landingPage.generateButton.click();
           await expect(landingPage.errorMessage).toBeVisible();
 
           await landingPage.generateButton.click();
+
+          // Assert
           await expect(landingPage.errorMessage).not.toBeVisible();
           await expect(page.getByTestId("summary-card")).toBeVisible();
         }
@@ -180,9 +215,11 @@ test.describe("Landing Page", () => {
     });
 
     test("should persist pending note and redirect to login from save prompt", async ({ landingPage, page }) => {
+      // Arrange
       const pendingResponse = { ...SUCCESS_RESPONSE, summary_text: "Podsumowanie zapisane do sesji" };
 
       await withAiMock(page, { status: 200, body: pendingResponse }, async () => {
+        // Act
         await landingPage.fillInput(SAMPLE_CONTENT);
         await landingPage.generateButton.click();
         await expect(page.getByTestId("save-prompt-banner")).toBeVisible();
@@ -190,19 +227,23 @@ test.describe("Landing Page", () => {
         await page.getByTestId("save-prompt-banner-login-button").click();
         await page.waitForURL(/\/login$/, { timeout: 10000 });
 
+        // Assert
         const pendingNote = await page.evaluate(() => sessionStorage.getItem("pendingNote"));
         expect(pendingNote).toBeTruthy();
       });
     });
 
     test("should generate summary using real AI service", async ({ landingPage, page }) => {
+      // Arrange
       test.slow();
+      const testContent =
+        "Przygotuj krótkie podsumowanie spotkania zespołu produktowego. Omawiano postępy sprintu, zaległe zadania oraz ryzyka.";
 
-      await landingPage.fillInput(
-        "Przygotuj krótkie podsumowanie spotkania zespołu produktowego. Omawiano postępy sprintu, zaległe zadania oraz ryzyka."
-      );
+      // Act
+      await landingPage.fillInput(testContent);
       await landingPage.generateButton.click();
 
+      // Assert
       await expect(page.getByTestId("summary-card")).toBeVisible({ timeout: 60000 });
       const summaryText = await page.getByTestId("summary-card-summary-text").textContent();
       expect(summaryText?.trim().length ?? 0).toBeGreaterThan(0);

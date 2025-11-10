@@ -8,12 +8,20 @@ test.describe("Reset Password Page", () => {
   });
 
   test("should display the reset password page", async ({ resetPasswordPage }) => {
+    // Arrange
+    // (Page is already loaded in beforeEach)
+
+    // Act
+    // (No action needed - testing initial state)
+
+    // Assert
     await expect(resetPasswordPage.container).toBeVisible();
     await expect(resetPasswordPage.goToLoginButton).toBeVisible();
+    await expect(resetPasswordPage.page).toHaveScreenshot("reset-password-page-layout.png");
   });
 
   test("should show error messages for weak password", async ({ resetPasswordPage, page }) => {
-    // Mock API response to return password validation error instead of token error
+    // Arrange
     await page.route("**/auth/v1/user", async (route) => {
       await route.fulfill({
         status: 400,
@@ -24,16 +32,19 @@ test.describe("Reset Password Page", () => {
       });
     });
 
+    // Act
     await resetPasswordPage.fillPassword("short");
     await resetPasswordPage.fillConfirmPassword("short");
     await resetPasswordPage.submitForm();
+
+    // Assert
     expect(await resetPasswordPage.hasPasswordError()).toBe(true);
     const errorText = await resetPasswordPage.getPasswordErrorText();
     expect(errorText).toBeTruthy();
   });
 
   test("should show error messages for mismatched passwords", async ({ resetPasswordPage, page }) => {
-    // Clear previous route and set new one
+    // Arrange
     await page.unroute("**/auth/v1/user");
     await page.route("**/auth/v1/user", async (route) => {
       await route.fulfill({
@@ -45,16 +56,19 @@ test.describe("Reset Password Page", () => {
       });
     });
 
+    // Act
     await resetPasswordPage.fillPassword("Password123!");
     await resetPasswordPage.fillConfirmPassword("Password123");
     await resetPasswordPage.submitForm();
+
+    // Assert
     expect(await resetPasswordPage.hasConfirmPasswordError()).toBe(true);
     const errorText = await resetPasswordPage.getConfirmPasswordErrorText();
     expect(errorText).toBeTruthy();
   });
 
   test("should handle server errors gracefully", async ({ resetPasswordPage, page }) => {
-    // Clear previous route and set new one
+    // Arrange
     await page.unroute("**/auth/v1/user");
     await page.route("**/auth/v1/user", async (route) => {
       await route.fulfill({
@@ -64,10 +78,12 @@ test.describe("Reset Password Page", () => {
       });
     });
 
+    // Act
     await resetPasswordPage.fillPassword("Password123!");
     await resetPasswordPage.fillConfirmPassword("Password123!");
     await resetPasswordPage.submitForm();
-    // Test that form remains on reset password page and doesn't break
+
+    // Assert
     const isDisplayed = await resetPasswordPage.container.isVisible().catch(() => false);
     expect(isDisplayed).toBe(true);
   });

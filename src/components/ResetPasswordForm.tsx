@@ -85,7 +85,11 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
           data-testid="reset-password-form-password-input"
           {...register("password")}
         />
-        {passwordError && <p className="text-sm text-destructive">{passwordError.message}</p>}
+        {passwordError && (
+          <p className="text-sm text-destructive" data-testid="reset-password-form-password-error">
+            {passwordError.message}
+          </p>
+        )}
         {/* Password strength indicator */}
         <PasswordStrengthIndicator password={password} />
       </div>
@@ -104,7 +108,11 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
           data-testid="reset-password-form-confirm-password-input"
           {...register("confirmPassword")}
         />
-        {confirmPasswordError && <p className="text-sm text-destructive">{confirmPasswordError.message}</p>}
+        {confirmPasswordError && (
+          <p className="text-sm text-destructive" data-testid="reset-password-form-confirm-password-error">
+            {confirmPasswordError.message}
+          </p>
+        )}
       </div>
 
       {/* Show password checkbox */}

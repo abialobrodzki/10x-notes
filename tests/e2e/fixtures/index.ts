@@ -110,7 +110,8 @@ export const authedTest = unauthedTest.extend<AuthedFixtures, AuthedWorkerFixtur
   },
 
   workerTestUser: [
-    async (_ctx, use) => {
+    // eslint-disable-next-line no-empty-pattern
+    async ({}, use) => {
       const { user: testUser, shouldPersist } = await createOrReuseWorkerTestUser();
 
       if (shouldPersist) {
