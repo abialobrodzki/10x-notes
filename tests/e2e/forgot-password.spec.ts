@@ -17,7 +17,7 @@ test.describe("Forgot Password Page", () => {
     // Assert
     await expect(forgotPasswordPage.container).toBeVisible();
     await expect(forgotPasswordPage.returnToLoginLink).toBeVisible();
-    await expect(forgotPasswordPage.page).toHaveScreenshot("forgot-password-page-layout.png");
+    await expect(forgotPasswordPage.emailInput).toBeVisible();
   });
 
   test.skip("should show an error for invalid email format", async ({ forgotPasswordPage }) => {

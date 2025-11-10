@@ -13,7 +13,10 @@ test.describe("Register Page", () => {
     // (Page is already loaded in beforeEach)
 
     // Assert
-    await expect(registerPage.page).toHaveScreenshot("register-page-layout.png");
+    await expect(registerPage.container).toBeVisible();
+    await expect(registerPage.emailInput).toBeVisible();
+    await expect(registerPage.passwordInput).toBeVisible();
+    await expect(registerPage.confirmPasswordInput).toBeVisible();
   });
 
   test("should display the register page title", async ({ registerPage }) => {

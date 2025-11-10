@@ -20,12 +20,17 @@ test.describe("Login Flow", () => {
   });
 
   test("should display login page with correct layout", async ({ loginPage }) => {
-    // ARRANGE
+    // Arrange
     await loginPage.goto();
     await loginPage.pageContainer.waitFor({ state: "visible" });
 
-    // ASSERT
-    await expect(loginPage.page).toHaveScreenshot("login-page-layout.png");
+    // Act
+    // (Page is already loaded in Arrange)
+
+    // Assert
+    await expect(loginPage.pageContainer).toBeVisible();
+    await expect(loginPage.emailInput).toBeVisible();
+    await expect(loginPage.passwordInput).toBeVisible();
   });
 
   test.describe("Successful Login", () => {

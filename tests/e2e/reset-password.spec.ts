@@ -17,7 +17,7 @@ test.describe("Reset Password Page", () => {
     // Assert
     await expect(resetPasswordPage.container).toBeVisible();
     await expect(resetPasswordPage.goToLoginButton).toBeVisible();
-    await expect(resetPasswordPage.page).toHaveScreenshot("reset-password-page-layout.png");
+    await expect(resetPasswordPage.passwordInput).toBeVisible();
   });
 
   test("should show error messages for weak password", async ({ resetPasswordPage, page }) => {

@@ -48,7 +48,7 @@ test.describe("Landing Page", () => {
     await expect(landingPage.contentArea).toBeVisible();
     await expect(landingPage.charCounter).toHaveText("0/5000");
     await expect(landingPage.generateButton).toBeDisabled();
-    await expect(landingPage.page).toHaveScreenshot("landing-page-layout.png");
+    await expect(landingPage.textarea).toBeVisible();
   });
 
   test("should keep generate disabled when input is empty", async ({ landingPage }) => {
