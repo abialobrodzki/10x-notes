@@ -1,4 +1,4 @@
-# 10xNotes 📝
+# 10xNotes 📝test
 
 A lightweight AI-powered meeting notes management application that helps you organize, summarize, and share meeting outcomes efficiently.
 
