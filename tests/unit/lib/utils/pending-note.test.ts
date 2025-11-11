@@ -622,8 +622,12 @@ describe("pending-note.utils", () => {
 
     it("should return false at expiration boundary (exactly 30 minutes)", () => {
       // Arrange - Exactly 30 minutes (condition is > not >=)
+      // Freeze time to avoid flaky test due to millisecond differences
+      const now = Date.now();
+      vi.setSystemTime(now);
+
       const note = createValidNote({
-        generated_at: Date.now() - PENDING_NOTE_EXPIRATION_MS,
+        generated_at: now - PENDING_NOTE_EXPIRATION_MS,
       });
       savePendingNote(note);
 
@@ -632,6 +636,9 @@ describe("pending-note.utils", () => {
 
       // Assert
       expect(result).toBe(false);
+
+      // Cleanup
+      vi.useRealTimers();
     });
 
     it("should return true just after expiration (30:01)", () => {
