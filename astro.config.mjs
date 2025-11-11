@@ -15,5 +15,7 @@ export default defineConfig({
     // @ts-expect-error - Tailwind v4 plugin type incompatibility, remove when fixed upstream
     plugins: [tailwindcss()],
   },
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: "compile",
+  }),
 });
