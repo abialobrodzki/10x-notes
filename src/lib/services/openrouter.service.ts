@@ -5,6 +5,7 @@
  * Provides LLM response generation with retry logic, telemetry, and error handling.
  */
 
+import { OPENROUTER_API_KEY } from "astro:env/server";
 import {
   OpenRouterValidationError,
   OpenRouterAuthError,
@@ -43,8 +44,8 @@ export class OpenRouterService {
   private readonly supabase?: SupabaseClient<Database>;
 
   constructor(supabase?: SupabaseClient<Database>, options?: OpenRouterServiceOptions) {
-    // Validate and load API key from environment
-    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    // Validate and load API key from environment (via Astro env)
+    const apiKey = OPENROUTER_API_KEY;
     if (!apiKey || apiKey.trim() === "") {
       throw new OpenRouterAuthError("OPENROUTER_API_KEY environment variable is required");
     }

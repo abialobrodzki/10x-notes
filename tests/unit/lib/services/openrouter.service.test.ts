@@ -19,6 +19,16 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Coverage target: 75%
  */
 
+// Mock astro:env/server module with dynamic values
+vi.mock("astro:env/server", () => ({
+  get OPENROUTER_API_KEY() {
+    return process.env.OPENROUTER_API_KEY;
+  },
+  get SUPABASE_SERVICE_ROLE_KEY() {
+    return process.env.SUPABASE_SERVICE_ROLE_KEY;
+  },
+}));
+
 describe("OpenRouterService", () => {
   beforeEach(() => {
     // Reset mocks
@@ -35,9 +45,12 @@ describe("OpenRouterService", () => {
   });
 
   describe("Constructor", () => {
-    it("should throw OpenRouterAuthError when API key is missing", () => {
+    it("should throw OpenRouterAuthError when API key is missing", async () => {
       // Temporarily unset the env variable for this specific test
       vi.stubEnv("OPENROUTER_API_KEY", undefined);
+
+      // Dynamically import to get fresh module with new env
+      const { OpenRouterService } = await import("@/lib/services/openrouter.service");
 
       expect(() => new OpenRouterService()).toThrow(OpenRouterAuthError);
       expect(() => new OpenRouterService()).toThrow("OPENROUTER_API_KEY environment variable is required");
@@ -46,8 +59,11 @@ describe("OpenRouterService", () => {
       vi.unstubAllEnvs();
     });
 
-    it("should throw OpenRouterAuthError when API key is empty string", () => {
+    it("should throw OpenRouterAuthError when API key is empty string", async () => {
       vi.stubEnv("OPENROUTER_API_KEY", "   ");
+
+      // Dynamically import to get fresh module with new env
+      const { OpenRouterService } = await import("@/lib/services/openrouter.service");
 
       expect(() => new OpenRouterService()).toThrow(OpenRouterAuthError);
     });
