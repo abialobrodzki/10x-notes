@@ -17,10 +17,12 @@ export default defineConfig({
       PUBLIC_SUPABASE_URL: envField.string({
         context: "client",
         access: "public",
+        default: "https://placeholder.supabase.co", // Placeholder for build time
       }),
       PUBLIC_SUPABASE_KEY: envField.string({
         context: "client",
         access: "public",
+        default: "placeholder-anon-key", // Placeholder for build time
       }),
       // Supabase - Server-only secrets
       SUPABASE_SERVICE_ROLE_KEY: envField.string({
@@ -32,6 +34,7 @@ export default defineConfig({
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
+        default: "placeholder-openrouter-key", // Placeholder for build time
       }),
     },
   },
