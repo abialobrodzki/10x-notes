@@ -47,7 +47,7 @@ A lightweight AI-powered meeting notes management application that helps you org
 ### 🚀 DevOps & Hosting
 
 - **GitHub Actions** (Planned) - CI/CD pipelines
-- **Cloudflare** (Planned) - Application hosting
+- **Cloudflare Pages** - Recommended hosting platform for performance, scalability, and a generous free tier.
 - **Current**: Node.js SSR adapter for flexible deployment
 
 ### 🔧 Development Tools
