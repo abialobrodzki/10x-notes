@@ -5,6 +5,7 @@ import { Navbar } from "../components/layout/Navbar";
 import { MobileBottomNav } from "../components/layout/MobileBottomNav";
 import { ToasterProvider } from "../components/ToasterProvider";
 import { optionalAuth } from "../lib/middleware/auth.middleware";
+import { isFeatureEnabled } from "@/lib/feature-flags";
 
 interface Props {
   title?: string;
@@ -29,6 +30,13 @@ const isAuthenticated = !!userId;
     <ViewTransitions />
   </head>
   <body>
+    {
+      isFeatureEnabled("collections") && (
+        <div class="bg-yellow-400 text-black text-center p-2 font-bold">
+          TEST MODE: Flaga 'collections' jest włączona.
+        </div>
+      )
+    }
     {showNavbar && <Navbar transition:persist client:load isAuthenticated={isAuthenticated} />}
     <main
       id="main-content"
