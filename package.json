@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier . --check",
-    "tsc:check": "tsc --noEmit --pretty --strict",
+    "tsc:check": "astro sync && tsc --noEmit --pretty --strict",
     "tailwind:check": "tsx scripts/tailwind-lint.ts",
     "workflow:check": "tsx scripts/workflow-lint.ts",
     "db:lint": "supabase db lint",
