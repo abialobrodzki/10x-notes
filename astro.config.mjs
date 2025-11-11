@@ -14,8 +14,21 @@ export default defineConfig({
   vite: {
     // @ts-expect-error - Tailwind v4 plugin type incompatibility, remove when fixed upstream
     plugins: [tailwindcss()],
+    ssr: {
+      external: ["node:async_hooks"],
+      noExternal: ["react", "react-dom"],
+    },
+    resolve: {
+      alias: {
+        // Workaround for React 19 on Cloudflare Workers
+        "react-dom/server": "react-dom/server.browser",
+      },
+    },
   },
   adapter: cloudflare({
     imageService: "compile",
+    platformProxy: {
+      enabled: true,
+    },
   }),
 });
