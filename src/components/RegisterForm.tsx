@@ -34,6 +34,7 @@ export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) 
     mode: "onBlur",
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password");
 
   const registerMutation = useRegisterMutation({

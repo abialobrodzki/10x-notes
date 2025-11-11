@@ -35,6 +35,7 @@ export function AddRecipientForm({ tagId }: AddRecipientFormProps) {
     mode: "onBlur",
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const emailValue = watch("email") ?? "";
 
   const addRecipientMutation = useAddRecipientMutation({

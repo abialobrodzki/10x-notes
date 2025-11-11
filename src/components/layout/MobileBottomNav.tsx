@@ -13,13 +13,15 @@ import { useCallback, useEffect, useState } from "react";
  * - Full keyboard navigation support (Tab, Enter)
  */
 export function MobileBottomNav() {
-  const [pathname, setPathname] = useState<string>("");
+  const [pathname, setPathname] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return window.location.pathname;
+    }
+    return "";
+  });
 
-  // Update pathname on mount and route changes
+  // Listen for navigation changes
   useEffect(() => {
-    setPathname(window.location.pathname);
-
-    // Listen for navigation changes
     const handleNavigate = () => {
       setPathname(window.location.pathname);
     };

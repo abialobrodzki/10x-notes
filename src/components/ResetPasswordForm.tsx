@@ -35,6 +35,7 @@ export default function ResetPasswordForm({ token: _token, onError, onSuccess }:
     mode: "onBlur",
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password");
 
   const resetPasswordMutation = useResetPasswordMutation({

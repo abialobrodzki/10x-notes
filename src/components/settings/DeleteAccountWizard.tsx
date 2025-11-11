@@ -49,6 +49,7 @@ export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const isConfirmed = watch("isConfirmed") ?? false;
   const confirmationEmail = watch("confirmation_email") ?? "";
   const normalizedUserEmail = userEmail.trim().toLowerCase();
