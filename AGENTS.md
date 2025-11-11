@@ -344,6 +344,27 @@ OPENROUTER_API_KEY=xxx  # For AI text generation
 - Pre-commit hooks automatically lint and format staged files
 - Configuration in `package.json` lint-staged section and `.husky/pre-commit`
 
+### Feature Flags (Toggles)
+
+A simple, file-based feature flag system is implemented to decouple deployments from releases.
+
+- **Configuration:** `src/lib/feature-flags.ts`
+- **How to Add a Flag:**
+  1.  Add the new flag's name to the `Feature` type in the config file.
+  2.  Set its value for `local` and `production` environments in the `featureFlagsConfig` object.
+- **How to Use:**
+
+  ```typescript
+  import { isFeatureEnabled } from "@/lib/feature-flags";
+
+  if (isFeatureEnabled("my_feature")) {
+    // ... show component or run logic
+  }
+  ```
+
+- **Note:** The system automatically detects the environment. `npm run dev` uses the `local` config, while a production build (`npm run build`) uses the `production` config via `import.meta.env.PROD`.
+- **Testing Production Config:** To test the `production` settings locally, first build the app (`npm run build`), then serve the result (`npm run preview`).
+
 ## AI Context Management
 
 This project uses **unified AI context management with symbolic links**:
