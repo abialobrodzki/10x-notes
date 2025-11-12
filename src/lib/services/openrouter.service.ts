@@ -43,9 +43,11 @@ export class OpenRouterService {
   private readonly appName?: string;
   private readonly supabase?: SupabaseClient<Database>;
 
-  constructor(supabase?: SupabaseClient<Database>, options?: OpenRouterServiceOptions) {
-    // Validate and load API key from environment (via Astro env)
-    const apiKey = OPENROUTER_API_KEY;
+  constructor(supabase?: SupabaseClient<Database>, options?: OpenRouterServiceOptions & { apiKey?: string }) {
+    // Validate and load API key from options or environment (via Astro env)
+    // For Cloudflare Pages, API key MUST be passed via options.apiKey from runtime.env
+    // For local dev, falls back to environment variable
+    const apiKey = options?.apiKey ?? OPENROUTER_API_KEY;
     if (!apiKey || apiKey.trim() === "") {
       throw new OpenRouterAuthError("OPENROUTER_API_KEY environment variable is required");
     }

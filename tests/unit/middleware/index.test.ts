@@ -282,7 +282,7 @@ describe("Middleware - Access Control", () => {
       await middlewareHandler(mockContext, mockNext);
 
       expect(mockContext.locals.supabase).toBe(mockSupabaseClient);
-      expect(createSupabaseServerClientMock).toHaveBeenCalledWith(mockContext.request, mockContext.cookies);
+      expect(createSupabaseServerClientMock).toHaveBeenCalledWith(mockContext.request, mockContext.cookies, undefined);
     });
   });
 

@@ -10,6 +10,13 @@ declare global {
         id: string;
         email: string;
       };
+      runtime?: {
+        env: {
+          SUPABASE_URL?: string;
+          SUPABASE_ANON_KEY?: string;
+          OPENROUTER_API_KEY?: string;
+        };
+      };
     }
   }
 }

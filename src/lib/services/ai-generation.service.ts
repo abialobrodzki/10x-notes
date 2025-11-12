@@ -48,14 +48,16 @@ const AI_SUMMARY_SCHEMA: JSONSchema & { name: string } = {
 export class AiGenerationService {
   private readonly openRouterService: OpenRouterService;
 
-  constructor(supabase: SupabaseClient<Database>) {
+  constructor(supabase: SupabaseClient<Database>, options?: { apiKey?: string }) {
     // Initialize OpenRouter service with Supabase for telemetry
+    // For Cloudflare Pages, API key must be passed from runtime.env
     this.openRouterService = new OpenRouterService(supabase, {
       defaultModel: "x-ai/grok-4-fast", // Grok-4-Fast: excellent JSON Schema support, fast, currently free on OpenRouter
       timeoutMs: 60000, // 60 seconds (1 minute)
       retryAttempts: 2, // Retry transient failures
       appUrl: "https://10xnotes.app",
       appName: "10xNotes",
+      apiKey: options?.apiKey, // Pass through API key from runtime.env (Cloudflare) or env var (local)
     });
   }
 

@@ -45,7 +45,14 @@ export function isAuthOnlyPath(pathname: string): boolean {
  */
 export async function middlewareHandler(context: APIContext, next: MiddlewareNext): Promise<Response> {
   // Create server-side Supabase client with cookies support
-  context.locals.supabase = createSupabaseServerClient(context.request, context.cookies);
+  // For Cloudflare Pages, pass runtime.env; for local dev, it falls back to astro:env
+  const env = context.locals.runtime?.env
+    ? {
+        SUPABASE_URL: context.locals.runtime.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: context.locals.runtime.env.SUPABASE_ANON_KEY,
+      }
+    : undefined;
+  context.locals.supabase = createSupabaseServerClient(context.request, context.cookies, env);
 
   // Get authenticated user
   const {

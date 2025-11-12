@@ -9,11 +9,17 @@ import type { AstroCookies } from "astro";
  *
  * @param request - Astro.request object
  * @param cookies - Astro.cookies object from context
+ * @param env - Optional runtime.env from Cloudflare (for production)
  * @returns Supabase client with session from cookies
  */
-export function createSupabaseServerClient(request: Request, cookies: AstroCookies) {
-  const supabaseUrl = PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = PUBLIC_SUPABASE_KEY;
+export function createSupabaseServerClient(
+  request: Request,
+  cookies: AstroCookies,
+  env?: { SUPABASE_URL?: string; SUPABASE_ANON_KEY?: string }
+) {
+  // For Cloudflare Pages, use runtime.env; for local dev, use astro:env/client
+  const supabaseUrl = env?.SUPABASE_URL ?? PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = env?.SUPABASE_ANON_KEY ?? PUBLIC_SUPABASE_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing Supabase environment variables");

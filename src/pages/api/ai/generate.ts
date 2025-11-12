@@ -99,7 +99,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let result: AiSummaryDTO;
 
     try {
-      const aiService = new AiGenerationService(locals.supabase);
+      // Get API key from Cloudflare runtime.env (production) or process.env (local dev)
+      const apiKey = locals.runtime?.env?.OPENROUTER_API_KEY;
+      const aiService = new AiGenerationService(locals.supabase, { apiKey });
       result = await aiService.generateSummary(validatedInput, userId);
     } catch (error) {
       // Handle specific OpenRouter error types with instanceof checks
