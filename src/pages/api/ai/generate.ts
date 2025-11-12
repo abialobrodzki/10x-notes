@@ -8,6 +8,7 @@ import {
   OpenRouterError,
 } from "../../../lib/errors/openrouter.errors";
 import { checkRateLimit, createRateLimitResponse } from "../../../lib/middleware/rate-limit.middleware";
+import { AiGenerationService } from "../../../lib/services/ai-generation.service";
 import { generateAiSummarySchema, type GenerateAiSummaryInput } from "../../../lib/validators/ai.schemas";
 import type { AiSummaryDTO } from "../../../types";
 import type { APIRoute } from "astro";
@@ -98,9 +99,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let result: AiSummaryDTO;
 
     try {
-      // Dynamically import the service to avoid global scope issues on Cloudflare
-      const { AiGenerationService } = await import("../../../lib/services/ai-generation.service");
-
       // Get API key from Cloudflare runtime.env (production) or process.env (local dev)
       const apiKey = locals.runtime?.env?.OPENROUTER_API_KEY;
       const aiService = new AiGenerationService(locals.supabase, { apiKey });

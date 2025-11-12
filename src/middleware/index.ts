@@ -1,5 +1,4 @@
 import { defineMiddleware } from "astro:middleware";
-import { createSupabaseServerClient } from "../lib/supabase-server";
 import type { APIContext, MiddlewareNext } from "astro";
 
 /**
@@ -44,6 +43,9 @@ export function isAuthOnlyPath(pathname: string): boolean {
  * Exported for testing purposes
  */
 export async function middlewareHandler(context: APIContext, next: MiddlewareNext): Promise<Response> {
+  // Dynamically import the server client creation function
+  const { createSupabaseServerClient } = await import("../lib/supabase-server");
+
   // Create server-side Supabase client with cookies support
   // For Cloudflare Pages, pass runtime.env; for local dev, it falls back to astro:env
   const env = context.locals.runtime?.env
