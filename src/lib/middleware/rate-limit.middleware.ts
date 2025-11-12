@@ -21,6 +21,11 @@ interface RateLimitEntry {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 /**
+ * Counter for periodic cleanup (runs every 1000 requests)
+ */
+let cleanupCounter = 0;
+
+/**
  * Rate limit configuration
  */
 const RATE_LIMIT_CONFIG = {
@@ -32,7 +37,9 @@ const RATE_LIMIT_CONFIG = {
 
 /**
  * Clean up expired entries from rate limit store
- * Runs periodically to prevent memory leaks
+ * Removes entries that have exceeded their window duration
+ * Note: Cloudflare Workers doesn't support setInterval in module scope,
+ * so cleanup happens opportunistically during checkRateLimit calls
  * Exported for testing purposes
  */
 export function cleanupExpiredEntries(): void {
@@ -47,9 +54,6 @@ export function cleanupExpiredEntries(): void {
 
   expiredKeys.forEach((key) => rateLimitStore.delete(key));
 }
-
-// Schedule cleanup every hour
-setInterval(cleanupExpiredEntries, 60 * 60 * 1000);
 
 /**
  * Extract client IP address from request
@@ -93,6 +97,14 @@ export function checkRateLimit(request: Request): {
   retryAfter?: number;
   remaining?: number;
 } {
+  // Periodically cleanup expired entries to prevent memory leak
+  // Run cleanup every 1000 requests
+  cleanupCounter++;
+  if (cleanupCounter >= 1000) {
+    cleanupExpiredEntries();
+    cleanupCounter = 0;
+  }
+
   const ip = getClientIp(request);
   const now = Date.now();
 
