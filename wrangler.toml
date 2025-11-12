@@ -1,0 +1,14 @@
+name = "10x-astro-starter"
+compatibility_date = "2024-04-05"
+compatibility_flags = ["nodejs_compat"]
+
+# This configuration is for Cloudflare Pages.
+# The settings below are often configured in the Cloudflare dashboard,
+# but specifying them here ensures consistency.
+
+[pages]
+# The build output directory for Astro projects is typically "dist"
+# build_output_dir = "dist"
+
+# The command to build the project
+# build_command = "npm run build"
