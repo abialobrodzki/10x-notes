@@ -108,11 +108,11 @@ export function DeleteTagDialog({ tagId, tagName, noteCount, onSuccess }: Delete
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-glass-text-muted hover-destructive"
-          aria-label="Usuń etykietę"
+          className="h-7 w-7 shrink-0 text-glass-text-muted opacity-70 transition-opacity hover:opacity-100 hover-destructive"
+          aria-label={`Usuń etykietę ${tagName}`}
           data-testid="delete-tag-dialog-trigger-button"
         >
-          <Trash2 className="h-3 w-3" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent

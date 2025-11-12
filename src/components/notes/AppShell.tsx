@@ -62,7 +62,7 @@ export function AppShell({ notes, tags, query, error }: AppShellProps) {
     >
       {/* Desktop Sidebar */}
       <aside
-        className="hidden w-64 border-r border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block"
+        className="hidden h-full w-64 border-r border-glass-border bg-linear-to-b from-glass-bg-from to-glass-bg-to backdrop-blur-xl md:block"
         data-testid="app-shell-desktop-sidebar"
       >
         <TagSidebar tags={tags.tags} selectedTagId={selectedTagId} onTagSelect={handleTagSelect} />
