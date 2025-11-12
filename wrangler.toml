@@ -1,0 +1,15 @@
+# This file configures the Cloudflare Pages deployment.
+# It is essential for projects using features that require Node.js compatibility,
+# such as React 19's SSR engine.
+
+name = "10x-astro-starter"
+
+# This property is REQUIRED for Wrangler to correctly identify this as a Pages project.
+pages_build_output_dir = "dist"
+
+# This compatibility date enables modern features of the Cloudflare runtime.
+compatibility_date = "2024-04-05"
+
+# This flag explicitly enables the Node.js compatibility layer,
+# which fixes the "MessageChannel is not defined" error for React 19.
+compatibility_flags = ["nodejs_compat"]
