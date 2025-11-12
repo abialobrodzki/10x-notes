@@ -1,14 +1,14 @@
+# This file is the source of truth for your Cloudflare Pages project configuration.
+# It was generated based on the official Cloudflare documentation.
+
 name = "10x-astro-starter"
+
+# This property is REQUIRED for Pages projects and points to the build output directory.
+pages_build_output_dir = "dist"
+
+# This compatibility date enables modern features of the Cloudflare runtime,
+# including those needed for React 19's SSR to work correctly.
 compatibility_date = "2024-04-05"
+
+# This flag explicitly enables Node.js compatibility, fixing the "MessageChannel is not defined" error.
 compatibility_flags = ["nodejs_compat"]
-
-# This configuration is for Cloudflare Pages.
-# The settings below are often configured in the Cloudflare dashboard,
-# but specifying them here ensures consistency.
-
-[pages]
-# The build output directory for Astro projects is typically "dist"
-# build_output_dir = "dist"
-
-# The command to build the project
-# build_command = "npm run build"
