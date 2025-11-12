@@ -43,10 +43,11 @@ export class OpenRouterService {
   private readonly supabase?: SupabaseClient<Database>;
 
   constructor(supabase?: SupabaseClient<Database>, options?: OpenRouterServiceOptions & { apiKey?: string }) {
-    // Validate and load API key from options or process.env
-    // For Cloudflare Pages: pass via options.apiKey from runtime.env
-    // For local dev/tests: falls back to process.env.OPENROUTER_API_KEY
-    const apiKey = options?.apiKey ?? process.env.OPENROUTER_API_KEY;
+    // Validate and load API key from options or process.env (if available)
+    // For Cloudflare Pages: MUST pass via options.apiKey from runtime.env
+    // For local dev/tests: falls back to process.env.OPENROUTER_API_KEY if process exists
+    const apiKey =
+      options?.apiKey ?? (typeof process !== "undefined" && process.env ? process.env.OPENROUTER_API_KEY : undefined);
     if (!apiKey || apiKey.trim() === "") {
       throw new OpenRouterAuthError("OPENROUTER_API_KEY environment variable is required");
     }
