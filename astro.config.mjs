@@ -13,22 +13,11 @@ export default defineConfig({
     port: 3000,
   },
   // Define the schema for environment variables for type safety and validation
+  // This configuration is based on a working project with a similar stack.
   env: {
     schema: {
-      // Public variables, prefixed with PUBLIC_
-      PUBLIC_SUPABASE_URL: envField.string({
-        context: "client", // Available on both server and client
-        access: "public",
-      }),
-      PUBLIC_SUPABASE_KEY: envField.string({
-        context: "client",
-        access: "public",
-      }),
-      // Secret variables, only available on the server
-      OPENROUTER_API_KEY: envField.string({
-        context: "server",
-        access: "secret",
-      }),
+      // These are defined as server-side secrets.
+      // The Astro build process will ensure they are available in the server context.
       SUPABASE_URL: envField.string({
         context: "server",
         access: "secret",
@@ -36,6 +25,19 @@ export default defineConfig({
       SUPABASE_ANON_KEY: envField.string({
         context: "server",
         access: "secret",
+      }),
+      OPENROUTER_API_KEY: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+      // These PUBLIC variables are for client-side code.
+      PUBLIC_SUPABASE_URL: envField.string({
+        context: "client",
+        access: "public",
+      }),
+      PUBLIC_SUPABASE_KEY: envField.string({
+        context: "client",
+        access: "public",
       }),
     },
   },

@@ -17,8 +17,8 @@ export function createSupabaseServerClient(
   env?: { SUPABASE_URL?: string; SUPABASE_ANON_KEY?: string }
 ) {
   // For Cloudflare Pages, use runtime.env; for local dev, use import.meta.env
-  const supabaseUrl = env?.SUPABASE_URL ?? import.meta.env.PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = env?.SUPABASE_ANON_KEY ?? import.meta.env.PUBLIC_SUPABASE_KEY;
+  const supabaseUrl = env?.SUPABASE_URL ?? import.meta.env.SUPABASE_URL;
+  const supabaseAnonKey = env?.SUPABASE_ANON_KEY ?? import.meta.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error("Missing Supabase environment variables");
