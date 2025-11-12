@@ -15,6 +15,13 @@ export default defineConfig({
   vite: {
     // @ts-expect-error - Tailwind v4 plugin type incompatibility, remove when fixed upstream
     plugins: [tailwindcss()],
+    resolve: {
+      alias: import.meta.env.PROD
+        ? {
+            "react-dom/server": "react-dom/server.edge",
+          }
+        : undefined,
+    },
   },
   adapter: cloudflare(),
 });
