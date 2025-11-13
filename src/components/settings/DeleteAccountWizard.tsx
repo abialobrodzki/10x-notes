@@ -19,16 +19,26 @@ import { Label } from "@/components/ui/label";
 import { useDeleteAccountMutation } from "@/hooks/mutations/useDeleteAccountMutation";
 import { deleteAccountFormSchema, type DeleteAccountFormInput } from "@/lib/validators/user.schemas";
 
+/**
+ * @interface DeleteAccountWizardProps
+ * @description Props for the DeleteAccountWizard component.
+ * @property {string} userEmail - The user's email address, used for confirmation validation.
+ */
 interface DeleteAccountWizardProps {
   /** User's email for confirmation validation */
   userEmail: string;
 }
 
 /**
- * DeleteAccountWizard component
- * Multi-step account deletion process with email confirmation and checkbox
- * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
- * Implements GDPR "right to be forgotten"
+ * @component DeleteAccountWizard
+ * @description A multi-step wizard component for the account deletion process.
+ * It ensures a secure deletion by requiring email confirmation and a checkbox acknowledgment.
+ * This component integrates with `react-hook-form` for state management, `Zod` for validation,
+ * and `TanStack Query` for API calls to handle the actual account deletion.
+ * It implements the GDPR "right to be forgotten" by permanently removing all associated user data.
+ *
+ * @param {DeleteAccountWizardProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered account deletion wizard dialog.
  */
 export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   const [isOpen, setIsOpen] = useState(false);

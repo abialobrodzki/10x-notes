@@ -1,3 +1,10 @@
+/**
+ * @module NotesService
+ * @description This module provides the business logic for managing user notes,
+ * including listing, filtering, pagination, creation, retrieval, updating, and deletion.
+ * It handles interactions with the Supabase database for note and tag data.
+ */
+
 import { calculateOffset, createPaginationDTO } from "../utils/pagination.utils";
 import type { Database } from "../../db/database.types";
 import type {
@@ -14,27 +21,38 @@ import type { NotesListQueryInput, CreateNoteInput, UpdateNoteInput } from "../v
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Raw note data from database with joined tag
- * Excludes original_content and suggested_tag (not needed for list view)
+ * @interface NoteWithTag
+ * @description Raw note data from the database with an embedded tag.
+ * Excludes `original_content` and `suggested_tag` as they are not typically needed for list views.
+ * @extends Omit<NoteEntity, "tag_id" | "original_content" | "suggested_tag">
+ * @property {Pick<TagEntity, "id" | "name">} tags - The associated tag's ID and name.
  */
 interface NoteWithTag extends Omit<NoteEntity, "tag_id" | "original_content" | "suggested_tag"> {
   tags: Pick<TagEntity, "id" | "name">;
 }
 
 /**
- * Notes Service
- * Handles business logic for notes listing, filtering, and pagination
+ * @class NotesService
+ * @description Handles all business logic related to notes, including data retrieval,
+ * manipulation, and interaction with the Supabase client. It manages note listing,
+ * filtering, pagination, and CRUD operations, as well as handling shared notes and public links.
  */
 export class NotesService {
+  /**
+   * @private
+   * @readonly
+   * @property {SupabaseClient<Database>} supabase - The Supabase client instance for database interactions.
+   */
   constructor(private readonly supabase: SupabaseClient<Database>) {}
 
   /**
-   * Get paginated list of user's notes with filtering and sorting
+   * Retrieves a paginated list of a user's notes, with options for filtering and sorting.
+   * This method also supports including notes from tags that have been shared with the user.
    *
-   * @param userId - Current user ID (from JWT)
-   * @param query - Validated query parameters
-   * @returns Paginated notes list with metadata
-   * @throws Error if database query fails
+   * @param {string} userId - The ID of the current user (obtained from JWT).
+   * @param {NotesListQueryInput} query - Validated query parameters for filtering, sorting, and pagination.
+   * @returns {Promise<NotesListDTO>} A promise that resolves to a paginated list of notes with metadata.
+   * @throws {Error} If any database query fails during the process of fetching notes or shared tags.
    */
   async getNotes(userId: string, query: NotesListQueryInput): Promise<NotesListDTO> {
     // Step 1: Build and execute query for own notes
@@ -146,12 +164,13 @@ export class NotesService {
   }
 
   /**
-   * Build Supabase query for notes
-   * Used for querying own notes (shared notes are fetched separately)
+   * Builds a Supabase query for fetching notes based on provided filters.
+   * This is primarily used for querying a user's own notes.
    *
-   * @param userId - Current user ID
-   * @param query - Query parameters
-   * @returns Supabase query builder
+   * @private
+   * @param {string} userId - The ID of the current user.
+   * @param {NotesListQueryInput} query - The query parameters including filters.
+   * @returns {any} A Supabase query builder instance configured with the specified filters.
    */
   private buildNotesQuery(userId: string, query: NotesListQueryInput) {
     let notesQuery = this.supabase.from("notes").select(
@@ -200,12 +219,14 @@ export class NotesService {
   }
 
   /**
-   * Sort notes array by specified field and order
+   * Sorts an array of notes based on a specified field and order.
+   * Includes a secondary sort by ID for stable pagination when primary sort values are equal.
    *
-   * @param notes - Array of notes to sort
-   * @param sortBy - Field to sort by
-   * @param order - Sort order (asc/desc)
-   * @returns Sorted array
+   * @private
+   * @param {NoteWithTag[]} notes - The array of notes to sort.
+   * @param {"meeting_date" | "created_at" | "updated_at"} sortBy - The field to sort by.
+   * @param {"asc" | "desc"} order - The sort order ('asc' for ascending, 'desc' for descending).
+   * @returns {NoteWithTag[]} The sorted array of notes.
    */
   private sortNotes(
     notes: NoteWithTag[],
@@ -234,11 +255,14 @@ export class NotesService {
   }
 
   /**
-   * Fetch public links for given note IDs
-   * Returns a Map of note_id -> has_public_link
+   * Fetches public link information for a given set of note IDs.
+   * Returns a Map indicating whether each note has an active public link.
+   * Errors during fetching are logged but do not prevent the service from returning an empty map.
    *
-   * @param noteIds - Array of note IDs
-   * @returns Map of note_id to boolean (has active public link)
+   * @private
+   * @param {string[]} noteIds - An array of note IDs for which to fetch public links.
+   * @returns {Promise<Map<string, boolean>>} A promise that resolves to a Map where keys are `note_id`s
+   * and values are booleans indicating if an active public link exists.
    */
   private async getPublicLinksMap(noteIds: string[]): Promise<Map<string, boolean>> {
     if (noteIds.length === 0) {
@@ -267,16 +291,15 @@ export class NotesService {
   }
 
   /**
-   * Get shared recipients counts for given tag IDs
-   * Returns a Map of tag_id -> count of recipients
+   * Retrieves the count of shared recipients for a given set of tag IDs.
+   * This method utilizes a Supabase RPC function (`get_tags_shared_counts`)
+   * which handles ownership verification and aggregation.
+   * Errors during fetching are logged but do not prevent the service from returning an empty map.
    *
-   * Uses RPC function get_tags_shared_counts() which:
-   * - Verifies tag ownership (only returns counts for owned tags)
-   * - Uses SECURITY DEFINER to bypass RLS on tag_access table
-   * - Returns aggregated counts per tag_id
-   *
-   * @param tagIds - Array of tag IDs (should be owned tags only)
-   * @returns Map of tag_id to shared recipients count
+   * @private
+   * @param {string[]} tagIds - An array of tag IDs (expected to be owned by the current user).
+   * @returns {Promise<Map<string, number>>} A promise that resolves to a Map where keys are `tag_id`s
+   * and values are the number of shared recipients for that tag.
    */
   private async getSharedRecipientsMap(tagIds: string[]): Promise<Map<string, number>> {
     if (tagIds.length === 0) {
@@ -306,13 +329,16 @@ export class NotesService {
   }
 
   /**
-   * Transform raw note data to NoteListItemDTO
+   * Transforms raw note data (with joined tag) into a `NoteListItemDTO`.
+   * This DTO is suitable for displaying notes in a list view, including ownership
+   * and public link status.
    *
-   * @param note - Raw note with joined tag
-   * @param currentUserId - Current user ID (to determine is_owner)
-   * @param publicLinksMap - Map of note_id to has_public_link
-   * @param sharedRecipientsMap - Map of tag_id to shared recipients count
-   * @returns Formatted DTO
+   * @private
+   * @param {NoteWithTag} note - The raw note data from the database.
+   * @param {string} currentUserId - The ID of the current authenticated user.
+   * @param {Map<string, boolean>} publicLinksMap - A map of note IDs to their public link status.
+   * @param {Map<string, number>} sharedRecipientsMap - A map of tag IDs to their shared recipients count.
+   * @returns {NoteListItemDTO} The formatted note list item DTO.
    */
   private transformToListItemDTO(
     note: NoteWithTag,
@@ -350,15 +376,23 @@ export class NotesService {
   }
 
   /**
-   * Create a new note with tag assignment
+   * Creates a new note with tag assignment.
+   * This method handles the logic for associating a note with an existing tag
+   * or creating a new tag if specified by name. It also auto-sets `is_ai_generated`
+   * based on the presence of `summary_text`.
    *
-   * Handles XOR logic: either tag_id (existing tag) or tag_name (find or create)
-   * Auto-sets is_ai_generated = false when summary_text is null
-   *
-   * @param userId - Current user ID (from JWT)
-   * @param input - Validated note creation data
-   * @returns Created note with tag information
-   * @throws Error if tag ownership verification fails or database operation fails
+   * @param {string} userId - The ID of the current user (from JWT).
+   * @param {CreateNoteInput} input - Validated data for creating the note.
+   * @param {string} [input.tag_id] - Optional: The ID of an existing tag to assign the note to.
+   * @param {string} [input.tag_name] - Optional: The name of a new tag to create and assign, or an existing tag to find.
+   * @param {string} input.original_content - The original content of the note.
+   * @param {string} [input.summary_text] - Optional: The summarized text of the note.
+   * @param {Database["public"]["Enums"]["goal_status_enum"]} [input.goal_status] - Optional: The goal status of the note.
+   * @param {string} [input.suggested_tag] - Optional: A suggested tag name.
+   * @param {string} [input.meeting_date] - Optional: The date of the meeting. Defaults to today's date.
+   * @param {boolean} [input.is_ai_generated] - Optional: Indicates if the summary was AI-generated. Defaults to `true` if `summary_text` is present, `false` otherwise.
+   * @returns {Promise<NoteDTO>} A promise that resolves to the created note with its tag information.
+   * @throws {Error} If the tag ownership cannot be verified, if tag creation fails, or if the database insertion fails.
    */
   async createNote(userId: string, input: CreateNoteInput): Promise<NoteDTO> {
     // Step 1: Resolve tag_id (XOR logic: tag_id OR tag_name)
@@ -437,15 +471,16 @@ export class NotesService {
   }
 
   /**
-   * Find existing tag by name (case-insensitive) or create new tag
+   * Finds an existing tag by name (case-insensitive) for the given user, or creates a new one if it doesn't exist.
+   * This method includes logic to handle race conditions during tag creation by retrying the SELECT operation
+   * if a unique constraint violation occurs.
    *
-   * Handles race conditions: if tag creation fails due to unique constraint,
-   * retries SELECT (another request created it simultaneously)
-   *
-   * @param userId - Current user ID
-   * @param tagName - Tag name to find or create
-   * @returns Resolved tag ID
-   * @throws Error if tag creation fails or race condition retry fails
+   * @private
+   * @param {string} userId - The ID of the current user.
+   * @param {string} tagName - The name of the tag to find or create.
+   * @returns {Promise<string>} A promise that resolves to the ID of the found or newly created tag.
+   * @throws {Error} If searching for an existing tag fails, if tag creation fails for reasons other than a race condition,
+   * or if the race condition retry for SELECT also fails.
    */
   private async findOrCreateTag(userId: string, tagName: string): Promise<string> {
     // Step 1: Try to find existing tag (case-insensitive)
@@ -499,10 +534,22 @@ export class NotesService {
   }
 
   /**
-   * Transform raw note data with joined tag to NoteDTO
+   * Transforms raw note data (with joined tag) from the database into a `NoteDTO`.
+   * This DTO represents the full details of a note suitable for display or further processing.
    *
-   * @param note - Raw note data from database with joined tag
-   * @returns Formatted NoteDTO
+   * @private
+   * @param {object} note - The raw note data object from the database.
+   * @param {string} note.id - The unique identifier of the note.
+   * @param {string} note.original_content - The original content of the note.
+   * @param {string | null} note.summary_text - The summarized text of the note, or `null`.
+   * @param {Database["public"]["Enums"]["goal_status_enum"] | null} note.goal_status - The goal status of the note, or `null`.
+   * @param {string | null} note.suggested_tag - A suggested tag name, or `null`.
+   * @param {string} note.meeting_date - The date of the meeting.
+   * @param {boolean} note.is_ai_generated - Indicates if the summary was AI-generated.
+   * @param {string} note.created_at - The creation timestamp of the note.
+   * @param {string} note.updated_at - The last update timestamp of the note.
+   * @param {{ id: string; name: string }} note.tags - The embedded tag object with ID and name.
+   * @returns {NoteDTO} The formatted note DTO.
    */
   private transformToNoteDTO(note: {
     id: string;
@@ -536,15 +583,16 @@ export class NotesService {
   }
 
   /**
-   * Get note by ID with full details
+   * Retrieves a single note by its ID with full details.
+   * This method includes access control: a note is returned only if the user is its owner
+   * or has shared access via `tag_access`. If the note is not found or the user has no access,
+   * `null` is returned to prevent revealing its existence.
    *
-   * Access control: returns note if user is owner OR has shared access via tag_access
-   * Returns null if note not found or user has no access (for 404 response)
-   *
-   * @param userId - Current user ID (from JWT)
-   * @param noteId - Note ID to fetch
-   * @returns Full note details with ownership and public link info, or null if no access
-   * @throws Error if database query fails
+   * @param {string} userId - The ID of the current user (from JWT).
+   * @param {string} noteId - The ID of the note to fetch.
+   * @returns {Promise<NoteDetailDTO | null>} A promise that resolves to the full note details
+   * with ownership and public link information, or `null` if the note is not found or access is denied.
+   * @throws {Error} If a database query fails unexpectedly.
    */
   async getNoteById(userId: string, noteId: string): Promise<NoteDetailDTO | null> {
     // Step 1: Query note with joined tag
@@ -657,16 +705,19 @@ export class NotesService {
   }
 
   /**
-   * Update note by ID (partial update)
+   * Updates an existing note identified by its ID.
+   * Only the owner of the note can perform updates. This method supports partial updates,
+   * meaning only the fields provided in the `patch` object will be updated.
+   * If `tag_id` is changed, ownership of the new tag is also verified.
    *
-   * Only owner can update. Validates tag ownership if tag_id is being changed.
-   * Updates only provided fields and sets updated_at to current timestamp.
-   *
-   * @param userId - Current user ID (from JWT)
-   * @param noteId - Note ID to update
-   * @param patch - Fields to update (at least one required)
-   * @returns Updated note with tag information
-   * @throws Error if note not found, user not owner, or tag not owned by user
+   * @param {string} userId - The ID of the current user (from JWT).
+   * @param {string} noteId - The ID of the note to update.
+   * @param {UpdateNoteInput} patch - An object containing the fields to update. At least one field must be provided.
+   * @returns {Promise<NoteDTO>} A promise that resolves to the updated note with its tag information.
+   * @throws {Error} "NOTE_NOT_FOUND" if the note does not exist.
+   * @throws {Error} "NOTE_NOT_OWNED" if the current user is not the owner of the note.
+   * @throws {Error} "TAG_NOT_OWNED" if `tag_id` is updated to a tag not owned by the user.
+   * @throws {Error} If the database update operation fails.
    */
   async updateNote(userId: string, noteId: string, patch: UpdateNoteInput): Promise<NoteDTO> {
     // Step 1: Verify note exists and user is owner
@@ -743,14 +794,16 @@ export class NotesService {
   }
 
   /**
-   * Delete note by ID
+   * Deletes a note identified by its ID.
+   * Only the owner of the note can perform this operation. Related records (e.g., public links)
+   * are automatically deleted via CASCADE rules configured in the database.
    *
-   * Only owner can delete. Related records (public_links) are deleted via CASCADE.
-   * Returns 404 if note not found or user is not owner (don't reveal existence).
-   *
-   * @param userId - Current user ID (from JWT)
-   * @param noteId - Note ID to delete
-   * @throws Error if note not found or user is not owner
+   * @param {string} userId - The ID of the current user (from JWT).
+   * @param {string} noteId - The ID of the note to delete.
+   * @returns {Promise<void>} A promise that resolves when the note has been successfully deleted.
+   * @throws {Error} "NOTE_NOT_FOUND" if the note does not exist.
+   * @throws {Error} "NOTE_NOT_OWNED" if the current user is not the owner of the note.
+   * @throws {Error} If the database deletion operation fails.
    */
   async deleteNote(userId: string, noteId: string): Promise<void> {
     // Step 1: Verify note exists and user is owner

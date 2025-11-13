@@ -8,17 +8,28 @@ import { Label } from "@/components/ui/label";
 import { useRegisterMutation } from "@/hooks/mutations/useRegisterMutation";
 import { registerSchema, type RegisterInput } from "@/lib/validators/auth.schemas";
 
+/**
+ * @interface RegisterFormProps
+ * @description Props for the RegisterForm component.
+ * @property {(errors: string[]) => void} onError - Callback function to handle errors, receiving an array of error messages.
+ * @property {(messages: string[]) => void} [onSuccess] - Optional callback function to handle successful registration, receiving an array of success messages.
+ */
 interface RegisterFormProps {
   onError: (errors: string[]) => void;
   onSuccess?: (messages: string[]) => void;
 }
 
 /**
- * RegisterForm component - email/password registration
- * Uses React Hook Form for state management, Zod for validation, and TanStack Query for API calls
- * Integrates with Supabase Auth and handles pending note auto-save flow
- * - Checks sessionStorage for pending notes after successful registration
- * - Redirects to /notes?autoSave=true if pending note exists
+ * @component RegisterForm
+ * @description React component for user registration via email and password.
+ * This form uses `react-hook-form` for state management, `Zod` for validation,
+ * and `TanStack Query` for API calls. It integrates with Supabase Auth and
+ * handles a pending note auto-save flow by checking `sessionStorage` after
+ * successful registration and redirecting to `/notes?autoSave=true` if a
+ * pending note exists.
+ *
+ * @param {RegisterFormProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered registration form.
  */
 export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);

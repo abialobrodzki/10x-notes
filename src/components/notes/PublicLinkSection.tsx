@@ -16,6 +16,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { NoteDetailDTO, PublicLinkDTO } from "@/types";
 
+/**
+ * @interface PublicLinkSectionProps
+ * @description Props for the PublicLinkSection component.
+ * @property {NoteDetailDTO["public_link"]} publicLink - The public link object associated with the note.
+ * @property {string} noteId - The ID of the note for which the public link is managed.
+ * @property {boolean} isOwner - Indicates if the current user is the owner of the note.
+ * @property {(publicLink: PublicLinkDTO | null) => void} onUpdate - Callback function to be called when the public link status is updated.
+ */
 interface PublicLinkSectionProps {
   publicLink: NoteDetailDTO["public_link"];
   noteId: string;
@@ -24,13 +32,14 @@ interface PublicLinkSectionProps {
 }
 
 /**
- * PublicLinkSection - Manage public link for note
- * Features:
- * - Toggle on/off (POST/PATCH)
- * - Display URL with copy-to-clipboard
- * - Rotate token with confirmation dialog
- * - Only visible for owners
- * Presentational component using usePublicLink hook
+ * @component PublicLinkSection
+ * @description A component for managing the public link of a note.
+ * It allows the note owner to toggle the public link on/off, display the URL with
+ * copy-to-clipboard functionality, and rotate the link token with a confirmation dialog.
+ * This component is only visible to the note owner.
+ *
+ * @param {PublicLinkSectionProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered public link management section, or `null` if the user is not the owner.
  */
 export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdate }: PublicLinkSectionProps) {
   const {

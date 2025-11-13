@@ -1,10 +1,20 @@
+/**
+ * @module middleware/index
+ * @description This module contains the core authentication and authorization middleware for the application.
+ * It intercepts all incoming requests and handles routing based on the user's authentication status.
+ *
+ * @depends on `astro:middleware`
+ * @depends on `../lib/supabase-server`
+ */
+
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServerClient } from "../lib/supabase-server";
 import type { APIContext, MiddlewareNext } from "astro";
 
 /**
- * Public paths that don't require authentication
- * Includes public access endpoints and public API routes
+ * @constant {string[]} PUBLIC_PATHS
+ * @description An array of paths that do not require authentication.
+ * This includes public pages, API routes, and assets.
  */
 const PUBLIC_PATHS = [
   // Landing page (public AI generation)
@@ -18,30 +28,46 @@ const PUBLIC_PATHS = [
 ];
 
 /**
- * Auth-only paths (pages for unauthenticated users only)
- * If user is authenticated, they will be redirected to dashboard
+ * @constant {string[]} AUTH_ONLY_PATHS
+ * @description An array of paths that are only accessible to unauthenticated users.
+ * If an authenticated user tries to access these paths, they will be redirected to the dashboard.
  */
 const AUTH_ONLY_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 /**
- * Check if the given path is public (doesn't require auth)
- * Exported for testing purposes
+ * Checks if a given path is a public path.
+ * Public paths are accessible to all users, regardless of their authentication status.
+ *
+ * @param {string} pathname - The path to check.
+ * @returns {boolean} `true` if the path is public, `false` otherwise.
  */
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 /**
- * Check if the given path is auth-only (for unauthenticated users only)
- * Exported for testing purposes
+ * Checks if a given path is an auth-only path.
+ * Auth-only paths are only accessible to unauthenticated users.
+ *
+ * @param {string} pathname - The path to check.
+ * @returns {boolean} `true` if the path is auth-only, `false` otherwise.
  */
 export function isAuthOnlyPath(pathname: string): boolean {
   return AUTH_ONLY_PATHS.some((path) => pathname === path);
 }
 
 /**
- * Core middleware logic (Astro-agnostic for testability)
- * Exported for testing purposes
+ * The core middleware handler for the application.
+ * This function is responsible for:
+ * - Creating a Supabase server client.
+ * - Getting the authenticated user.
+ * - Redirecting users based on their authentication status and the path they are trying to access.
+ * - Clearing invalid authentication cookies.
+ *
+ * @param {APIContext} context - The Astro API context.
+ * @param {MiddlewareNext} next - The next middleware in the chain.
+ * @returns {Promise<Response>} A promise that resolves to a `Response` object.
+ * @see https://docs.astro.build/en/guides/middleware/
  */
 export async function middlewareHandler(context: APIContext, next: MiddlewareNext): Promise<Response> {
   // Create server-side Supabase client with cookies support
@@ -121,5 +147,10 @@ export async function middlewareHandler(context: APIContext, next: MiddlewareNex
   return context.redirect("/login");
 }
 
-// Astro middleware wrapper
+/**
+ * @constant {MiddlewareResponseHandler} onRequest
+ * @description The Astro middleware wrapper for the `middlewareHandler` function.
+ * This is the entry point for the middleware.
+ * @see https://docs.astro.build/en/guides/middleware/
+ */
 export const onRequest = defineMiddleware(middlewareHandler);

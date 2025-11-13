@@ -1,8 +1,8 @@
 /**
- * OpenRouter Service
- *
- * Secure, type-safe communication layer for OpenRouter API.
- * Provides LLM response generation with retry logic, telemetry, and error handling.
+ * @module OpenRouterService
+ * @description This module provides a secure and type-safe communication layer for the OpenRouter API.
+ * It handles LLM response generation, including retry logic, telemetry logging, and robust error handling.
+ * The service supports structured outputs via JSON Schema validation and integrates with Supabase for telemetry.
  */
 
 import {
@@ -28,8 +28,20 @@ import type {
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * OpenRouter Service
- * Main service for LLM generation via OpenRouter API
+ * @class OpenRouterService
+ * @description Main service for LLM generation via the OpenRouter API.
+ * This class encapsulates the logic for making API calls, handling responses,
+ * implementing retry mechanisms, and logging telemetry data.
+ *
+ * @property {string} openRouterApiKey - The API key for OpenRouter.
+ * @property {string} openRouterApiUrl - The base URL for the OpenRouter API.
+ * @property {number} timeoutMs - The timeout duration for API requests in milliseconds.
+ * @property {number} retryAttempts - The number of retry attempts for transient errors.
+ * @property {number} retryDelayMs - The base delay for exponential backoff in milliseconds.
+ * @property {string} defaultModel - The default LLM model to use for generation.
+ * @property {string} [appUrl] - Optional: The URL of the application for HTTP-Referer header.
+ * @property {string} [appName] - Optional: The name of the application for X-Title header.
+ * @property {SupabaseClient<Database>} [supabase] - Optional: Supabase client for logging telemetry.
  */
 export class OpenRouterService {
   private readonly openRouterApiKey: string;
@@ -42,6 +54,19 @@ export class OpenRouterService {
   private readonly appName?: string;
   private readonly supabase?: SupabaseClient<Database>;
 
+  /**
+   * Creates an instance of OpenRouterService.
+   * @param {SupabaseClient<Database>} [supabase] - An optional Supabase client for logging telemetry.
+   * @param {OpenRouterServiceOptions & { apiKey?: string }} [options] - Configuration options for the service.
+   * @param {string} [options.apiKey] - The OpenRouter API key. If not provided, it attempts to read from `process.env.OPENROUTER_API_KEY`.
+   * @param {number} [options.timeoutMs=60000] - Request timeout in milliseconds.
+   * @param {number} [options.retryAttempts=2] - Number of retry attempts for transient errors.
+   * @param {number} [options.retryDelayMs=1000] - Base delay for exponential backoff in milliseconds.
+   * @param {string} [options.defaultModel="x-ai/grok-4-fast"] - The default model to use.
+   * @param {string} [options.appUrl] - The application URL for the `HTTP-Referer` header.
+   * @param {string} [options.appName] - The application name for the `X-Title` header.
+   * @throws {OpenRouterAuthError} If `OPENROUTER_API_KEY` is not provided or is empty.
+   */
   constructor(supabase?: SupabaseClient<Database>, options?: OpenRouterServiceOptions & { apiKey?: string }) {
     // Validate and load API key from options or process.env (if available)
     // For Cloudflare Pages: MUST pass via options.apiKey from runtime.env
@@ -66,12 +91,28 @@ export class OpenRouterService {
   }
 
   /**
-   * Main generation method with full type safety
-   * Generic type T represents the expected response structure
+   * Main generation method with full type safety.
+   * This method orchestrates the LLM generation process, including request validation,
+   * payload construction, API calling with retry logic, response parsing, and telemetry logging.
    *
-   * @param request - Generation request with messages, model, schema, and parameters
-   * @returns Typed response with data and metadata
-   * @throws OpenRouterError subclasses for various failure scenarios
+   * @template T - The expected structure of the response data. Defaults to `string` if no schema is provided.
+   * @param {OpenRouterRequest<T>} request - The generation request object.
+   * @param {string} request.systemMessage - The system message to guide the LLM's behavior.
+   * @param {string} request.userMessage - The user's prompt for the LLM.
+   * @param {string} [request.modelName] - The specific model to use (e.g., "x-ai/grok-4-fast"). Defaults to `this.defaultModel`.
+   * @param {JSONSchema & { name: string }} [request.responseSchema] - Optional JSON schema for structured output validation.
+   * @param {ModelParameters} [request.parameters] - Optional model-specific parameters (e.g., temperature, max_tokens).
+   * @param {string} [request.userId] - Optional user ID for telemetry logging.
+   * @param {string} [request.noteId] - Optional note ID for telemetry logging.
+   * @returns {Promise<OpenRouterResponse<T>>} A promise that resolves to a typed response with data and metadata.
+   * @throws {OpenRouterValidationError} If the request parameters are invalid.
+   * @throws {OpenRouterAuthError} If authentication fails.
+   * @throws {OpenRouterRateLimitError} If the rate limit is exceeded.
+   * @throws {OpenRouterTimeoutError} If the API request times out.
+   * @throws {OpenRouterNetworkError} If a network error occurs.
+   * @throws {OpenRouterServiceError} If an upstream service error occurs.
+   * @throws {OpenRouterParseError} If the API response cannot be parsed or validated against the schema.
+   * @throws {OpenRouterApiError} For other unexpected API errors.
    */
   async generate<T = string>(request: OpenRouterRequest<T>): Promise<OpenRouterResponse<T>> {
     const startTime = Date.now();
@@ -128,11 +169,12 @@ export class OpenRouterService {
   }
 
   /**
-   * Validate request parameters before sending to API
-   * Ensures all inputs meet contract requirements
+   * Validates the request parameters before sending them to the OpenRouter API.
+   * Ensures that all required inputs meet the contract requirements and constraints.
    *
-   * @param request - Request to validate
-   * @throws OpenRouterValidationError if validation fails
+   * @template T - The expected structure of the response data.
+   * @param {OpenRouterRequest<T>} request - The request object to validate.
+   * @throws {OpenRouterValidationError} If any validation rule fails.
    */
   private validateRequest<T>(request: OpenRouterRequest<T>): void {
     // Validate required fields
@@ -201,11 +243,12 @@ export class OpenRouterService {
   }
 
   /**
-   * Build OpenRouter API payload from request
-   * Constructs payload conforming to OpenRouter specification
+   * Builds the OpenRouter API payload from the internal `OpenRouterRequest` object.
+   * This method transforms the request into a format conforming to the OpenRouter API specification.
    *
-   * @param request - Generation request
-   * @returns Formatted payload for OpenRouter API
+   * @template T - The expected structure of the response data.
+   * @param {OpenRouterRequest<T>} request - The generation request object.
+   * @returns {OpenRouterPayload} The formatted payload ready for the OpenRouter API.
    */
   private buildOpenRouterPayload<T>(request: OpenRouterRequest<T>): OpenRouterPayload {
     const payload: OpenRouterPayload = {
@@ -257,12 +300,17 @@ export class OpenRouterService {
   }
 
   /**
-   * Call OpenRouter API with retry logic for transient failures
-   * Implements exponential backoff for retryable errors
+   * Calls the OpenRouter API with a retry mechanism for transient failures.
+   * Implements exponential backoff to handle temporary network issues or rate limiting.
    *
-   * @param payload - OpenRouter API payload
-   * @returns API response
-   * @throws OpenRouterError if all retry attempts fail or non-retryable error occurs
+   * @param {OpenRouterPayload} payload - The payload to send to the OpenRouter API.
+   * @returns {Promise<OpenRouterApiResponse>} A promise that resolves to the raw API response.
+   * @throws {OpenRouterError} If all retry attempts fail or a non-retryable error occurs.
+   * @throws {OpenRouterTimeoutError} If the request times out during any attempt.
+   * @throws {OpenRouterNetworkError} If a network error occurs during any attempt.
+   * @throws {OpenRouterServiceError} If an upstream service error occurs during any attempt.
+   * @throws {OpenRouterRateLimitError} If the rate limit is exceeded during any attempt.
+   * @throws {OpenRouterApiError} For other unexpected API errors.
    */
   private async callWithRetry(payload: OpenRouterPayload): Promise<OpenRouterApiResponse> {
     let lastError: Error | undefined;
@@ -273,7 +321,7 @@ export class OpenRouterService {
       } catch (error) {
         lastError = error as Error;
 
-        // Check if error is retryable
+        // Determine if the error is retryable
         const isRetryable =
           error instanceof OpenRouterTimeoutError ||
           error instanceof OpenRouterNetworkError ||
@@ -281,7 +329,7 @@ export class OpenRouterService {
           error instanceof OpenRouterRateLimitError ||
           (error instanceof OpenRouterApiError && error.retryable);
 
-        // Don't retry if error is not retryable or this was the last attempt
+        // If not retryable or this was the last attempt, re-throw the error
         if (!isRetryable || attempt === this.retryAttempts) {
           throw error;
         }
@@ -294,17 +342,23 @@ export class OpenRouterService {
       }
     }
 
-    // This should never be reached (loop always throws or returns), but TypeScript needs it
+    // This line should theoretically not be reached as the loop always throws or returns.
     throw lastError as Error;
   }
 
   /**
-   * Low-level HTTP call to OpenRouter API
-   * Uses AbortController for timeout management
+   * Makes a low-level HTTP call to the OpenRouter API.
+   * Manages request headers, body, and timeout using `AbortController`.
    *
-   * @param payload - OpenRouter API payload
-   * @returns Raw API response
-   * @throws OpenRouterError subclasses based on failure type
+   * @param {OpenRouterPayload} payload - The payload to send to the OpenRouter API.
+   * @returns {Promise<OpenRouterApiResponse>} A promise that resolves to the raw API response.
+   * @throws {OpenRouterTimeoutError} If the request times out.
+   * @throws {OpenRouterNetworkError} If a network error occurs (e.g., no internet connection).
+   * @throws {OpenRouterAuthError} If the API key is invalid or unauthorized.
+   * @throws {OpenRouterRateLimitError} If the rate limit is exceeded.
+   * @throws {OpenRouterValidationError} If the request payload is invalid according to the API.
+   * @throws {OpenRouterServiceError} If an upstream service error occurs (5xx status codes).
+   * @throws {OpenRouterApiError} For other unexpected API errors.
    */
   private async callOpenRouterApi(payload: OpenRouterPayload): Promise<OpenRouterApiResponse> {
     // Create AbortController for timeout
@@ -377,11 +431,16 @@ export class OpenRouterService {
   }
 
   /**
-   * Map HTTP status codes to domain errors
-   * Provides consistent error handling across the service
+   * Maps HTTP status codes from the OpenRouter API response to specific domain error types.
+   * This provides consistent and actionable error handling across the service.
    *
-   * @param response - HTTP response from OpenRouter API
-   * @throws Appropriate OpenRouterError subclass
+   * @param {Response} response - The HTTP response object received from the OpenRouter API.
+   * @returns {Promise<never>} A promise that always rejects with an appropriate `OpenRouterError` subclass.
+   * @throws {OpenRouterAuthError} For 401/403 status codes (authentication/authorization issues).
+   * @throws {OpenRouterRateLimitError} For 429 status codes (rate limiting).
+   * @throws {OpenRouterValidationError} For 400 status codes (invalid request payload).
+   * @throws {OpenRouterServiceError} For 503/504 or other 5xx status codes (upstream service issues).
+   * @throws {OpenRouterApiError} For any other unhandled HTTP status codes.
    */
   private async handleApiError(response: Response): Promise<never> {
     const statusCode = response.status;

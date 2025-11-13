@@ -7,6 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { GlassCard } from "@/components/ui/composed";
 import type { NoteListItemDTO } from "@/types";
 
+/**
+ * @interface NoteListItemProps
+ * @description Props for the NoteListItem component.
+ * @property {NoteListItemDTO} item - The data transfer object containing the note's details.
+ * @property {(id: string) => void} onClick - Callback function to be called when the note item is clicked, receiving the note's ID.
+ * @property {string} [searchTerm] - Optional search term to highlight within the note's summary.
+ */
 interface NoteListItemProps {
   item: NoteListItemDTO;
   onClick: (id: string) => void;
@@ -14,19 +21,14 @@ interface NoteListItemProps {
 }
 
 /**
- * NoteListItem - Single note in the list
+ * @component NoteListItem
+ * @description Displays a single note as an item in a list, providing a preview of its content
+ * and key metadata. It includes features like summary truncation, badges for meeting date,
+ * tag, goal status, and indicators for AI generation, public links, and shared status.
+ * The component is optimized for performance using `React.memo`, `useMemo`, and `useCallback`.
  *
- * Features:
- * - Summary preview (truncated)
- * - Meeting date, tag, goal status badges
- * - AI/public/owner indicators
- * - Click to navigate to detail page
- * - Optional search term highlighting
- *
- * Performance optimizations:
- * - React.memo to prevent unnecessary re-renders
- * - useMemo for expensive calculations (date formatting, text truncation)
- * - useCallback for event handlers
+ * @param {NoteListItemProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered note list item.
  */
 export const NoteListItem = memo(function NoteListItem({ item, onClick, searchTerm }: NoteListItemProps) {
   // Memoize meeting date parsing and formatting
