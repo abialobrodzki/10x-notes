@@ -1,5 +1,7 @@
 # 10xNotes 📝
 
+> **🌐 Live Application:** [https://10x-notes.pages.dev/](https://10x-notes.pages.dev/)
+
 A lightweight AI-powered meeting notes management application that helps you organize, summarize, and share meeting outcomes efficiently.
 
 ## 📖 Description
