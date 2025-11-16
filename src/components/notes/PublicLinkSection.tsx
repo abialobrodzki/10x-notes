@@ -38,8 +38,8 @@ interface PublicLinkSectionProps {
  * copy-to-clipboard functionality, and rotate the link token with a confirmation dialog.
  * This component is only visible to the note owner.
  *
- * @param {PublicLinkSectionProps} props - The props for the component.
- * @returns {JSX.Element | null} The rendered public link management section, or `null` if the user is not the owner.
+ * @param props - The props for the component.
+ * @returns The rendered public link management section, or `null` if the user is not the owner.
  */
 export default function PublicLinkSection({ publicLink, noteId, isOwner, onUpdate }: PublicLinkSectionProps) {
   const {

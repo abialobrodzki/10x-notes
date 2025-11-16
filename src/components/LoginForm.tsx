@@ -25,8 +25,8 @@ interface LoginFormProps {
  * successful login and redirecting to `/notes?autoSave=true` if a
  * pending note exists.
  *
- * @param {LoginFormProps} props - The props for the component.
- * @returns {JSX.Element} The rendered login form.
+ * @param props - The props for the component.
+ * @returns The rendered login form.
  */
 export default function LoginForm({ onError }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);

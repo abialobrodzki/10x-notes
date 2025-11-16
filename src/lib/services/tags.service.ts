@@ -165,7 +165,7 @@ export class TagsService {
    * Transform tag entity to TagWithStatsDTO
    *
    * @param tag - Raw tag entity
-   * @param currentUserId - Current user ID
+   * @param _currentUserId - Current user ID
    * @param ownedTagIds - Set of owned tag IDs
    * @param noteCountsMap - Map of tag_id to note count
    * @param sharedRecipientsMap - Map of tag_id to shared recipients count
@@ -173,7 +173,7 @@ export class TagsService {
    */
   private transformToTagWithStatsDTO(
     tag: TagEntity,
-    currentUserId: string,
+    _currentUserId: string,
     ownedTagIds: Set<string>,
     noteCountsMap: Map<string, number>,
     sharedRecipientsMap: Map<string, number>

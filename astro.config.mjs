@@ -24,6 +24,18 @@ export default defineConfig({
   output: "server",
 
   /**
+   * @property {object} image
+   * @description Image service configuration for Cloudflare Workers compatibility.
+   * Using 'noop' service disables image optimization since Sharp doesn't work in Workers runtime.
+   * @see https://docs.astro.build/en/guides/images/
+   */
+  image: {
+    service: {
+      entrypoint: "astro/assets/services/noop",
+    },
+  },
+
+  /**
    * @property {Array<object>} integrations
    * @description A list of Astro integrations to use in the project.
    * - `react()`: Enables React components to be used within Astro.

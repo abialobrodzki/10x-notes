@@ -51,7 +51,6 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
               onDateFromChange(date ? format(date, "yyyy-MM-dd") : undefined);
               setFromOpen(false);
             }}
-            initialFocus
             locale={pl}
             className="text-glass-text"
             data-testid="date-range-picker-from-calendar"
@@ -86,7 +85,6 @@ export function DateRangePicker({ dateFrom, dateTo, onDateFromChange, onDateToCh
               }
               return false;
             }}
-            initialFocus
             locale={pl}
             className="text-glass-text"
             data-testid="date-range-picker-to-calendar"

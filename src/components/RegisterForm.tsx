@@ -28,8 +28,8 @@ interface RegisterFormProps {
  * successful registration and redirecting to `/notes?autoSave=true` if a
  * pending note exists.
  *
- * @param {RegisterFormProps} props - The props for the component.
- * @returns {JSX.Element} The rendered registration form.
+ * @param props - The props for the component.
+ * @returns The rendered registration form.
  */
 export default function RegisterForm({ onError, onSuccess }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);

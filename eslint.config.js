@@ -16,102 +16,114 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, ".gitignore");
 
-const baseConfig = tseslint.config({
-  extends: [eslint.configs.recommended, tseslint.configs.strict, tseslint.configs.stylistic],
-  rules: {
-    "no-console": "warn",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-      },
-    ],
-    "@typescript-eslint/no-explicit-any": "warn",
-    // Disable unified-signatures due to bug with type parameters
-    // https://github.com/typescript-eslint/typescript-eslint/issues/9464
-    "@typescript-eslint/unified-signatures": "off",
-  },
-});
-
-const jsxA11yConfig = tseslint.config({
-  files: ["**/*.{js,jsx,ts,tsx}"],
-  extends: [jsxA11y.flatConfigs.recommended],
-  languageOptions: {
-    ...jsxA11y.flatConfigs.recommended.languageOptions,
-  },
-  rules: {
-    ...jsxA11y.flatConfigs.recommended.rules,
-  },
-});
-
-const importConfig = tseslint.config({
-  files: ["**/*.{js,jsx,ts,tsx}"],
-  plugins: {
-    import: importPlugin,
-  },
-  settings: {
-    "import/resolver": {
-      typescript: true,
-      node: true,
-    },
-  },
-  rules: {
-    "import/order": [
-      "warn",
-      {
-        groups: ["builtin", "external", "internal", ["parent", "sibling"], "index", "object", "type"],
-        "newlines-between": "never",
-        alphabetize: {
-          order: "asc",
-          caseInsensitive: true,
+const baseConfig = [
+  eslint.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
+  {
+    rules: {
+      "no-console": "warn",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
         },
-      },
-    ],
-    "import/no-duplicates": "error",
-    "import/no-unresolved": "off", // TypeScript handles this
-  },
-});
-
-const reactConfig = tseslint.config({
-  files: ["**/*.{js,jsx,ts,tsx}"],
-  extends: [pluginReact.configs.flat.recommended],
-  languageOptions: {
-    ...pluginReact.configs.flat.recommended.languageOptions,
-    globals: {
-      window: true,
-      document: true,
+      ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Disable unified-signatures due to bug with type parameters
+      // https://github.com/typescript-eslint/typescript-eslint/issues/9464
+      "@typescript-eslint/unified-signatures": "off",
     },
   },
-  plugins: {
-    "react-hooks": eslintPluginReactHooks,
-    "react-compiler": reactCompiler,
+];
+
+const jsxA11yConfig = [
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    ...jsxA11y.flatConfigs.recommended,
+    languageOptions: {
+      ...jsxA11y.flatConfigs.recommended.languageOptions,
+    },
+    rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
+    },
   },
-  settings: { react: { version: "detect" } },
-  rules: {
-    ...eslintPluginReactHooks.configs.recommended.rules,
-    "react/react-in-jsx-scope": "off",
-    "react-compiler/react-compiler": "error",
+];
+
+const importConfig = [
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    plugins: {
+      import: importPlugin,
+    },
+    settings: {
+      "import/resolver": {
+        typescript: true,
+        node: true,
+      },
+    },
+    rules: {
+      "import/order": [
+        "warn",
+        {
+          groups: ["builtin", "external", "internal", ["parent", "sibling"], "index", "object", "type"],
+          "newlines-between": "never",
+          alphabetize: {
+            order: "asc",
+            caseInsensitive: true,
+          },
+        },
+      ],
+      "import/no-duplicates": "error",
+      "import/no-unresolved": "off", // TypeScript handles this
+    },
   },
-});
+];
+
+const reactConfig = [
+  {
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    ...pluginReact.configs.flat.recommended,
+    languageOptions: {
+      ...pluginReact.configs.flat.recommended.languageOptions,
+      globals: {
+        window: true,
+        document: true,
+      },
+    },
+    plugins: {
+      "react-hooks": eslintPluginReactHooks,
+      "react-compiler": reactCompiler,
+    },
+    settings: { react: { version: "detect" } },
+    rules: {
+      ...eslintPluginReactHooks.configs.recommended.rules,
+      "react/react-in-jsx-scope": "off",
+      "react-compiler/react-compiler": "error",
+    },
+  },
+];
 
 // E2E tests config - disable React rules for Playwright fixtures
-const e2eConfig = tseslint.config({
-  files: ["tests/e2e/**/*.ts"],
-  rules: {
-    "no-console": "off", // Console is expected in test setup
-    "react-hooks/rules-of-hooks": "off", // Playwright fixtures use "use" parameter
+const e2eConfig = [
+  {
+    files: ["tests/e2e/**/*.ts"],
+    rules: {
+      "no-console": "off", // Console is expected in test setup
+      "react-hooks/rules-of-hooks": "off", // Playwright fixtures use "use" parameter
+    },
   },
-});
+];
 
-export default tseslint.config(
+export default [
   includeIgnoreFile(gitignorePath),
-  baseConfig,
-  jsxA11yConfig,
-  importConfig,
-  reactConfig,
-  e2eConfig,
-  eslintPluginAstro.configs["flat/recommended"],
-  eslintPluginPrettier
-);
+  ...baseConfig,
+  ...jsxA11yConfig,
+  ...importConfig,
+  ...reactConfig,
+  ...e2eConfig,
+  ...eslintPluginAstro.configs["flat/recommended"],
+  eslintPluginPrettier,
+];

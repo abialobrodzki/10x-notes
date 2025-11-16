@@ -27,12 +27,12 @@ export class TagAccessService {
    * - Fetches recipients with emails from auth.users (SECURITY DEFINER)
    * - Returns only data for tags owned by current user
    *
-   * @param userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
+   * @param _userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
    * @param tagId - Tag ID to get access list for
    * @returns List of recipients with access to the tag
    * @throws Error if tag not found, user not owner, or database query fails
    */
-  async getTagAccess(userId: string, tagId: string): Promise<TagAccessListDTO> {
+  async getTagAccess(_userId: string, tagId: string): Promise<TagAccessListDTO> {
     // Call RPC function that handles ownership check and fetches emails
     // Function signature: get_tag_access_list(p_tag_id uuid) -> TABLE(recipient_id uuid, email text, granted_at timestamptz)
     // The function uses auth.uid() internally to verify ownership
@@ -76,13 +76,13 @@ export class TagAccessService {
    * - Prevents self-sharing and duplicates
    * - Inserts into tag_access table
    *
-   * @param userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
+   * @param _userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
    * @param tagId - Tag ID to grant access to
    * @param recipientEmail - Email address of recipient user
    * @returns Granted access details (recipient_id, email, granted_at)
    * @throws Error if tag not found, user not owner, recipient not found, etc.
    */
-  async grantTagAccess(userId: string, tagId: string, recipientEmail: string): Promise<TagAccessGrantedDTO> {
+  async grantTagAccess(_userId: string, tagId: string, recipientEmail: string): Promise<TagAccessGrantedDTO> {
     // Call RPC function that handles all validation and insertion
     // Function signature: grant_tag_access(p_tag_id uuid, p_recipient_email text) -> TABLE(recipient_id uuid, email text, granted_at timestamptz)
     const { data, error } = await this.supabase.rpc("grant_tag_access", {
@@ -139,12 +139,12 @@ export class TagAccessService {
    * - Deletes tag_access record with SECURITY DEFINER (bypasses RLS)
    * - Returns success status with deleted count
    *
-   * @param userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
+   * @param _userId - Current user ID (from JWT) - not used directly, auth.uid() is used in RPC
    * @param tagId - Tag ID to revoke access from
    * @param recipientId - User ID whose access should be revoked
    * @throws Error if tag not found, user not owner, or RPC fails
    */
-  async revokeTagAccess(userId: string, tagId: string, recipientId: string): Promise<void> {
+  async revokeTagAccess(_userId: string, tagId: string, recipientId: string): Promise<void> {
     // Call RPC function that handles ownership check and deletion
     // Function signature: revoke_tag_access(p_tag_id uuid, p_recipient_id uuid) -> jsonb
     // The function uses auth.uid() internally to verify ownership

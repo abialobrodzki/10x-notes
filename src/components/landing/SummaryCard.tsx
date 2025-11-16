@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react";
-import { GoalStatusDisplay } from "./GoalStatusDisplay";
+import { GoalStatusBadge } from "@/components/shared/GoalStatusBadge";
 import { SuggestedTagBadge } from "./SuggestedTagBadge";
 import type { AiSummaryDTO } from "@/types";
 
@@ -50,7 +50,7 @@ export function SummaryCard({ data }: SummaryCardProps) {
       {/* Goal Status */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-glass-text">Status celów:</h3>
-        <GoalStatusDisplay status={data.goal_status} />
+        <GoalStatusBadge status={data.goal_status} showIcon data-testid="goal-status-display" />
       </div>
 
       {/* Suggested Tag */}

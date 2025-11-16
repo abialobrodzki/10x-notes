@@ -100,7 +100,7 @@ describe("OpenRouterService", () => {
 
       // Mock fetch to capture headers
       let capturedHeaders: Record<string, string> | undefined;
-      global.fetch = vi.fn().mockImplementation((url, options) => {
+      global.fetch = vi.fn().mockImplementation((_url, options) => {
         capturedHeaders = options?.headers as Record<string, string>;
         return Promise.resolve({
           ok: true,
@@ -130,7 +130,7 @@ describe("OpenRouterService", () => {
 
       // Mock fetch to capture headers
       let capturedHeaders: Record<string, string> | undefined;
-      global.fetch = vi.fn().mockImplementation((url, options) => {
+      global.fetch = vi.fn().mockImplementation((_url, options) => {
         capturedHeaders = options?.headers as Record<string, string>;
         return Promise.resolve({
           ok: true,
@@ -468,7 +468,7 @@ describe("OpenRouterService", () => {
     it("should successfully use valid model parameters in request", async () => {
       // Mock fetch to capture the payload
       let capturedPayload: unknown;
-      global.fetch = vi.fn().mockImplementation((url, options) => {
+      global.fetch = vi.fn().mockImplementation((_url, options) => {
         const body = options?.body;
         if (typeof body === "string") {
           capturedPayload = JSON.parse(body);
@@ -513,7 +513,7 @@ describe("OpenRouterService", () => {
 
     it("should handle parameters with only some fields defined (temperature undefined)", async () => {
       let capturedPayload: unknown;
-      global.fetch = vi.fn().mockImplementation((url, options) => {
+      global.fetch = vi.fn().mockImplementation((_url, options) => {
         const body = options?.body;
         if (typeof body === "string") {
           capturedPayload = JSON.parse(body);

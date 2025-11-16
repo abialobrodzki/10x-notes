@@ -85,7 +85,6 @@ export default function MeetingDatePicker({ value, isOwner, onChange, isSaving }
             onSelect={handleSelect}
             disabled={!isOwner || isSaving}
             locale={pl}
-            initialFocus
             className="text-glass-text"
             data-testid="meeting-date-picker-calendar"
           />

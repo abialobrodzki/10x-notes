@@ -104,7 +104,7 @@ test.describe("Notes List Page - With Notes", () => {
       // Arrange
       await notesListPage.waitForNotesToLoad();
       await notesListPage.searchInputField.click();
-      await notesListPage.searchInputField.type("test query", { delay: 50 });
+      await notesListPage.searchInputField.fill("test query");
 
       // Act
       await notesListPage.clearSearch();

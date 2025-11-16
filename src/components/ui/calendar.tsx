@@ -98,12 +98,10 @@ function Calendar({
       }}
       components={{
         Root: (props) => {
-          // eslint-disable-next-line react/prop-types
           const { className, rootRef, ...rest } = props;
           return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...rest} />;
         },
         Chevron: (props) => {
-          // eslint-disable-next-line react/prop-types
           const { className, orientation, ...rest } = props;
           if (orientation === "left") {
             return <ChevronLeftIcon className={cn("size-4", className)} {...rest} />;

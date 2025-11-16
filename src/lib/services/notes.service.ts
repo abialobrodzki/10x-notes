@@ -168,9 +168,9 @@ export class NotesService {
    * This is primarily used for querying a user's own notes.
    *
    * @private
-   * @param {string} userId - The ID of the current user.
-   * @param {NotesListQueryInput} query - The query parameters including filters.
-   * @returns {any} A Supabase query builder instance configured with the specified filters.
+   * @param userId - The ID of the current user.
+   * @param query - The query parameters including filters.
+   * @returns A Supabase query builder instance configured with the specified filters.
    */
   private buildNotesQuery(userId: string, query: NotesListQueryInput) {
     let notesQuery = this.supabase.from("notes").select(

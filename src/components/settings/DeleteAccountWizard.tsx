@@ -37,8 +37,8 @@ interface DeleteAccountWizardProps {
  * and `TanStack Query` for API calls to handle the actual account deletion.
  * It implements the GDPR "right to be forgotten" by permanently removing all associated user data.
  *
- * @param {DeleteAccountWizardProps} props - The props for the component.
- * @returns {JSX.Element} The rendered account deletion wizard dialog.
+ * @param props - The props for the component.
+ * @returns The rendered account deletion wizard dialog.
  */
 export function DeleteAccountWizard({ userEmail }: DeleteAccountWizardProps) {
   const [isOpen, setIsOpen] = useState(false);
