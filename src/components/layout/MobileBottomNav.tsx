@@ -1,5 +1,5 @@
 import { BookOpen, Plus, Settings } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 /**
  * MobileBottomNav - Bottom navigation bar for mobile devices
@@ -13,31 +13,35 @@ import { useCallback, useEffect, useState } from "react";
  * - Full keyboard navigation support (Tab, Enter)
  */
 export function MobileBottomNav() {
-  const [pathname, setPathname] = useState<string>(() => {
-    if (typeof window !== "undefined") {
+  // Use useSyncExternalStore to subscribe to pathname changes
+  // This is the React 18+ recommended way to sync with external state (window.location)
+  // Prevents hydration mismatch by explicitly handling SSR vs client differences
+  const pathname = useSyncExternalStore(
+    // Subscribe function - called on client only
+    (callback) => {
+      const handleNavigate = () => callback();
+
+      window.addEventListener("popstate", handleNavigate);
+      document.addEventListener("astro:page-load", handleNavigate);
+
+      return () => {
+        window.removeEventListener("popstate", handleNavigate);
+        document.removeEventListener("astro:page-load", handleNavigate);
+      };
+    },
+    // Get snapshot function - returns current pathname (client)
+    () => {
+      if (typeof window === "undefined") return "";
       return window.location.pathname;
-    }
-    return "";
-  });
-
-  // Listen for navigation changes
-  useEffect(() => {
-    const handleNavigate = () => {
-      setPathname(window.location.pathname);
-    };
-
-    window.addEventListener("popstate", handleNavigate);
-    document.addEventListener("astro:page-load", handleNavigate);
-
-    return () => {
-      window.removeEventListener("popstate", handleNavigate);
-      document.removeEventListener("astro:page-load", handleNavigate);
-    };
-  }, []);
+    },
+    // Get server snapshot function - returns default for SSR
+    () => ""
+  );
 
   // Determine active link based on pathname
   const isActive = useCallback(
     (href: string) => {
+      if (!pathname) return false; // Server-side or initial state
       if (href === "/" && pathname === "/") return true;
       // Handle /settings specifically to also match /settings/
       if (href === "/settings" && (pathname === "/settings" || pathname.startsWith("/settings/"))) return true;
