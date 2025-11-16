@@ -421,9 +421,9 @@ export class OpenRouterService {
         throw error;
       }
 
-      // Wrap unknown errors
+      // Wrap unknown errors (avoid logging sensitive details like API keys)
       throw new OpenRouterApiError(
-        `Unexpected error calling OpenRouter API: ${error instanceof Error ? error.message : String(error)}`
+        `Unexpected error calling OpenRouter API (${error instanceof Error ? error.constructor.name : "Unknown"})`
       );
     } finally {
       clearTimeout(timeoutId);

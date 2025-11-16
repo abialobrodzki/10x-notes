@@ -1484,7 +1484,7 @@ describe("OpenRouterService", () => {
           systemMessage: "Test",
           userMessage: "Test",
         })
-      ).rejects.toThrow("Unexpected error calling OpenRouter API: Unexpected error from a library");
+      ).rejects.toThrow("Unexpected error calling OpenRouter API (RangeError)");
     });
 
     it("should wrap non-Error unknown exceptions as OpenRouterApiError", async () => {
@@ -1503,7 +1503,7 @@ describe("OpenRouterService", () => {
           systemMessage: "Test",
           userMessage: "Test",
         })
-      ).rejects.toThrow("Unexpected error calling OpenRouter API: Something went wrong with the library");
+      ).rejects.toThrow("Unexpected error calling OpenRouter API (Unknown)");
     });
   });
 
@@ -1828,7 +1828,7 @@ describe("OpenRouterService", () => {
         expect.objectContaining({
           user_id: "user-789",
           status: "failure",
-          error_message: "Unexpected error calling OpenRouter API: Network failure string",
+          error_message: "Unexpected error calling OpenRouter API (Unknown)",
         })
       );
     });
