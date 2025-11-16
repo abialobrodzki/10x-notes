@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier . --check",
-    "tsc:check": "astro sync && tsc --noEmit --pretty --strict",
+    "tsc:check": "astro check --minimumFailingSeverity hint",
     "tailwind:check": "tsx scripts/tailwind-lint.ts",
     "workflow:check": "tsx scripts/workflow-lint.ts",
     "db:lint": "supabase db lint",
@@ -74,6 +74,7 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.5",
     "@eslint/compat": "^1.4.1",
     "@eslint/js": "^9.39.0",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
